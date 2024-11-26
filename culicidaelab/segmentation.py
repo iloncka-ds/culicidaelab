@@ -86,7 +86,10 @@ class MosquitoSegmenter:
         else:
             # If no boxes provided, use automatic mask generation
             masks = self.predictor.generate()
-            final_mask = np.logical_or.reduce([mask for mask in masks])
+            if masks:
+                final_mask = np.logical_or.reduce([mask for mask in masks])
+            else:
+                final_mask = np.zeros(image.shape[:2], dtype=bool)
 
         return final_mask.astype(np.uint8)
 

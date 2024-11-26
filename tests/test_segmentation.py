@@ -24,14 +24,16 @@ def mock_predictor():
     """Create a mock SAM predictor."""
     with patch("culicidaelab.segmentation.SamPredictor") as mock:
         mock_instance = mock.return_value
-        # Mock predict method
-        mock_instance.predict.return_value = (
-            [np.ones((416, 416), dtype=bool)],  # masks
-            [0.95],  # scores
-            [1],  # logits
-        )
-        # Mock generate method
-        mock_instance.generate.return_value = [np.ones((416, 416), dtype=bool)]
+
+        # Mock predict method to return empty mask for empty boxes
+        def predict_side_effect(**kwargs):
+            if "box" in kwargs:
+                return [np.ones((416, 416), dtype=bool)], [0.95], [1]
+            return [], [], []
+
+        mock_instance.predict.side_effect = predict_side_effect
+        # Mock generate method to return empty list for empty detection boxes
+        mock_instance.generate.return_value = []
         yield mock_instance
 
 

@@ -4,14 +4,14 @@ Module for mosquito species classification using FastAI and timm.
 
 from __future__ import annotations
 
-from functools import partial
 from pathlib import Path
+from typing import Any
+from collections.abc import Mapping
 
 import numpy as np
 import timm
 import torch
 import torch.nn as nn
-from typing import Any
 from fastai.learner import Learner
 from fastai.losses import CrossEntropyLossFlat
 from fastai.vision.all import aug_transforms
@@ -26,7 +26,8 @@ from fastai.vision.all import parent_label
 from fastai.vision.all import RandomSplitter
 from fastai.vision.all import Resize
 from PIL import Image
-from sklearn.metrics import accuracy_score, confusion_matrix, label_binarize, roc_auc_score
+from sklearn.metrics import accuracy_score, confusion_matrix, roc_auc_score
+from sklearn.preprocessing import label_binarize
 
 from .settings import SpeciesConfig
 
@@ -57,6 +58,7 @@ class MosquitoClassifier:
         """
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.arch = arch
+        self.data_dir = data_dir
 
         # Initialize species configuration
         self.species_config = SpeciesConfig(config_path, data_dir)
@@ -76,7 +78,14 @@ class MosquitoClassifier:
         Returns:
             fastai.Learner: FastAI learner object
         """
-        # Create dummy data to initialize the learner
+        if not hasattr(self, "data_dir") or not self.data_dir:
+            raise ValueError("data_dir must be provided to create a learner")
+
+        path = Path(self.data_dir)
+        if not path.exists():
+            raise FileNotFoundError(f"Data directory not found: {path}")
+
+        # Create dataloaders
         dls = DataBlock(
             blocks=(ImageBlock, CategoryBlock),
             get_items=get_image_files,
@@ -87,11 +96,12 @@ class MosquitoClassifier:
                 *aug_transforms(size=224, min_scale=0.75),
                 Normalize.from_stats(*imagenet_stats),
             ],
-        ).dataloaders(Path("."), bs=16)
+        ).dataloaders(path, bs=16)
 
         # Create model using timm
         arch = self.arch
-        model = create_body(partial(timm.create_model, arch, pretrained=True))
+        base_model = timm.create_model(arch, pretrained=True)
+        model = create_body(base_model)
         model = nn.Sequential(
             model,
             nn.Flatten(),
@@ -102,9 +112,15 @@ class MosquitoClassifier:
         )
 
         # Create learner
-        learn = Learner(dls, model, loss_func=CrossEntropyLossFlat())
+        learn = Learner(
+            dls,
+            model,
+            loss_func=CrossEntropyLossFlat(),
+            metrics=[accuracy_score],
+        )
 
-        if model_path:
+        # Load weights if provided
+        if model_path and Path(model_path).exists():
             learn.load(model_path)
 
         learn.model.to(self.device)
@@ -238,7 +254,8 @@ class MosquitoClassifier:
             nn.Module: PyTorch model
         """
         arch = self.arch
-        model = create_body(partial(timm.create_model, arch, pretrained=True))
+        base_model = timm.create_model(arch, pretrained=True)
+        model = create_body(base_model)
         model = nn.Sequential(
             model,
             nn.Flatten(),
@@ -256,7 +273,7 @@ class MosquitoClassifier:
         classes: int | list[Any] | dict[Any, int] | None = None,
         threshold: float = 0.5,
         average: str = "macro",
-    ) -> dict[str, Any]:
+    ) -> Mapping[str, float | list[list[int]] | dict[str, dict[str, float]]]:
         """
         Evaluate classification model performance.
 
@@ -269,6 +286,9 @@ class MosquitoClassifier:
 
         Returns:
             Dictionary containing metrics (accuracy, precision, recall, f1, etc.)
+
+        Raises:
+            ValueError: If input arrays are empty or have different lengths
         """
         # Convert inputs to numpy arrays
         if isinstance(y_true, torch.Tensor):
@@ -280,88 +300,141 @@ class MosquitoClassifier:
         if isinstance(y_pred, list):
             y_pred = np.array(y_pred)
 
+        # Check for empty arrays
+        if len(y_true) == 0 or len(y_pred) == 0:
+            raise ValueError("Input arrays cannot be empty")
+
+        # Check for length mismatch
+        if len(y_true) != len(y_pred):
+            raise ValueError("Input arrays must have the same length")
+
         # Determine class information
         if classes is None:
-            classes = [0, 1]  # Binary classification
+            unique_classes = np.unique(np.concatenate([y_true, y_pred]))
+            classes = list(range(len(unique_classes)))
+            label_to_idx = {label: idx for idx, label in enumerate(unique_classes)}
         elif isinstance(classes, int):
             classes = list(range(classes))
+            label_to_idx = {i: i for i in classes}
         elif isinstance(classes, dict):
-            idx_to_label = {v: k for k, v in classes.items()}
-            classes = list(classes.values())
+            label_to_idx = classes
+            classes = list(label_to_idx.values())
         else:
             label_to_idx = {label: idx for idx, label in enumerate(classes)}
-            idx_to_label = {idx: label for label, idx in label_to_idx.items()}
 
+        idx_to_label = {idx: label for label, idx in label_to_idx.items()}
         num_classes = len(classes)
         is_binary = num_classes == 2
 
         # Convert string labels to indices if needed
         if not isinstance(y_true[0], (int, np.integer)):
             y_true = np.array([label_to_idx[label] for label in y_true])
+        if not isinstance(y_pred[0], (int, np.integer)) and y_pred.ndim == 1:
+            y_pred = np.array([label_to_idx[label] for label in y_pred])
 
         # Handle different prediction formats
         if y_pred.ndim == 2:  # Probabilities for each class
             if is_binary:
                 y_pred = y_pred[:, 1]  # Take probability of positive class
-            else:
-                y_pred_binary = label_binarize(np.argmax(y_pred, axis=1), classes=classes)
-                y_pred_labels = np.argmax(y_pred, axis=1)
-        else:
-            if is_binary:
                 y_pred_binary = (y_pred > threshold).astype(int)
                 y_pred_labels = y_pred_binary
             else:
+                y_pred_labels = np.argmax(y_pred, axis=1)
+                y_pred_binary = label_binarize(y_pred_labels, classes=classes)
+        else:
+            y_pred_labels = y_pred
+            if is_binary:
+                y_pred_binary = (y_pred > threshold).astype(int)
+            else:
                 y_pred_binary = label_binarize(y_pred, classes=classes)
-                y_pred_labels = y_pred
 
         # Calculate metrics
         accuracy = float(accuracy_score(y_true, y_pred_labels))
+        metrics: dict[str, float | list[list[int]] | dict[str, dict[str, float]]] = {
+            "accuracy": accuracy,
+        }
+
+        # Handle single-class case
+        if len(np.unique(y_true)) == 1:
+            per_class_metrics: dict[str, dict[str, float]] = {
+                idx_to_label[classes[0]]: {
+                    "precision": 1.0,
+                    "recall": 1.0,
+                    "f1": 1.0,
+                },
+            }
+            metrics.update(
+                {
+                    "precision": 1.0,
+                    "recall": 1.0,
+                    "f1": 1.0,
+                    "per_class": per_class_metrics,
+                    "average_precision": 1.0,
+                    "average_recall": 1.0,
+                    "average_f1": 1.0,
+                    "confusion_matrix": confusion_matrix(y_true, y_pred_labels).tolist(),
+                },
+            )
+            return metrics
 
         if is_binary:
             # Binary classification metrics
-            tn, fp, fn, tp = confusion_matrix(y_true, y_pred_binary).ravel()
-            tpr = tp / (tp + fn) if (tp + fn) > 0 else 0
-            tnr = tn / (tn + fp) if (tn + fp) > 0 else 0
+            cm = confusion_matrix(y_true, y_pred_binary)
+            tn, fp, fn, tp = cm.ravel()
             precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-            f1 = 2 * (precision * tpr) / (precision + tpr) if (precision + tpr) > 0 else 0
+            recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+            f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+            metrics.update(
+                {
+                    "precision": float(precision),
+                    "recall": float(recall),
+                    "f1": float(f1),
+                    "true_negatives": int(tn),
+                    "false_positives": int(fp),
+                    "false_negatives": int(fn),
+                    "true_positives": int(tp),
+                },
+            )
 
-            return {
-                "accuracy": accuracy,
-                "tpr": float(tpr),
-                "tnr": float(tnr),
-                "precision": float(precision),
-                "recall": float(tpr),
-                "f1": float(f1),
-                "roc_auc": float(roc_auc_score(y_true, y_pred)),
-            }
+            # Only calculate ROC AUC if there are two classes
+            if len(np.unique(y_true)) == 2:
+                metrics["roc_auc"] = float(roc_auc_score(y_true, y_pred_binary))
         else:
             # Multi-class metrics
+            y_true_binary = label_binarize(y_true, classes=classes)
+
+            # Calculate per-class metrics
             per_class_metrics = {}
-            y_true_bin = label_binarize(y_true, classes=classes)
-
-            for idx, class_label in enumerate(classes):
-                class_true = y_true_bin[:, idx]
-                class_pred = y_pred_binary[:, idx]
-                tn, fp, fn, tp = confusion_matrix(class_true, class_pred).ravel()
-                tpr = tp / (tp + fn) if (tp + fn) > 0 else 0
-                tnr = tn / (tn + fp) if (tn + fp) > 0 else 0
+            for i, class_label in enumerate(classes):
+                class_true = y_true_binary[:, i]
+                class_pred = y_pred_binary[:, i]
+                cm = confusion_matrix(class_true, class_pred)
+                tn, fp, fn, tp = cm.ravel()
                 precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-                f1 = 2 * (precision * tpr) / (precision + tpr) if (precision + tpr) > 0 else 0
+                recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+                f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
-                label = idx_to_label[idx] if "idx_to_label" in locals() else idx
-                per_class_metrics[label] = {
-                    "tpr": float(tpr),
-                    "tnr": float(tnr),
+                per_class_metrics[idx_to_label[i]] = {
                     "precision": float(precision),
-                    "recall": float(tpr),
+                    "recall": float(recall),
                     "f1": float(f1),
                 }
 
-            return {
-                "accuracy": accuracy,
-                "per_class": per_class_metrics,
-                "average_precision": float(np.mean([m["precision"] for m in per_class_metrics.values()])),
-                "average_recall": float(np.mean([m["recall"] for m in per_class_metrics.values()])),
-                "average_f1": float(np.mean([m["f1"] for m in per_class_metrics.values()])),
-                "roc_auc": float(roc_auc_score(y_true_bin, y_pred, multi_class="ovr", average=average)),
-            }
+            # Calculate average metrics
+            metrics.update(
+                {
+                    "confusion_matrix": confusion_matrix(y_true, y_pred_labels).tolist(),
+                    "per_class": per_class_metrics,
+                    "average_precision": float(np.mean([m["precision"] for m in per_class_metrics.values()])),
+                    "average_recall": float(np.mean([m["recall"] for m in per_class_metrics.values()])),
+                    "average_f1": float(np.mean([m["f1"] for m in per_class_metrics.values()])),
+                },
+            )
+
+            # Only calculate ROC AUC if there are multiple classes
+            if len(np.unique(y_true)) > 1:
+                metrics["roc_auc"] = float(
+                    roc_auc_score(y_true_binary, y_pred_binary, average=average, multi_class="ovr"),
+                )
+
+        return metrics

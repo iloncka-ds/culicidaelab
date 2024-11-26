@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 from typing import Any
+import torch
 
 
 class MosquitoDetector:
@@ -46,7 +47,11 @@ class MosquitoDetector:
             boxes = r.boxes
             for box in boxes:
                 # Get box coordinates and confidence
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                xyxy = box.xyxy  # Shape: (1, 4)
+                if isinstance(xyxy, torch.Tensor):
+                    x1, y1, x2, y2 = xyxy[0].cpu().numpy()
+                else:
+                    x1, y1, x2, y2 = xyxy[0]  # Handle case where it's already numpy
                 conf = float(box.conf[0])
 
                 # Convert to center format
@@ -128,7 +133,26 @@ class MosquitoDetector:
         Returns:
             Dictionary containing metrics (precision, recall, mAP, etc.)
         """
-        if not true_boxes or not pred_boxes:
+        # Handle empty cases
+        if not true_boxes and not pred_boxes:
+            return {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "ap": 0.0,
+                "map": 0.0,
+            }
+
+        if not true_boxes:  # No ground truth boxes
+            return {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "ap": 0.0,
+                "map": 0.0,
+            }
+
+        if not pred_boxes:  # No predicted boxes
             return {
                 "precision": 0.0,
                 "recall": 0.0,
@@ -170,7 +194,7 @@ class MosquitoDetector:
         # Calculate cumulative metrics
         cum_tp = np.cumsum(tp)
         cum_fp = np.cumsum(fp)
-        recall = cum_tp / len(true_boxes) if true_boxes else np.zeros_like(cum_tp)
+        recall = cum_tp / len(true_boxes)
         precision = cum_tp / (cum_tp + cum_fp)
 
         # Calculate AP using 11-point interpolation
@@ -183,18 +207,13 @@ class MosquitoDetector:
             ap += p / 11.0
 
         # Calculate final metrics
-        if len(pred_boxes) > 0:
-            final_precision = float(precision[-1])
-            final_recall = float(recall[-1])
-            f1 = (
-                2 * (final_precision * final_recall) / (final_precision + final_recall)
-                if (final_precision + final_recall) > 0
-                else 0.0
-            )
-        else:
-            final_precision = 0.0
-            final_recall = 0.0
-            f1 = 0.0
+        final_precision = float(precision[-1])
+        final_recall = float(recall[-1])
+        f1 = (
+            2 * (final_precision * final_recall) / (final_precision + final_recall)
+            if (final_precision + final_recall) > 0
+            else 0.0
+        )
 
         return {
             "precision": final_precision,
