@@ -224,13 +224,13 @@ def normalize_image(
 
     # Scale to [0, 1] if needed
     if image.max() > 1.0:
-        image /= 255.0
+        image = (image / 255.0).astype(np.float32)
 
     # Apply mean and std normalization
     if mean is not None and std is not None:
-        mean = np.array(mean if isinstance(mean, list) else [mean])
-        std = np.array(std if isinstance(std, list) else [std])
-        image = (image - mean) / std
+        mean = np.array(mean if isinstance(mean, list) else [mean], dtype=np.float32)
+        std = np.array(std if isinstance(std, list) else [std], dtype=np.float32)
+        image = ((image - mean) / std).astype(np.float32)
 
     return image
 

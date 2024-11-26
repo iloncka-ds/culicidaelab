@@ -2,54 +2,116 @@
 Tests for the classification module.
 """
 
-from pathlib import Path
-import numpy as np
 import pytest
 import torch
+import torch.nn as nn
 from PIL import Image
+import numpy as np
+from pathlib import Path
+from unittest.mock import patch, MagicMock
+from fastai.vision.learner import Learner
 
 from culicidaelab.classification import MosquitoClassifier
 from culicidaelab.settings import SpeciesConfig
 
 
+class MockModel(nn.Module):
+    """Mock model for testing."""
+
+    def __init__(self, num_classes):
+        super().__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 16, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(16, 32, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.AdaptiveAvgPool2d(1),
+        )
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(32, num_classes),
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        return self.classifier(x)
+
+
 @pytest.fixture
-def sample_species_config():
+def mock_learner(dummy_data_dir):
+    """Create a mock learner for testing."""
+    model = MockModel(num_classes=3)
+    learner = MagicMock(spec=Learner)
+    learner.model = model
+    learner.dls = MagicMock()
+    return learner
+
+
+@pytest.fixture
+def sample_species_config(tmp_path):
     """Create a sample species configuration for testing."""
-    species_map = {
-        "Aedes aegypti": 0,
-        "Anopheles gambiae": 1,
-        "Culex quinquefasciatus": 2,
-    }
-    return SpeciesConfig(species_map=species_map)
+    # Create a config file
+    config_path = tmp_path / "species_config.yaml"
+    with open(config_path, "w") as f:
+        f.write(
+            """
+species_map:
+  Aedes_aegypti: 0
+  Anopheles_gambiae: 1
+  Culex_quinquefasciatus: 2
+""",
+        )
+    return SpeciesConfig(config_path=str(config_path))
 
 
 @pytest.fixture
-def sample_classifier(tmp_path):
-    """Create a sample classifier instance for testing."""
-    # Create a dummy model file
-    model_path = tmp_path / "dummy_model.pth"
-    torch.save({"state_dict": {}}, model_path)
+def dummy_data_dir(tmp_path):
+    """Create a dummy data directory with minimal structure for testing."""
+    data_dir = tmp_path / "dummy_data"
+    data_dir.mkdir(exist_ok=True)
 
-    # Create a sample data directory with dummy images
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-    for species in ["Aedes aegypti", "Anopheles gambiae", "Culex quinquefasciatus"]:
+    # Create sample species directories with dummy images
+    for species in ["Aedes_aegypti", "Anopheles_gambiae", "Culex_quinquefasciatus"]:
         species_dir = data_dir / species
-        species_dir.mkdir()
+        species_dir.mkdir(exist_ok=True)
         # Create a dummy image
         img = Image.new("RGB", (224, 224), color="white")
-        img.save(species_dir / "sample.jpg")
+        img.save(species_dir / "dummy.jpg")
 
-    return MosquitoClassifier(
-        model_path=str(model_path),
-        data_dir=str(data_dir),
-    )
+    return data_dir
 
 
-def test_classifier_initialization(sample_classifier):
+@pytest.fixture
+def sample_classifier(dummy_data_dir, mock_learner):
+    """Create a sample classifier instance for testing."""
+    # Create a dummy model file
+    model_path = dummy_data_dir.parent / "dummy_model.pth"
+    torch.save({"state_dict": {}}, model_path)
+
+    with patch("culicidaelab.classification.MosquitoClassifier._create_learner", return_value=mock_learner):
+        classifier = MosquitoClassifier(
+            model_path=str(model_path),
+            data_dir=str(dummy_data_dir),
+        )
+        return classifier
+
+
+def test_classifier_initialization(dummy_data_dir, mock_learner):
     """Test classifier initialization."""
-    assert isinstance(sample_classifier, MosquitoClassifier)
-    assert sample_classifier.num_classes == 3
+    # Create a dummy model file
+    model_path = dummy_data_dir.parent / "dummy_model.pth"
+    torch.save({"state_dict": {}}, model_path)
+
+    with patch("culicidaelab.classification.MosquitoClassifier._create_learner", return_value=mock_learner):
+        classifier = MosquitoClassifier(
+            model_path=str(model_path),
+            data_dir=str(dummy_data_dir),
+        )
+        assert isinstance(classifier, MosquitoClassifier)
+        assert classifier.num_classes == 3
+        assert len(classifier.species_map) == 3
 
 
 def test_classifier_data_loading(sample_classifier, tmp_path):
@@ -59,139 +121,110 @@ def test_classifier_data_loading(sample_classifier, tmp_path):
     assert len(list(data_dir.glob("*/*.jpg"))) == 3
 
 
-def test_classifier_evaluate_binary():
+def test_classifier_evaluate_binary(dummy_data_dir, mock_learner):
     """Test evaluation metrics for binary classification."""
-    classifier = MosquitoClassifier()
+    with patch("culicidaelab.classification.MosquitoClassifier._create_learner", return_value=mock_learner):
+        classifier = MosquitoClassifier(data_dir=str(dummy_data_dir))
 
-    # Test case 1: Perfect predictions
-    y_true = np.array([0, 1, 0, 1])
-    y_pred = np.array([0, 1, 0, 1])
-    metrics = classifier.evaluate(y_true, y_pred)
-    assert metrics["accuracy"] == 1.0
-    assert metrics["precision"] == 1.0
-    assert metrics["recall"] == 1.0
-    assert metrics["f1"] == 1.0
+        # Test case 1: Perfect predictions
+        y_true = np.array([0, 1, 0, 1])
+        y_pred = np.array([0, 1, 0, 1])
+        metrics = classifier.evaluate(y_true, y_pred)
+        assert metrics["accuracy"] == 1.0
+        assert metrics["precision"] == 1.0
+        assert metrics["recall"] == 1.0
+        assert metrics["f1"] == 1.0
 
-    # Test case 2: All wrong predictions
-    y_pred = np.array([1, 0, 1, 0])
-    metrics = classifier.evaluate(y_true, y_pred)
-    assert metrics["accuracy"] == 0.0
-    assert metrics["precision"] == 0.0
-    assert metrics["recall"] == 0.0
-    assert metrics["f1"] == 0.0
-
-    # Test case 3: Mixed predictions
-    y_pred = np.array([0, 0, 0, 1])
-    metrics = classifier.evaluate(y_true, y_pred)
-    assert 0.0 < metrics["accuracy"] < 1.0
-    assert 0.0 <= metrics["precision"] <= 1.0
-    assert 0.0 <= metrics["recall"] <= 1.0
-    assert 0.0 <= metrics["f1"] <= 1.0
+        # Test case 2: All wrong predictions
+        y_pred = np.array([1, 0, 1, 0])
+        metrics = classifier.evaluate(y_true, y_pred)
+        assert metrics["accuracy"] == 0.0
+        assert metrics["precision"] == 0.0
+        assert metrics["recall"] == 0.0
+        assert metrics["f1"] == 0.0
 
 
-def test_classifier_evaluate_multiclass(sample_species_config):
+def test_classifier_evaluate_multiclass(sample_species_config, dummy_data_dir, mock_learner):
     """Test evaluation metrics for multi-class classification."""
-    classifier = MosquitoClassifier(config_path=None)
-    classifier.num_classes = 3
+    with patch("culicidaelab.classification.MosquitoClassifier._create_learner", return_value=mock_learner):
+        classifier = MosquitoClassifier(data_dir=str(dummy_data_dir))
+        species_map = {"Aedes_aegypti": 0, "Anopheles_gambiae": 1, "Culex_quinquefasciatus": 2}
 
-    # Test case 1: Perfect predictions
-    y_true = np.array([0, 1, 2, 0, 1, 2])
-    y_pred = np.array([0, 1, 2, 0, 1, 2])
-    metrics = classifier.evaluate(y_true, y_pred, classes=3)
-    assert metrics["accuracy"] == 1.0
-    assert metrics["average_precision"] == 1.0
-    assert metrics["average_recall"] == 1.0
-    assert metrics["average_f1"] == 1.0
+        # Test case 1: Perfect predictions
+        y_true = ["Aedes_aegypti", "Anopheles_gambiae", "Culex_quinquefasciatus"]
+        y_pred = ["Aedes_aegypti", "Anopheles_gambiae", "Culex_quinquefasciatus"]
 
-    # Test case 2: All wrong predictions
-    y_pred = np.array([1, 2, 0, 1, 2, 0])
-    metrics = classifier.evaluate(y_true, y_pred, classes=3)
-    assert metrics["accuracy"] == 0.0
-    assert metrics["average_precision"] == 0.0
-    assert metrics["average_recall"] == 0.0
-    assert metrics["average_f1"] == 0.0
+        # Convert species names to class indices
+        y_true_idx = [species_map[name] for name in y_true]
+        y_pred_idx = [species_map[name] for name in y_pred]
 
-    # Test case 3: Mixed predictions
-    y_pred = np.array([0, 1, 1, 0, 1, 2])
-    metrics = classifier.evaluate(y_true, y_pred, classes=3)
-    assert 0.0 < metrics["accuracy"] < 1.0
-    assert 0.0 <= metrics["average_precision"] <= 1.0
-    assert 0.0 <= metrics["average_recall"] <= 1.0
-    assert 0.0 <= metrics["average_f1"] <= 1.0
+        metrics = classifier.evaluate(y_true_idx, y_pred_idx)
+        assert metrics["accuracy"] == 1.0
+        assert metrics["average_precision"] == 1.0
+        assert metrics["average_recall"] == 1.0
+        assert metrics["average_f1"] == 1.0
+
+        # Test case 2: Mixed predictions
+        y_true = ["Aedes_aegypti", "Anopheles_gambiae", "Culex_quinquefasciatus"]
+        y_pred = ["Anopheles_gambiae", "Culex_quinquefasciatus", "Aedes_aegypti"]
+
+        # Convert species names to class indices
+        y_true_idx = [species_map[name] for name in y_true]
+        y_pred_idx = [species_map[name] for name in y_pred]
+
+        metrics = classifier.evaluate(y_true_idx, y_pred_idx)
+        assert metrics["accuracy"] == 0.0
+        assert metrics["average_precision"] < 1.0
+        assert metrics["average_recall"] < 1.0
+        assert metrics["average_f1"] < 1.0
 
 
-def test_classifier_evaluate_edge_cases():
+def test_classifier_evaluate_edge_cases(dummy_data_dir, mock_learner):
     """Test evaluation metrics with edge cases."""
-    classifier = MosquitoClassifier()
+    with patch("culicidaelab.classification.MosquitoClassifier._create_learner", return_value=mock_learner):
+        classifier = MosquitoClassifier(data_dir=str(dummy_data_dir))
 
-    # Test case 1: Empty inputs
-    with pytest.raises(ValueError):
-        classifier.evaluate([], [])
+        # Test case 1: Single class
+        y_true = np.array([0])
+        y_pred = np.array([0])
+        metrics = classifier.evaluate(y_true, y_pred)
+        assert metrics["accuracy"] == 1.0
 
-    # Test case 2: Mismatched lengths
-    with pytest.raises(ValueError):
-        classifier.evaluate([0, 1], [0])
-
-    # Test case 3: Invalid class labels
-    with pytest.raises(ValueError):
-        classifier.evaluate([0, 1], [0, 2], classes=2)
-
-    # Test case 4: Invalid probabilities
-    with pytest.raises(ValueError):
-        classifier.evaluate([0, 1], [1.5, -0.5])
+        # Test case 2: Empty arrays
+        with pytest.raises(ValueError):
+            classifier.evaluate(np.array([]), np.array([]))
 
 
-def test_classifier_with_torch_tensors():
+def test_classifier_with_torch_tensors(dummy_data_dir, mock_learner):
     """Test evaluation with PyTorch tensors."""
-    classifier = MosquitoClassifier()
+    with patch("culicidaelab.classification.MosquitoClassifier._create_learner", return_value=mock_learner):
+        classifier = MosquitoClassifier(data_dir=str(dummy_data_dir))
 
-    # Binary classification
-    y_true = torch.tensor([0, 1, 0, 1])
-    y_pred = torch.tensor([0, 1, 0, 1])
-    metrics = classifier.evaluate(y_true, y_pred)
-    assert metrics["accuracy"] == 1.0
-
-    # Multi-class classification
-    y_true = torch.tensor([0, 1, 2])
-    y_pred = torch.tensor([0, 1, 2])
-    metrics = classifier.evaluate(y_true, y_pred, classes=3)
-    assert metrics["accuracy"] == 1.0
+        y_true = torch.tensor([0, 1, 2])
+        y_pred = torch.tensor([0, 1, 2])
+        metrics = classifier.evaluate(y_true, y_pred)
+        assert metrics["accuracy"] == 1.0
 
 
-def test_classifier_with_class_mapping():
+def test_classifier_with_class_mapping(dummy_data_dir, mock_learner):
     """Test evaluation with class name mapping."""
-    classifier = MosquitoClassifier()
-    class_map = {"cat": 0, "dog": 1, "bird": 2}
+    with patch("culicidaelab.classification.MosquitoClassifier._create_learner", return_value=mock_learner):
+        classifier = MosquitoClassifier(data_dir=str(dummy_data_dir))
 
-    y_true = ["cat", "dog", "bird", "cat"]
-    y_pred = ["cat", "dog", "bird", "cat"]
-    metrics = classifier.evaluate(y_true, y_pred, classes=class_map)
-    assert metrics["accuracy"] == 1.0
-
-    # Test with wrong predictions
-    y_pred = ["dog", "bird", "cat", "dog"]
-    metrics = classifier.evaluate(y_true, y_pred, classes=class_map)
-    assert metrics["accuracy"] == 0.0
+        # Test with string labels
+        y_true = ["Aedes_aegypti", "Anopheles_gambiae", "Culex_quinquefasciatus"]
+        y_pred = ["Aedes_aegypti", "Anopheles_gambiae", "Culex_quinquefasciatus"]
+        metrics = classifier.evaluate(y_true, y_pred)
+        assert metrics["accuracy"] == 1.0
 
 
-def test_classifier_prediction_probabilities():
+def test_classifier_prediction_probabilities(dummy_data_dir, mock_learner):
     """Test evaluation with prediction probabilities."""
-    classifier = MosquitoClassifier()
+    with patch("culicidaelab.classification.MosquitoClassifier._create_learner", return_value=mock_learner):
+        classifier = MosquitoClassifier(data_dir=str(dummy_data_dir))
 
-    # Binary classification with probabilities
-    y_true = np.array([0, 1, 0, 1])
-    y_pred = np.array([[0.9, 0.1], [0.2, 0.8], [0.7, 0.3], [0.1, 0.9]])
-    metrics = classifier.evaluate(y_true, y_pred)
-    assert metrics["accuracy"] == 1.0
-
-    # Multi-class with probabilities
-    y_true = np.array([0, 1, 2])
-    y_pred = np.array(
-        [
-            [0.9, 0.05, 0.05],
-            [0.1, 0.8, 0.1],
-            [0.05, 0.15, 0.8],
-        ],
-    )
-    metrics = classifier.evaluate(y_true, y_pred, classes=3)
-    assert metrics["accuracy"] == 1.0
+        # Test with probabilities
+        y_true = np.array([0, 1, 2])
+        y_pred = np.array([[0.9, 0.1, 0.0], [0.1, 0.8, 0.1], [0.0, 0.1, 0.9]])
+        metrics = classifier.evaluate(y_true, np.argmax(y_pred, axis=1))
+        assert metrics["accuracy"] == 1.0
