@@ -61,8 +61,16 @@ class SpeciesConfig:
 
         # Extract species mapping
         if "species_map" in config:
-            # Convert string keys to integers if needed
-            self.species_map = {int(k) if isinstance(k, str) else k: v for k, v in config["species_map"].items()}
+            # Handle both name->index and index->name mappings
+            species_map = {}
+            for k, v in config["species_map"].items():
+                if isinstance(k, str) and (isinstance(v, int) or isinstance(v, str) and v.isdigit()):
+                    # Name -> Index mapping
+                    species_map[int(v)] = k
+                elif isinstance(k, (int, str)) and isinstance(v, str):
+                    # Index -> Name mapping
+                    species_map[int(k) if isinstance(k, str) else k] = v
+            self.species_map = species_map
         else:
             raise KeyError("Configuration file must contain 'species_map' key")
 
@@ -189,3 +197,39 @@ class SpeciesConfig:
             Name of the species if found, None otherwise
         """
         return self.species_map.get(index)
+
+    def convert_species_to_indices(self, species_names: list[str]) -> list[int]:
+        """
+        Convert a list of species names to their corresponding indices.
+
+        Args:
+            species_names: List of species names to convert
+
+        Returns:
+            List of corresponding indices
+        """
+        indices = []
+        for name in species_names:
+            idx = self.get_species_index(name)
+            if idx is None:
+                raise ValueError(f"Species name not found in mapping: {name}")
+            indices.append(idx)
+        return indices
+
+    def convert_indices_to_species(self, indices: list[int]) -> list[str]:
+        """
+        Convert a list of indices to their corresponding species names.
+
+        Args:
+            indices: List of indices to convert
+
+        Returns:
+            List of corresponding species names
+        """
+        names = []
+        for idx in indices:
+            name = self.get_species_name(idx)
+            if name is None:
+                raise ValueError(f"Index not found in mapping: {idx}")
+            names.append(name)
+        return names
