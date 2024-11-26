@@ -1,0 +1,11 @@
+lint.select = ["E", "F"]
+lint.ignore = ["F405", "F403"]
+exclude = [
+    "build",
+    "dist",
+    ".venv",
+]
+line-length = 120
+
+[lint.per-file-ignores]
+"tools/ignore.py" = ["F401"]
