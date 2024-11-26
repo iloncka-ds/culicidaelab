@@ -1,16 +1,56 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "pip>=21.3"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "culicidaelab"
 version = "0.1.0"
-description = "Add your description here"
+description = "A Python library for mosquito detection, segmentation, and classification in images"
 readme = "README.md"
-requires-python = ">=3.7"
-dependencies = []
+authors = [
+    { name = "CulicidaeLab Team", email = "your.email@example.com" }
+]
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+    "numpy>=1.21.0",
+    "opencv-python>=4.5.0",
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "scikit-image>=0.19.0",
+    "pillow>=9.0.0",
+    "fastai>=2.7.0",
+    "timm>=0.9.0",
+    "segment-anything>=1.0",
+    "ultralytics>=8.0.0",
+    "pyyaml>=6.0.0",
+    "huggingface-hub>=0.16.0",
+    "datasets>=2.13.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.3.0",
+    "ipykernel>=6.16.2",
+    "mypy>=1.4.1",
+    "pre-commit>=2.21.0",
+    "pytest>=7.4.4",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.8.0",
+]
+
+[tool.setuptools]
+packages = ["culicidaelab"]
 
 [dependency-groups]
 dev = [
     "black>=23.3.0",
     "ipykernel>=6.16.2",
-    "isort>=5.11.5",
     "mypy>=1.4.1",
     "pre-commit>=2.21.0",
     "pytest>=7.4.4",

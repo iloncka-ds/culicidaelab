@@ -15,6 +15,7 @@ repos:
         stages: [commit]
     -   id: name-tests-test
         stages: [commit]
+        args: [--pytest-test-first]
     -   id: requirements-txt-fixer
         stages: [commit]
     -   id: check-added-large-files
@@ -34,7 +35,7 @@ repos:
     rev: v3.19.0
     hooks:
     -   id: pyupgrade
-        args: [--py39-plus]
+        args: [--py311-plus]
         stages: [commit]
 
 -   repo: https://github.com/PyCQA/flake8
