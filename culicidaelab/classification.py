@@ -28,7 +28,7 @@ from fastai.vision.all import Resize
 from PIL import Image
 from sklearn.metrics import accuracy_score, confusion_matrix, label_binarize, roc_auc_score
 
-from .config import SpeciesConfig
+from .settings import SpeciesConfig
 
 # Standard Library
 
