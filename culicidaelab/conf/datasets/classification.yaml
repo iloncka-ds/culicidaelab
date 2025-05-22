@@ -1,0 +1,7 @@
+defaults:
+  repository: "iloncka/mosquito-species-classification-dataset"
+  dataset_name: "classification"
+  dataset_metadata: None
+  dataset_dir: "datasets"
+  trained_models_repositories:
+    - "iloncka/culico-net-cls-v1"

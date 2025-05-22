@@ -4,10 +4,14 @@ CulicidaeLab - A Python library for mosquito detection, segmentation, and classi
 
 from __future__ import annotations
 
-__version__ = "0.1.0"
+__all__ = []
 
-from .classification import MosquitoClassifier
-from .detection import MosquitoDetector
-from .segmentation import MosquitoSegmenter
 
-__all__ = ["MosquitoDetector", "MosquitoSegmenter", "MosquitoClassifier"]
+# read version from installed package
+def __getattr__(name):
+    if name != "__version__":
+        msg = f"module {__name__} has no attribute {name}"
+        raise AttributeError(msg)
+    from importlib.metadata import version
+
+    return version("culicidaelab")

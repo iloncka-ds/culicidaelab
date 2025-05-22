@@ -6,7 +6,7 @@ import json
 import pytest
 import yaml  # type: ignore
 
-from culicidaelab.settings import SpeciesConfig
+from culicidaelab.species_cofig import SpeciesConfig
 
 
 @pytest.fixture

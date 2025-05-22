@@ -8,3 +8,11 @@ wheels/
 
 # Virtual environments
 .venv
+# Environment variables
+.env
+.pypirc
+# intermediate files
+requirements-dev.in
+requirements.in
+cache/
+weights/
