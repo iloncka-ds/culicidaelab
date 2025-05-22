@@ -7,7 +7,7 @@ import pytest
 import torch
 from unittest.mock import MagicMock, patch
 
-from culicidaelab.detection import MosquitoDetector
+from culicidaelab.detector import MosquitoDetector
 
 
 @pytest.fixture

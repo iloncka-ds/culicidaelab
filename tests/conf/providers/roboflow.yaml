@@ -1,0 +1,10 @@
+defaults:
+  - _self_
+
+provider_url: "https://universe.roboflow.com/ds/{dataset_id}?key={api_key}"
+api_key: ${oc.env:ROBOFLOW_API_KEY}
+provider_name: "roboflow"
+rf_workspace: "mosquitos-u6ipx"
+rf_dataset: "mosquito-detection-dataset"
+project_version: 4
+data_format: "yolov11"

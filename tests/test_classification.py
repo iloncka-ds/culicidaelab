@@ -11,8 +11,8 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 from fastai.vision.learner import Learner
 
-from culicidaelab.classification import MosquitoClassifier
-from culicidaelab.settings import SpeciesConfig
+from culicidaelab.classifier import MosquitoClassifier
+from culicidaelab.species_cofig import SpeciesConfig
 
 
 class MockModel(nn.Module):

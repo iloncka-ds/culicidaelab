@@ -1,0 +1,6 @@
+base_dirs:
+  cache: "../testing/cache"
+  weights: "../testing/weights"
+  datasets: "../testing/datasets"
+
+config_path: "tests/conf"
