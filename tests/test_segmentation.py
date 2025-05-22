@@ -7,7 +7,7 @@ import pytest
 import torch
 from unittest.mock import MagicMock, patch
 
-from culicidaelab.segmentation import MosquitoSegmenter
+from culicidaelab.segmenter import MosquitoSegmenter
 
 
 @pytest.fixture

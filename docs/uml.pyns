@@ -1,0 +1,82 @@
+# PynSource Version 1.2
+{'type':'meta', 'info1':'Lorem ipsum dolor sit amet, consectetur adipiscing elit is latin. Comments are saved.'}
+{'type':'umlshape', 'id':'BasePredictor', 'x':1019, 'y':151, 'width':154, 'height':282, 'attrs': 'model_loaded|model_path', 'meths': '__call__|__init__|_aggregate_metrics|_load_model|_predict_batch|evaluate|evaluate_batch|load_model|predict|predict_batch|process_batch|visualize'}
+{'type':'umlshape', 'id':'ABC', 'x':270, 'y':18, 'width':40, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'ConfigurableComponent', 'x':1224, 'y':171, 'width':220, 'height':138, 'attrs': '_config|config|config_manager', 'meths': '__init__|load_config'}
+{'type':'umlshape', 'id':'ConfigManager', 'x':1495, 'y':152, 'width':170, 'height':346, 'attrs': '_config|_env_keys|_instance|config_path|initialized|library_config_path', 'meths': '__init__|__new__|_get_project_root|_load_env_vars|_resolve_config_path|get_api_key|get_config|get_provider_config|get_resource_dirs|initialize_config|instantiate|load_config'}
+{'type':'umlshape', 'id':'np.ndarray', 'x':720, 'y':805, 'width':110, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'Path', 'x':960, 'y':171, 'width':50, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'BaseProvider', 'x':960, 'y':10, 'width':186, 'height':112, 'attrs': '', 'meths': '__call__|download_dataset|download_model_weights|get_provider_name'}
+{'type':'umlshape', 'id':'Generic.T', 'x':720, 'y':410, 'width':100, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'DictConfig', 'x':1196, 'y':73, 'width':110, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'ResourceManager', 'x':10, 'y':839, 'width':194, 'height':282, 'attrs': 'app_name|dataset_dir|downloads_dir|model_dir|temp_dir|user_cache_dir|user_data_dir', 'meths': '__init__|_initialize_directories|clean_old_downloads|clean_temp_workspace|create_temp_workspace|get_dataset_path|get_model_path'}
+{'type':'umlshape', 'id':'Settings', 'x':221, 'y':808, 'width':186, 'height':330, 'attrs': '_config|_instance|cache_dir|config_dir|datasets_dir|environment|initialized|root_dir|weights_dir', 'meths': '__init__|__new__|_initialize_components|_setup_config_dir|_setup_directories|get_dataset_path|get_processing_params|get_resource_dir'}
+{'type':'umlshape', 'id':'os.getenv', 'x':744, 'y':757, 'width':100, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'UnknownType', 'x':677, 'y':602, 'width':120, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'DatasetLoader', 'x':720, 'y':487, 'width':140, 'height':64, 'attrs': '', 'meths': 'load_dataset'}
+{'type':'umlshape', 'id':'HuggingFaceDatasetLoader', 'x':443, 'y':883, 'width':250, 'height':64, 'attrs': '', 'meths': 'load_dataset'}
+{'type':'umlshape', 'id':'DatasetsManager', 'x':239, 'y':460, 'width':160, 'height':298, 'attrs': 'config_path|dataset_loader|datasets_config|datasets_dir|loaded_datasets', 'meths': '__init__|add_dataset|get_dataset_info|get_loaded_dataset|list_datasets|load_config|load_dataset|remove_dataset|save_config|update_dataset'}
+{'type':'umlshape', 'id':'Protocol.T', 'x':31, 'y':526, 'width':110, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'MosquitoClassifier', 'x':720, 'y':23, 'width':190, 'height':314, 'attrs': 'arch|config|data_dir|learner|num_classes|species_config|species_map', 'meths': '__init__|_aggregate_metrics|_create_cls_learner|_load_model|evaluate|evaluate_batch|predict|process_batch|visualize'}
+{'type':'umlshape', 'id':'SpeciesClassesManager', 'x':450, 'y':487, 'width':220, 'height':346, 'attrs': 'species_map|species_metadata', 'meths': '__init__|add_species|convert_indices_to_species|convert_species_to_indices|get_all_metadata|get_num_species|get_species_index|get_species_list|get_species_map|get_species_metadata|get_species_name|infer_from_directory|load_species_classes|load_species_metadata|remove_species|save_to_file'}
+{'type':'umlshape', 'id':'MosquitoDetector', 'x':910, 'y':483, 'width':170, 'height':250, 'attrs': 'confidence_threshold|config|model', 'meths': '__init__|_aggregate_metrics|_calculate_iou|_load_model|evaluate|evaluate_batch|predict|process_batch|visualize'}
+{'type':'umlshape', 'id':'YOLO', 'x':169, 'y':295, 'width':50, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'ModelWeightsManager', 'x':11, 'y':338, 'width':200, 'height':138, 'attrs': '_config', 'meths': '__init__|_download_weights|_get_abs_path|get_weights'}
+{'type':'umlshape', 'id':'MosquitoSegmenter', 'x':10, 'y':604, 'width':180, 'height':186, 'attrs': 'config|device|predictor', 'meths': '__init__|_load_model|evaluate|predict|visualize'}
+{'type':'umlshape', 'id':'SAM2ImagePredictor', 'x':720, 'y':680, 'width':190, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'torch.device', 'x':720, 'y':883, 'width':130, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'HuggingFaceProvider', 'x':19, 'y':86, 'width':200, 'height':202, 'attrs': 'api_key|config_manager|provider_name|provider_url', 'meths': '__init__|download_dataset|download_model_weights|get_metadata|get_provider_name'}
+{'type':'umlshape', 'id':'KaggleProvider', 'x':360, 'y':0, 'width':150, 'height':138, 'attrs': 'api|api_key|provider_name', 'meths': '__init__|download_dataset'}
+{'type':'umlshape', 'id':'KaggleApi', 'x':85, 'y':8, 'width':100, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'umlshape', 'id':'RemoteURLProvider', 'x':270, 'y':188, 'width':180, 'height':154, 'attrs': 'config_manager|downloads_dir|provider_name', 'meths': '__init__|download_dataset|get_metadata'}
+{'type':'umlshape', 'id':'RoboflowProvider', 'x':499, 'y':188, 'width':170, 'height':250, 'attrs': 'api_key|config_manager|dataset|format|provider_name|provider_url|version|workspace', 'meths': '__init__|download|get_metadata|list_versions'}
+{'type':'umlshape', 'id':'list', 'x':6, 'y':55, 'width':50, 'height':28, 'attrs': '', 'meths': ''}
+{'type':'edge', 'id':'BasePredictor_to_ABC', 'source':'BasePredictor', 'target':'ABC', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'BasePredictor_to_ConfigurableComponent', 'source':'BasePredictor', 'target':'ConfigurableComponent', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'ConfigManager_to_BasePredictor', 'source':'ConfigManager', 'target':'BasePredictor', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'np.ndarray_to_BasePredictor', 'source':'np.ndarray', 'target':'BasePredictor', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'Path_to_BasePredictor', 'source':'Path', 'target':'BasePredictor', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'BaseProvider_to_ABC', 'source':'BaseProvider', 'target':'ABC', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'ConfigurableComponent_to_Generic.T', 'source':'ConfigurableComponent', 'target':'Generic.T', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'DictConfig_to_ConfigurableComponent', 'source':'DictConfig', 'target':'ConfigurableComponent', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'DictConfig_to_ConfigManager', 'source':'DictConfig', 'target':'ConfigManager', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'ConfigManager_to_ConfigurableComponent', 'source':'ConfigManager', 'target':'ConfigurableComponent', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'Path_to_ResourceManager', 'source':'Path', 'target':'ResourceManager', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'Settings_to_ConfigurableComponent', 'source':'Settings', 'target':'ConfigurableComponent', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'os.getenv_to_Settings', 'source':'os.getenv', 'target':'Settings', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'UnknownType_to_Settings', 'source':'UnknownType', 'target':'Settings', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'DatasetsManager_to_ConfigurableComponent', 'source':'DatasetsManager', 'target':'ConfigurableComponent', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'HuggingFaceDatasetLoader_to_DatasetLoader', 'source':'HuggingFaceDatasetLoader', 'target':'DatasetLoader', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'DatasetLoader_to_Protocol.T', 'source':'DatasetLoader', 'target':'Protocol.T', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'DatasetLoader_to_DatasetsManager', 'source':'DatasetLoader', 'target':'DatasetsManager', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'UnknownType_to_DatasetsManager', 'source':'UnknownType', 'target':'DatasetsManager', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'ConfigManager_to_DatasetsManager', 'source':'ConfigManager', 'target':'DatasetsManager', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'MosquitoClassifier_to_BasePredictor', 'source':'MosquitoClassifier', 'target':'BasePredictor', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'np.ndarray_to_MosquitoClassifier', 'source':'np.ndarray', 'target':'MosquitoClassifier', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'SpeciesClassesManager_to_MosquitoClassifier', 'source':'SpeciesClassesManager', 'target':'MosquitoClassifier', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'ConfigManager_to_MosquitoClassifier', 'source':'ConfigManager', 'target':'MosquitoClassifier', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'MosquitoDetector_to_BasePredictor', 'source':'MosquitoDetector', 'target':'BasePredictor', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'YOLO_to_MosquitoDetector', 'source':'YOLO', 'target':'MosquitoDetector', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'ConfigManager_to_MosquitoDetector', 'source':'ConfigManager', 'target':'MosquitoDetector', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'np.ndarray_to_MosquitoDetector', 'source':'np.ndarray', 'target':'MosquitoDetector', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'ModelWeightsManager_to_ConfigurableComponent', 'source':'ModelWeightsManager', 'target':'ConfigurableComponent', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'UnknownType_to_ModelWeightsManager', 'source':'UnknownType', 'target':'ModelWeightsManager', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'MosquitoSegmenter_to_BasePredictor', 'source':'MosquitoSegmenter', 'target':'BasePredictor', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'SAM2ImagePredictor_to_MosquitoSegmenter', 'source':'SAM2ImagePredictor', 'target':'MosquitoSegmenter', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'UnknownType_to_MosquitoSegmenter', 'source':'UnknownType', 'target':'MosquitoSegmenter', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'np.ndarray_to_MosquitoSegmenter', 'source':'np.ndarray', 'target':'MosquitoSegmenter', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'ConfigManager_to_MosquitoSegmenter', 'source':'ConfigManager', 'target':'MosquitoSegmenter', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'torch.device_to_MosquitoSegmenter', 'source':'torch.device', 'target':'MosquitoSegmenter', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'HuggingFaceProvider_to_BaseProvider', 'source':'HuggingFaceProvider', 'target':'BaseProvider', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'ConfigManager_to_HuggingFaceProvider', 'source':'ConfigManager', 'target':'HuggingFaceProvider', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'KaggleProvider_to_BaseProvider', 'source':'KaggleProvider', 'target':'BaseProvider', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'KaggleApi_to_KaggleProvider', 'source':'KaggleApi', 'target':'KaggleProvider', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'RemoteURLProvider_to_BaseProvider', 'source':'RemoteURLProvider', 'target':'BaseProvider', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'ConfigManager_to_RemoteURLProvider', 'source':'ConfigManager', 'target':'RemoteURLProvider', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'RoboflowProvider_to_BaseProvider', 'source':'RoboflowProvider', 'target':'BaseProvider', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'ConfigManager_to_RoboflowProvider', 'source':'ConfigManager', 'target':'RoboflowProvider', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'SpeciesClassesManager_to_ConfigurableComponent', 'source':'SpeciesClassesManager', 'target':'ConfigurableComponent', 'uml_edge_type': 'generalisation'}
+{'type':'edge', 'id':'Path_to_SpeciesClassesManager', 'source':'Path', 'target':'SpeciesClassesManager', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'list_to_SpeciesClassesManager', 'source':'list', 'target':'SpeciesClassesManager', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'UnknownType_to_SpeciesClassesManager', 'source':'UnknownType', 'target':'SpeciesClassesManager', 'uml_edge_type': 'composition'}
+{'type':'edge', 'id':'ConfigManager_to_SpeciesClassesManager', 'source':'ConfigManager', 'target':'SpeciesClassesManager', 'uml_edge_type': 'composition'}
