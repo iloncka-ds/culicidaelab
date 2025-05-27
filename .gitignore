@@ -5,7 +5,7 @@ build/
 dist/
 wheels/
 *.egg-info
-
+.vscode
 # Virtual environments
 .venv
 # Environment variables
@@ -16,3 +16,5 @@ requirements-dev.in
 requirements.in
 cache/
 weights/
+md_*/
+example3/
