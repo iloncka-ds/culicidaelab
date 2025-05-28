@@ -1,3 +1,7 @@
+from omegaconf import DictConfig, OmegaConf
+from typing import Dict, Any, Optional
+
+
 class SpeciesConfig:
     """
     Configuration class for species data.
