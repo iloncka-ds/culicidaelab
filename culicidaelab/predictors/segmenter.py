@@ -10,7 +10,7 @@ import torch
 from sam2.build_sam import build_sam2
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 from pathlib import Path
-from culicidaelab.core._base_predictor import BasePredictor
+from culicidaelab.core.base_predictor import BasePredictor
 from culicidaelab.core.config_manager import ConfigManager
 
 
@@ -26,13 +26,13 @@ class MosquitoSegmenter(BasePredictor):
             config_manager: Configuration manager instance
         """
         super().__init__(model_path, config_manager)
-        self.config = self.config_manager.get_config()
+        self._config = self.config_manager.get_config()
         self.predictor = None
 
     def _load_model(self) -> None:
         """Load the SAM model."""
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        sam_config_path = self.config.model.sam_config_path
+        sam_config_path = self._config.model.sam_config_path
         sam2_model = build_sam2(sam_config_path, self.model_path, device=self.device)
         self.predictor = SAM2ImagePredictor(sam2_model)
 
@@ -107,9 +107,9 @@ class MosquitoSegmenter(BasePredictor):
         overlay = input_data.copy()
         overlay[predictions] = cv2.addWeighted(
             overlay[predictions],
-            self.config.visualization.alpha,
-            np.array(self.config.visualization.overlay_color),
-            1 - self.config.visualization.alpha,
+            self._config.visualization.alpha,
+            np.array(self._config.visualization.overlay_color),
+            1 - self._config.visualization.alpha,
             0,
         )
 

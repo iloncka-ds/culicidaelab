@@ -8,26 +8,9 @@ from pathlib import Path
 from typing import Any
 from omegaconf import OmegaConf
 
-from .config_manager import ConfigurableComponent, ConfigManager
-from datasets import load_dataset
-from typing import Protocol
+from ..core.config_manager import ConfigurableComponent, ConfigManager
 
-T = TypeVar("T")
-
-
-class DatasetLoader(Protocol[T]):
-    """Protocol for dataset loading strategies."""
-
-    def load_dataset(self, path: str, split: str | None = None, **kwargs) -> T:
-        """Load a dataset from the given path."""
-        pass
-
-
-class HuggingFaceDatasetLoader(DatasetLoader):
-    """HuggingFace-specific dataset loader."""
-
-    def load_dataset(self, path: str, split: str | None = None, **kwargs) -> Any:
-        return load_dataset(path, split=split, **kwargs)
+from ..core.loader_protocol import DatasetLoader
 
 
 class DatasetsManager(ConfigurableComponent):

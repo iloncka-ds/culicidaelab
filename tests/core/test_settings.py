@@ -36,7 +36,7 @@ def mock_config():
             "resource_mapping": {
                 "data_dir": "data",
             },
-        }
+        },
     )
 
 
