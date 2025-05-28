@@ -17,6 +17,7 @@ from .species_config import SpeciesConfig
 # Load environment variables from .env file
 load_dotenv()
 
+
 class Settings(ConfigurableComponent):
     _instance = None
 
@@ -46,16 +47,18 @@ class Settings(ConfigurableComponent):
 
         self.root_dir = Path(__file__).parent.parent  # culicidaelab directory
         self.environment = os.getenv("APP_ENV", "development")
-        
+
         # Set default config directory to culicidaelab/conf
         self.default_config_dir = self.root_dir / "conf"
-        
+
         # Set up configuration directory
         effective_config_dir = self._setup_config_dir(config_dir)
-        
+
         # Initialize configuration with ConfigManager
-        config_manager = ConfigManager(library_config_path=str(self.default_config_dir), 
-                                      config_path=effective_config_dir)
+        config_manager = ConfigManager(
+            library_config_path=str(self.default_config_dir),
+            config_path=effective_config_dir,
+        )
         super().__init__(config_manager)
 
         # Load configuration
@@ -170,13 +173,13 @@ class Settings(ConfigurableComponent):
         # Check for required config structure
         required_dirs = ["app_settings", "species"]
         missing_dirs = [d for d in required_dirs if not os.path.exists(os.path.join(config_dir, d))]
-        
+
         # Check for required files
         required_files = [
             os.path.join("app_settings", f"{self.environment}.yaml"),
             os.path.join("species", "species_classes.yaml"),
             os.path.join("species", "species_metadata.yaml"),
-            "config.yaml"
+            "config.yaml",
         ]
         missing_files = [f for f in required_files if not os.path.exists(os.path.join(config_dir, f))]
 
@@ -190,7 +193,7 @@ class Settings(ConfigurableComponent):
 
             # Create config directory if it doesn't exist
             os.makedirs(config_dir, exist_ok=True)
-            
+
             # Create missing directories
             for dir_name in missing_dirs:
                 os.makedirs(os.path.join(config_dir, dir_name), exist_ok=True)
@@ -273,17 +276,20 @@ class Settings(ConfigurableComponent):
 
         # Get model-specific weights path from configuration
         model_config = None
-        
+
         # Check if we have datasets configuration with model repositories
         if hasattr(self._config, "datasets"):
             # Try to get from specific dataset config
             if hasattr(self._config.datasets, model_type):
                 dataset_config = getattr(self._config.datasets, model_type)
-                if hasattr(dataset_config, "trained_models_repositories") and dataset_config.trained_models_repositories:
+                if (
+                    hasattr(dataset_config, "trained_models_repositories")
+                    and dataset_config.trained_models_repositories
+                ):
                     # Use the first repository as default
                     model_repo = dataset_config.trained_models_repositories[0]
-                    model_config = model_repo.split('/')[-1]
-        
+                    model_config = model_repo.split("/")[-1]
+
         # If we have a model config, use it to construct the path
         if model_config:
             # Format: model_type/model_name/weights.pt
@@ -291,10 +297,10 @@ class Settings(ConfigurableComponent):
         else:
             # Default path if not specified in config
             weights_path = weights_dir / model_type / "weights.pt"
-        
+
         # Ensure the directory exists
         weights_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         return weights_path
 
 
