@@ -71,7 +71,7 @@ The following Jupyter notebooks provide step-by-step tutorials:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/culicidaelab.git
+git clone https://github.com/iloncka-ds/culicidaelab
 cd culicidaelab
 ```
 

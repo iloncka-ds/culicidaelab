@@ -5,16 +5,17 @@ Configuration module for CulicidaeLab.
 from __future__ import annotations
 
 import os
+import shutil
 from pathlib import Path
 from typing import Any
 from omegaconf import OmegaConf
 from dotenv import load_dotenv
 
 from .config_manager import ConfigManager, ConfigurableComponent
+from .species_config import SpeciesConfig
 
 # Load environment variables from .env file
 load_dotenv()
-
 
 class Settings(ConfigurableComponent):
     _instance = None
@@ -43,15 +44,22 @@ class Settings(ConfigurableComponent):
         if hasattr(self, "initialized") and self.initialized:
             return
 
-        self.root_dir = Path(__file__).parent
+        self.root_dir = Path(__file__).parent.parent  # culicidaelab directory
         self.environment = os.getenv("APP_ENV", "development")
-
-        # Initialize configuration
-        config_manager = ConfigManager(config_dir or "../conf")
+        
+        # Set default config directory to culicidaelab/conf
+        self.default_config_dir = self.root_dir / "conf"
+        
+        # Set up configuration directory
+        effective_config_dir = self._setup_config_dir(config_dir)
+        
+        # Initialize configuration with ConfigManager
+        config_manager = ConfigManager(library_config_path=str(self.default_config_dir), 
+                                      config_path=effective_config_dir)
         super().__init__(config_manager)
 
-        # Load configuration with environment override
-        self.config_manager.load_config(app_settings=self.environment)
+        # Load configuration
+        self.config_manager.load_config("config")
         self._config = self.config_manager.get_config()  # Initialize config as a regular attribute
         self.load_config()
 
@@ -147,55 +155,79 @@ class Settings(ConfigurableComponent):
             str: Path to the active config directory
         """
         if config_dir is None:
-            return self.default_config_dir
+            return str(self.default_config_dir)
 
         # Convert to absolute path if relative
         if not os.path.isabs(str(config_dir)):
             config_dir = os.path.join(str(self.root_dir), str(config_dir))
 
-        # Check if external config directory exists and has required files
+        # Check if external config directory exists
         config_dir = str(config_dir)
         if not os.path.exists(config_dir):
             print(f"Warning: Config directory {config_dir} not found. Using default configs.")
-            return self.default_config_dir
+            return str(self.default_config_dir)
 
+        # Check for required config structure
+        required_dirs = ["app_settings", "species"]
+        missing_dirs = [d for d in required_dirs if not os.path.exists(os.path.join(config_dir, d))]
+        
+        # Check for required files
         required_files = [
-            f"app_settings_{self.environment}.yaml",
-            "models_config.yaml",
-            "species_classes.yaml",
-            "species_metadata.yaml",
-            "datasets_config.yaml",
+            os.path.join("app_settings", f"{self.environment}.yaml"),
+            os.path.join("species", "species_classes.yaml"),
+            os.path.join("species", "species_metadata.yaml"),
+            "config.yaml"
         ]
         missing_files = [f for f in required_files if not os.path.exists(os.path.join(config_dir, f))]
 
-        if missing_files:
-            print(f"Warning: Missing required config files in {config_dir}: {missing_files}")
+        if missing_dirs or missing_files:
+            print(f"Warning: Missing required config structure in {config_dir}")
+            if missing_dirs:
+                print(f"Missing directories: {missing_dirs}")
+            if missing_files:
+                print(f"Missing files: {missing_files}")
             print("Copying default configs to external directory...")
 
             # Create config directory if it doesn't exist
             os.makedirs(config_dir, exist_ok=True)
+            
+            # Create missing directories
+            for dir_name in missing_dirs:
+                os.makedirs(os.path.join(config_dir, dir_name), exist_ok=True)
 
-            # Copy missing default configs
-            for file in missing_files:
-                src = os.path.join(self.default_config_dir, file)
-                dst = os.path.join(config_dir, file)
+            # Copy missing files
+            for file_path in missing_files:
+                src = os.path.join(self.default_config_dir, file_path)
+                dst = os.path.join(config_dir, file_path)
+                # Create parent directories if they don't exist
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
                 if os.path.exists(src):
                     shutil.copy2(src, dst)
-                    print(f"Copied {file} to {config_dir}")
+                    print(f"Copied {file_path} to {config_dir}")
                 else:
-                    print(f"Warning: Default config {file} not found")
+                    print(f"Warning: Default config {file_path} not found")
 
         return config_dir
 
     @property
-    def weights_dir(self) -> Path:
+    def model_dir(self) -> Path:
         """Get the weights directory path."""
-        return self.get_resource_dir("weights_dir")
+        return self.get_resource_dir("model_dir")
+
+    @property
+    def weights_dir(self) -> Path:
+        """Get the weights directory path (alias for model_dir)."""
+        return self.model_dir
+
+    @property
+    def dataset_dir(self) -> Path:
+        """Get the datasets directory path."""
+        return self.get_resource_dir("dataset_dir")
 
     @property
     def datasets_dir(self) -> Path:
-        """Get the datasets directory path."""
-        return self.get_resource_dir("datasets_dir")
+        """Get the datasets directory path (alias for dataset_dir)."""
+        return self.dataset_dir
 
     @property
     def cache_dir(self) -> Path:
@@ -205,7 +237,65 @@ class Settings(ConfigurableComponent):
     @property
     def config_dir(self) -> Path:
         """Get the configuration directory path."""
-        return Path(self._config.paths.config_dir).resolve()
+        return Path(self._config.config_dir).resolve()
+
+    @property
+    def species_config(self) -> SpeciesConfig:
+        """
+        Get the species configuration.
+
+        Returns:
+            SpeciesConfig instance
+        """
+        if not hasattr(self, "_species_config"):
+            self._species_config = SpeciesConfig(self._config)
+        return self._species_config
+
+    def get_model_weights(self, model_type: str) -> Path:
+        """
+        Get the path to model weights for a specific model type.
+
+        Args:
+            model_type: Type of model ('detection', 'segmentation', or 'classification')
+
+        Returns:
+            Path to the model weights
+
+        Raises:
+            ValueError: If model type is not recognized
+        """
+        valid_types = ["detection", "segmentation", "classification"]
+        if model_type not in valid_types:
+            raise ValueError(f"Unknown model type: {model_type}. Must be one of {valid_types}")
+
+        # Get model weights directory
+        weights_dir = self.weights_dir
+
+        # Get model-specific weights path from configuration
+        model_config = None
+        
+        # Check if we have datasets configuration with model repositories
+        if hasattr(self._config, "datasets"):
+            # Try to get from specific dataset config
+            if hasattr(self._config.datasets, model_type):
+                dataset_config = getattr(self._config.datasets, model_type)
+                if hasattr(dataset_config, "trained_models_repositories") and dataset_config.trained_models_repositories:
+                    # Use the first repository as default
+                    model_repo = dataset_config.trained_models_repositories[0]
+                    model_config = model_repo.split('/')[-1]
+        
+        # If we have a model config, use it to construct the path
+        if model_config:
+            # Format: model_type/model_name/weights.pt
+            weights_path = weights_dir / model_type / model_config / "weights.pt"
+        else:
+            # Default path if not specified in config
+            weights_path = weights_dir / model_type / "weights.pt"
+        
+        # Ensure the directory exists
+        weights_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        return weights_path
 
 
 # Module-level settings instance
