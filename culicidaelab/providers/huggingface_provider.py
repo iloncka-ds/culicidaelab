@@ -30,7 +30,7 @@ class HuggingFaceProvider(BaseProvider):
         if not self.api_key:
             raise ValueError("HuggingFace API key not found in environment variables")
 
-    def get_metadata(self, dataset_name: str) -> dict[str, Any]:
+    def get_dataset_metadata(self, dataset_name: str) -> dict[str, Any]:
         """Get metadata for a specific dataset from HuggingFace.
 
         Args:
@@ -82,9 +82,9 @@ class HuggingFaceProvider(BaseProvider):
         # Save dataset
         dataset.save_to_disk(save_dir)
 
-        return save_dir
+        return Path(save_dir)
 
-    def download_model_weights(self, model_type: str) -> str:
+    def download_model_weights(self, model_type: str) -> Path:
         """
         Get model weights path.
 
@@ -92,7 +92,7 @@ class HuggingFaceProvider(BaseProvider):
             model_type: Type of model ('detection', 'segmentation', or 'classification')
 
         Returns:
-            str: Path to the model weights file
+            Path: Path to the model weights file
         """
         config = self.config_manager.get_config()
 
@@ -104,7 +104,7 @@ class HuggingFaceProvider(BaseProvider):
 
         # Check if weights exist locally
         if local_path.exists():
-            return str(local_path)
+            return Path(local_path)
 
         # Download from remote if not found locally
         print(f"\nModel weights for {model_type} not found at: {local_path}")
@@ -128,7 +128,7 @@ class HuggingFaceProvider(BaseProvider):
                 local_dir_use_symlinks=False,
                 token=self.api_key,
             )
-            return str(local_path)
+            return Path(local_path)
         except Exception as e:
             raise RuntimeError(f"Failed to download model weights: {str(e)}")
 

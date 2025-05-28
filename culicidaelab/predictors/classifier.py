@@ -1,26 +1,34 @@
-"""
-Module for mosquito species classification using FastAI and timm.
+"""Module for mosquito species classification using FastAI and timm.
+
+This module provides a classifier for mosquito species identification using
+pre-trained deep learning models with FastAI framework and timm backbones.
 """
 
 from __future__ import annotations
 
-import os
+import platform
+import pathlib
+from contextlib import contextmanager
+from pathlib import Path
 from typing import Any
+
+import cv2
 import numpy as np
 import timm
 import torch
+import yaml
 from fastai.vision.all import (
-    aug_transforms,
     CategoryBlock,
+    CrossEntropyLossFlat,
     DataBlock,
-    get_image_files,
     ImageBlock,
-    parent_label,
     RandomSplitter,
     Resize,
-    vision_learner,
-    CrossEntropyLossFlat,
+    aug_transforms,
+    get_image_files,
     load_learner,
+    parent_label,
+    vision_learner,
 )
 from PIL import Image
 from sklearn.metrics import confusion_matrix, roc_auc_score
@@ -28,17 +36,20 @@ from sklearn.preprocessing import label_binarize
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
-from culicidaelab.species_classes_manager import SpeciesClassesManager
-from culicidaelab.core._base_predictor import BasePredictor
+from culicidaelab.core.base_predictor import BasePredictor
 from culicidaelab.core.config_manager import ConfigManager
-from contextlib import contextmanager
-import pathlib
-import platform
-import cv2
 
 
 @contextmanager
 def set_posix_windows():
+    """Context manager to handle path compatibility between Windows and POSIX systems.
+
+    On Windows systems, temporarily replaces PosixPath with WindowsPath to ensure
+    compatibility with FastAI models that may have been trained on POSIX systems.
+
+    Yields:
+        None
+    """
     if platform.system() == "Windows":
         posix_backup = pathlib.PosixPath
         try:
@@ -51,56 +62,136 @@ def set_posix_windows():
 
 
 class MosquitoClassifier(BasePredictor):
-    """Class for classifying mosquito species using FastAI and timm models."""
+    """Mosquito species classifier using FastAI and timm models.
 
-    def __init__(self, model_path: str | os.path, config_manager: ConfigManager) -> None:
-        """
-        Initialize the mosquito classifier.
+    This class provides functionality for classifying mosquito species from images
+    using deep learning models. It supports both single image and batch prediction,
+    visualization of results, and comprehensive evaluation metrics.
+
+    Attributes:
+        arch (str): Model architecture name from timm.
+        data_dir (Path): Directory containing training data.
+        species_map (dict): Mapping from class indices to species names.
+        num_classes (int): Number of species classes.
+        learner: FastAI learner instance.
+    """
+
+    def __init__(
+        self,
+        model_path: str | Path,
+        config_manager: ConfigManager,
+        load_model: bool = False,
+    ) -> None:
+        """Initialize the mosquito classifier.
 
         Args:
-            model_path: Path to pre-trained model weights
-            config_manager: Configuration manager instance
+            model_path: Path to pre-trained model weights (.pkl file).
+            config_manager: Configuration manager instance containing model settings.
+            load_model: Whether to load the model immediately during initialization.
+                Defaults to False for lazy loading.
+
+        Raises:
+            FileNotFoundError: If species classes file is not found.
+            ValueError: If configuration parameters are invalid.
         """
-        super().__init__(model_path, config_manager)
-        self.config = self.config_manager.get_config()
+        super().__init__(model_path, config_manager, load_model)
+        self._config = self.config_manager.get_config()  # <-- assign to _config, not config
 
         # Set up model architecture and paths
-        self.arch = self.config.model.arch
-        self.data_dir = self.config.data.data_dir
+        self.arch = self.config.classifier.model_arch
+        self.data_dir = Path(self.config.data.data_dir) if hasattr(self.config.data, "data_dir") else None
 
         # Initialize species configuration
-        self.species_config = SpeciesClassesManager(config_manager=self.config_manager)
-        self.species_map = self.species_config.get_species_map()
-        self.num_classes = len(self.species_map)
-        print(f"Number of species classes: {self.num_classes}")
+        self._load_species_classes()
+
+        print(f"Initialized classifier with {self.num_classes} species classes")
+        print(f"Using architecture: {self.arch}")
+
+    def _load_species_classes(self) -> None:
+        """Load species classes from YAML configuration file.
+
+        Reads the species classes configuration and creates a mapping from
+        class indices to species names.
+
+        Raises:
+            FileNotFoundError: If the species classes file doesn't exist.
+            yaml.YAMLError: If the YAML file is malformed.
+        """
+        species_config_path = Path(self.config.classifier.params.species_classes)
+
+        # Make path absolute if relative
+        if not species_config_path.is_absolute():
+            species_config_path = self.config_manager.get_config().paths.root_dir / species_config_path
+
+        if not species_config_path.exists():
+            raise FileNotFoundError(
+                f"Species classes file not found: {species_config_path}",
+            )
+
+        try:
+            with open(species_config_path, encoding="utf-8") as f:
+                species_data = yaml.safe_load(f)
+
+            # Extract species mapping - assuming format: {0: 'species_name', 1: 'other_species', ...}
+            if isinstance(species_data, dict):
+                self.species_map = {int(k): str(v) for k, v in species_data.items()}
+            elif isinstance(species_data, list):
+                self.species_map = {i: str(species) for i, species in enumerate(species_data)}
+            else:
+                raise ValueError("Species classes file must contain a dict or list")
+
+            self.num_classes = len(self.species_map)
+
+        except yaml.YAMLError as e:
+            raise yaml.YAMLError(f"Error parsing species classes YAML: {e}")
 
     def _load_model(self) -> None:
-        """Load the FastAI model with timm backbone."""
+        """Load the FastAI model with timm backbone.
+
+        Attempts to load a pre-trained FastAI learner. If loading fails,
+        creates a new learner with the specified architecture.
+
+        Raises:
+            Exception: If model loading fails and a new learner cannot be created.
+        """
         with set_posix_windows():
             try:
+                print(f"Loading model from: {self.model_path}")
                 self.learner = load_learner(self.model_path)
-            except Exception:
-                # If loading fails, create new learner
-                self.learner = self._create_cls_learner(self.model_path)
+                print("Model loaded successfully")
+            except Exception as e:
+                print(f"Failed to load existing model: {e}")
+                print("Creating new learner...")
+                self.learner = self._create_cls_learner(str(self.model_path))
 
     def predict(self, input_data: np.ndarray) -> list[tuple[str, float]]:
-        """
-        Classify mosquito species in an image.
+        """Classify mosquito species in an image.
 
         Args:
-            input_data: Input image as numpy array
+            input_data: Input image as numpy array with shape (H, W, C) where C=3 for RGB.
+                Values should be in range [0, 255] for uint8 or [0, 1] for float.
 
         Returns:
-            List of tuples (species_name, confidence_score)
+            List of tuples containing (species_name, confidence_score) ordered by
+            confidence in descending order. Length determined by config.model.top_k.
+
+        Raises:
+            ValueError: If input_data has invalid shape or dtype.
         """
         if not self.model_loaded:
             self.load_model()
 
+        # Validate input
+        if input_data.ndim != 3 or input_data.shape[2] != 3:
+            raise ValueError(f"Expected 3D RGB image, got shape: {input_data.shape}")
+
         # Convert numpy array to PIL Image
         if input_data.dtype == np.uint8:
             image = Image.fromarray(input_data)
-        else:
+        elif input_data.dtype in [np.float32, np.float64]:
             image = Image.fromarray((input_data * 255).astype(np.uint8))
+        else:
+            raise ValueError(f"Unsupported dtype: {input_data.dtype}")
 
         # Get predictions
         pred_class, pred_idx, probabilities = self.learner.predict(image)
@@ -111,47 +202,72 @@ class MosquitoClassifier(BasePredictor):
             species_name = self.species_map.get(idx, f"unknown_{idx}")
             species_probs.append((species_name, float(prob)))
 
-        # Sort by confidence
+        # Sort by confidence (descending)
         species_probs.sort(key=lambda x: x[1], reverse=True)
 
         # Return top predictions based on config
-        top_k = self.config.model.top_k
+        top_k = getattr(self.config.model, "top_k", 5)
         return species_probs[:top_k]
 
     def visualize(
         self,
         input_data: np.ndarray,
         predictions: list[tuple[str, float]],
-        save_path: str | os.path | None = None,
+        save_path: str | Path | None = None,
     ) -> np.ndarray:
-        """
-        Visualize classification predictions on the image.
+        """Visualize classification predictions on the image.
 
         Args:
-            input_data: Original image
-            predictions: List of (species_name, confidence) tuples
-            save_path: Optional path to save visualization
+            input_data: Original image as numpy array with shape (H, W, C).
+            predictions: List of (species_name, confidence_score) tuples from predict().
+            save_path: Optional path to save the visualization image.
 
         Returns:
-            np.ndarray: Image with visualized predictions
+            Image with prediction text overlaid as numpy array with same shape as input.
+
+        Raises:
+            ValueError: If input_data or predictions have invalid format.
         """
-        # Create visualization
+        if input_data.ndim != 3:
+            raise ValueError(f"Expected 3D image, got shape: {input_data.shape}")
+
+        if not predictions:
+            raise ValueError("Predictions list cannot be empty")
+
+        # Create visualization copy
         vis_img = input_data.copy()
+
+        # Get visualization parameters from config
+        vis_config = getattr(self.config, "visualization", None)
+        font_scale = getattr(vis_config, "font_scale", 0.7) if vis_config else 0.7
+        thickness = getattr(vis_config, "text_thickness", 2) if vis_config else 2
+        color = getattr(vis_config, "text_color", (0, 255, 0)) if vis_config else (0, 255, 0)
 
         # Add text for each prediction
         font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = self.config.visualization.font_scale
-        thickness = self.config.visualization.text_thickness
-        color = self.config.visualization.text_color
-
         y_offset = 30
-        for species, conf in predictions:
-            text = f"{species}: {conf:.2f}"
-            cv2.putText(vis_img, text, (10, y_offset), font, font_scale, color, thickness)
-            y_offset += 30
 
+        for species, conf in predictions:
+            text = f"{species}: {conf:.3f}"
+            cv2.putText(
+                vis_img,
+                text,
+                (10, y_offset),
+                font,
+                font_scale,
+                color,
+                thickness,
+            )
+            y_offset += 35
+
+        # Save if path provided
         if save_path:
-            cv2.imwrite(str(save_path), cv2.cvtColor(vis_img, cv2.COLOR_RGB2BGR))
+            save_path = Path(save_path)
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Convert RGB to BGR for OpenCV saving
+            save_img = cv2.cvtColor(vis_img, cv2.COLOR_RGB2BGR)
+            cv2.imwrite(str(save_path), save_img)
 
         return vis_img
 
@@ -160,76 +276,48 @@ class MosquitoClassifier(BasePredictor):
         input_data: np.ndarray,
         ground_truth: str,
     ) -> dict[str, float]:
-        """
-        Evaluate classification predictions against ground truth.
+        """Evaluate classification predictions against ground truth.
 
         Args:
-            input_data: Input image
-            ground_truth: Ground truth species name
+            input_data: Input image as numpy array.
+            ground_truth: Ground truth species name as string.
 
         Returns:
-            Dictionary containing accuracy and confidence metrics
+            Dictionary containing evaluation metrics:
+                - accuracy: 1.0 if top prediction matches ground truth, else 0.0
+                - confidence: Confidence score of top prediction
+                - top_1_correct: Same as accuracy (for consistency)
+                - top_5_correct: 1.0 if ground truth is in top 5 predictions
+
+        Raises:
+            ValueError: If ground_truth is not a valid species name.
         """
         predictions = self.predict(input_data)
-        pred_species = predictions[0][0] if predictions else "unknown"
-        confidence = predictions[0][1] if predictions else 0.0
 
-        correct = pred_species == ground_truth
+        if not predictions:
+            return {
+                "accuracy": 0.0,
+                "confidence": 0.0,
+                "top_1_correct": 0.0,
+                "top_5_correct": 0.0,
+            }
+
+        pred_species = predictions[0][0]
+        confidence = predictions[0][1]
+
+        # Check if prediction is correct
+        top_1_correct = float(pred_species == ground_truth)
+
+        # Check if ground truth is in top 5 predictions
+        top_5_species = [p[0] for p in predictions[:5]]
+        top_5_correct = float(ground_truth in top_5_species)
 
         return {
-            "accuracy": float(correct),
-            "confidence": float(confidence),
-            "top_1_correct": float(correct),
-            "top_5_correct": float(any(p[0] == ground_truth for p in predictions[:5])),
+            "accuracy": top_1_correct,
+            "confidence": confidence,
+            "top_1_correct": top_1_correct,
+            "top_5_correct": top_5_correct,
         }
-
-    def _create_cls_learner(self, model_path: str) -> Any:
-        """Create a FastAI learner for classification."""
-        # Create model architecture
-        model = timm.create_model(
-            self.arch,
-            pretrained=True,
-            num_classes=self.num_classes,
-        )
-
-        # Create data block
-        dblock = DataBlock(
-            blocks=(ImageBlock, CategoryBlock),
-            get_items=get_image_files,
-            get_y=parent_label,
-            splitter=RandomSplitter(),
-            item_tfms=Resize(self.config.model.input_size),
-            batch_tfms=aug_transforms(
-                size=self.config.model.input_size,
-                min_scale=self.config.augmentation.min_scale,
-                do_flip=self.config.augmentation.do_flip,
-                flip_vert=self.config.augmentation.flip_vert,
-                max_rotate=self.config.augmentation.max_rotate,
-                min_zoom=self.config.augmentation.min_zoom,
-                max_zoom=self.config.augmentation.max_zoom,
-                max_lighting=self.config.augmentation.max_lighting,
-                max_warp=self.config.augmentation.max_warp,
-            ),
-        )
-
-        # Create data loaders
-        dls = dblock.dataloaders(
-            self.data_dir,
-            bs=self.config.training.batch_size,
-        )
-
-        # Create learner
-        learn = vision_learner(
-            dls,
-            self.arch,
-            metrics=self.config.training.metrics,
-            loss_func=CrossEntropyLossFlat(),
-            model=model,
-        )
-
-        # Save and return
-        learn.export(model_path)
-        return learn
 
     def evaluate_batch(
         self,
@@ -238,56 +326,87 @@ class MosquitoClassifier(BasePredictor):
         num_workers: int = 4,
         batch_size: int = 32,
     ) -> dict[str, float]:
-        """
-        Optimized batch evaluation for classifier that processes predictions in batches.
+        """Evaluate model on a batch of inputs with optimized processing.
+
+        This method processes predictions in batches for efficiency and calculates
+        comprehensive evaluation metrics including confusion matrix and ROC-AUC.
 
         Args:
-            input_data_batch: List of input images
-            ground_truth_batch: List of ground truth species names
-            num_workers: Number of parallel workers
-            batch_size: Size of batches to process at once
+            input_data_batch: List of input images as numpy arrays.
+            ground_truth_batch: List of corresponding ground truth species names.
+            num_workers: Number of parallel workers for processing. Defaults to 4.
+            batch_size: Size of batches to process at once. Defaults to 32.
 
         Returns:
-            Dictionary containing aggregated evaluation metrics
+            Dictionary containing aggregated evaluation metrics:
+                - accuracy, precision, recall, f1: Classification metrics
+                - top_1, top_5: Top-k accuracy metrics
+                - roc_auc: Area under ROC curve for multi-class classification
+                - confusion_matrix: Confusion matrix as nested list
+                - *_std: Standard deviation for each metric across batches
+
+        Raises:
+            ValueError: If input and ground truth batch sizes don't match or are empty.
         """
         if len(input_data_batch) != len(ground_truth_batch):
             raise ValueError(
-                "Number of inputs must match number of ground truth annotations",
+                f"Batch size mismatch: {len(input_data_batch)} inputs vs "
+                f"{len(ground_truth_batch)} ground truth labels",
             )
 
         if len(input_data_batch) == 0:
             raise ValueError("Input batch cannot be empty")
 
-        # Convert numpy arrays to PIL Images
-        images = [Image.fromarray(img) for img in input_data_batch]
+        if not self.model_loaded:
+            self.load_model()
 
-        # Get predictions for entire batch at once using FastAI's batch processing
+        # Convert numpy arrays to PIL Images for FastAI processing
+        print("Converting images to PIL format...")
+        images = []
+        for img in tqdm(input_data_batch, desc="Converting images"):
+            if img.dtype == np.uint8:
+                images.append(Image.fromarray(img))
+            else:
+                images.append(Image.fromarray((img * 255).astype(np.uint8)))
+
+        # Get predictions for entire batch using FastAI
+        print("Getting model predictions...")
         all_predictions = []
         with torch.no_grad():
-            for i in range(0, len(images), batch_size):
+            for i in tqdm(range(0, len(images), batch_size), desc="Processing batches"):
                 batch = images[i : i + batch_size]
-                # Process batch predictions
                 batch_preds = []
+
                 for img in batch:
-                    pred, pred_idx, probs = self.learner.predict(img)
-                    batch_preds.append((pred_idx, probs))
+                    pred_class, pred_idx, probs = self.learner.predict(img)
+                    batch_preds.append((pred_idx.item(), probs))
+
                 all_predictions.extend(batch_preds)
 
-        # Process evaluation in parallel
-        def process_batch(batch_idx: int) -> dict[str, float]:
+        # Create reverse species mapping for ground truth lookup
+        species_to_idx = {v: k for k, v in self.species_map.items()}
+
+        def process_evaluation_batch(batch_idx: int) -> dict[str, float]:
+            """Process evaluation metrics for a single batch.
+
+            Args:
+                batch_idx: Index of the batch to process.
+
+            Returns:
+                Dictionary containing metrics for this batch.
+            """
             start_idx = batch_idx * batch_size
             end_idx = min(start_idx + batch_size, len(input_data_batch))
 
             batch_metrics = []
+
             for i in range(start_idx, end_idx):
                 pred_idx, probs = all_predictions[i]
                 ground_truth = ground_truth_batch[i]
 
                 # Convert ground truth to numerical label
-                if ground_truth in self.species_map.values():
-                    true_label = [k for k, v in self.species_map.items() if v == ground_truth][0]
-                else:
-                    # If ground truth species is not in our map, count as incorrect
+                if ground_truth not in species_to_idx:
+                    # Unknown species - mark as incorrect
                     metrics = {
                         "accuracy": 0.0,
                         "precision": 0.0,
@@ -295,37 +414,36 @@ class MosquitoClassifier(BasePredictor):
                         "f1": 0.0,
                         "top_1": 0.0,
                         "top_5": 0.0,
+                        "roc_auc": 0.0,
                     }
                     batch_metrics.append(metrics)
                     continue
 
-                # Get top predictions
+                true_label = species_to_idx[ground_truth]
+
+                # Calculate basic metrics
+                correct = true_label == pred_idx
+                accuracy = 1.0 if correct else 0.0
+                precision = 1.0 if correct else 0.0
+                recall = 1.0 if correct else 0.0
+                f1 = 1.0 if correct else 0.0
+
+                # Calculate top-k accuracy
                 top_k = min(5, self.num_classes)
                 top_probs, top_indices = torch.topk(probs, top_k)
 
-                # Calculate metrics
-                pred_label = pred_idx.item()
-                accuracy = 1.0 if true_label == pred_label else 0.0
-                precision = 1.0 if true_label == pred_label else 0.0
-                recall = 1.0 if true_label == pred_label else 0.0
-                f1 = 1.0 if true_label == pred_label else 0.0
-
-                # Calculate top-k accuracy
                 top_1 = 1.0 if true_label == top_indices[0].item() else 0.0
                 top_5 = 1.0 if true_label in top_indices.cpu().numpy() else 0.0
 
-                # For multi-class ROC-AUC, we need to binarize the labels
-                y_true_bin = label_binarize(
-                    [true_label],
-                    classes=range(self.num_classes),
-                )
+                # Calculate ROC-AUC for this sample
                 try:
-                    roc_auc = roc_auc_score(
-                        y_true_bin,
-                        probs.cpu().numpy().reshape(1, -1),
-                        multi_class="ovr",
+                    y_true_bin = label_binarize(
+                        [true_label],
+                        classes=range(self.num_classes),
                     )
-                except ValueError:
+                    y_score = probs.cpu().numpy().reshape(1, -1)
+                    roc_auc = roc_auc_score(y_true_bin, y_score, multi_class="ovr")
+                except (ValueError, Exception):
                     roc_auc = 0.0
 
                 metrics = {
@@ -341,14 +459,13 @@ class MosquitoClassifier(BasePredictor):
 
             return self._aggregate_metrics(batch_metrics)
 
-        # Calculate number of batches
-        num_batches = (len(input_data_batch) + batch_size - 1) // batch_size
-        batch_indices = range(num_batches)
+        # Process evaluation batches in parallel
+        num_eval_batches = (len(input_data_batch) + batch_size - 1) // batch_size
+        batch_indices = range(num_eval_batches)
 
-        # Process batches in parallel
         all_metrics = []
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
-            futures = [executor.submit(process_batch, idx) for idx in batch_indices]
+            futures = [executor.submit(process_evaluation_batch, idx) for idx in batch_indices]
 
             for future in tqdm(
                 as_completed(futures),
@@ -359,54 +476,108 @@ class MosquitoClassifier(BasePredictor):
                     batch_result = future.result()
                     all_metrics.append(batch_result)
                 except Exception as e:
-                    print(f"Error processing batch: {str(e)}")
+                    print(f"Error processing evaluation batch: {e}")
 
-        # Aggregate metrics from all batches
+        # Aggregate final metrics
         final_metrics = self._aggregate_metrics(all_metrics)
 
-        # Add confusion matrix for the entire batch
-        y_true = []
-        y_pred = []
+        # Calculate overall confusion matrix
+        y_true, y_pred = [], []
         for i in range(len(input_data_batch)):
             gt = ground_truth_batch[i]
-            if gt in self.species_map.values():
-                true_label = [k for k, v in self.species_map.items() if v == gt][0]
-                pred_label = all_predictions[i][0].item()
+            if gt in species_to_idx:
+                true_label = species_to_idx[gt]
+                pred_label = all_predictions[i][0]
                 y_true.append(true_label)
                 y_pred.append(pred_label)
 
-        conf_matrix = confusion_matrix(y_true, y_pred, labels=range(self.num_classes))
-        final_metrics["confusion_matrix"] = conf_matrix.tolist()
+        if y_true and y_pred:
+            conf_matrix = confusion_matrix(
+                y_true,
+                y_pred,
+                labels=range(self.num_classes),
+            )
+            final_metrics["confusion_matrix"] = conf_matrix.tolist()
 
         return final_metrics
 
-    def _aggregate_metrics(
-        self,
-        metrics_list: list[dict[str, float]],
-    ) -> dict[str, float]:
-        """
-        Aggregate metrics from multiple batches.
+    def _create_cls_learner(self, model_path: str) -> Any:
+        """Create a FastAI learner for classification.
+
+        Creates a new FastAI vision learner with the specified architecture and
+        configuration parameters. Used when pre-trained model loading fails.
 
         Args:
-            metrics_list: List of dictionaries containing metrics
+            model_path: Path where the trained model will be saved.
 
         Returns:
-            Dictionary containing aggregated metrics
+            FastAI vision learner instance.
+
+        Raises:
+            Exception: If learner creation fails due to missing data or config issues.
         """
-        if not metrics_list:
-            return {}
+        if self.data_dir is None or not self.data_dir.exists():
+            raise Exception(
+                "Cannot create learner: data directory not specified or doesn't exist",
+            )
 
-        # Initialize aggregated metrics
-        aggregated = {}
+        # Create model with timm architecture
+        model = timm.create_model(
+            self.arch,
+            pretrained=True,
+            num_classes=self.num_classes,
+        )
 
-        # Get all metric keys except confusion_matrix
-        metric_keys = [key for key in metrics_list[0].keys() if key != "confusion_matrix"]
+        # Get configuration parameters
+        params = self.config.classifier.params
+        input_size = params.input_size
 
-        # Calculate mean and std for each metric
-        for key in metric_keys:
-            values = [m[key] for m in metrics_list if key in m]
-            if values:
-                aggregated[key] = float(np.mean(values))
-                aggregated[f"{key}_std"] = float(np.std(values))
+        # Create data block for FastAI
+        dblock = DataBlock(
+            blocks=(ImageBlock, CategoryBlock),
+            get_items=get_image_files,
+            get_y=parent_label,
+            splitter=RandomSplitter(valid_pct=0.2),
+            item_tfms=Resize(input_size),
+            batch_tfms=aug_transforms(size=input_size),
+        )
 
-        return aggregated
+        # Create data loaders
+        batch_size = getattr(self.config.training, "batch_size", 32)
+        dls = dblock.dataloaders(self.data_dir, bs=batch_size)
+
+        # Create vision learner
+        metrics = getattr(self.config.training, "metrics", ["accuracy"])
+        learn = vision_learner(
+            dls,
+            self.arch,
+            metrics=metrics,
+            loss_func=CrossEntropyLossFlat(),
+            model=model,
+        )
+
+        # Export the model
+        learn.export(model_path)
+        print(f"New learner created and saved to: {model_path}")
+
+        return learn
+
+    def get_species_names(self) -> list[str]:
+        """Get list of all species names in order of class indices.
+
+        Returns:
+            List of species names ordered by class index.
+        """
+        return [self.species_map[i] for i in sorted(self.species_map.keys())]
+
+    def get_class_index(self, species_name: str) -> int | None:
+        """Get class index for a given species name.
+
+        Args:
+            species_name: Name of the species.
+
+        Returns:
+            Class index if species exists, None otherwise.
+        """
+        species_to_idx = {v: k for k, v in self.species_map.items()}
+        return species_to_idx.get(species_name)
