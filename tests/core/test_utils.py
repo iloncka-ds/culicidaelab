@@ -26,7 +26,6 @@ def test_download_file_success(temp_dir):
     test_url = "https://example.com/test.txt"
     test_content = b"test content"
 
-    # Mock the requests.get response
     mock_response = MagicMock()
     mock_response.headers = {"content-length": str(len(test_content))}
     mock_response.iter_content.return_value = [test_content]
@@ -34,15 +33,12 @@ def test_download_file_success(temp_dir):
     mock_response.__enter__.return_value = mock_response
 
     with patch("requests.get", return_value=mock_response) as mock_get:
-        # Call download_file
         result = download_file(test_url, downloads_dir=temp_dir)
 
-        # Verify the result
         assert result.exists()
         assert result.name == "test.txt"
         assert result.read_bytes() == test_content
 
-        # Verify the request was made correctly
         mock_get.assert_called_once_with(
             test_url,
             stream=True,
@@ -62,7 +58,6 @@ def test_download_file_with_custom_destination(temp_dir):
     test_url = "https://example.com/test.txt"
     custom_dest = temp_dir / "custom" / "path" / "myfile.txt"
 
-    # Mock the requests response
     mock_response = MagicMock()
     mock_response.headers = {"content-length": "10"}
     mock_response.iter_content.return_value = [b"test data"]
@@ -89,7 +84,6 @@ def test_download_file_with_progress_callback(temp_dir):
         assert downloaded > 0
         assert total > 0
 
-    # Mock the requests response
     mock_response = MagicMock()
     mock_response.headers = {"content-length": str(len(test_content))}
     mock_response.iter_content.return_value = [test_content]
@@ -108,13 +102,11 @@ def test_download_file_with_progress_callback(temp_dir):
 
 def test_default_progress_callback(capsys):
     """Test the default progress callback function."""
-    # Test with total > 0
     default_progress_callback(50, 100)
     captured = capsys.readouterr()
     assert "50.00%" in captured.out
     assert "50/100 bytes" in captured.out
 
-    # Test with total = 0 (should not cause division by zero)
     default_progress_callback(50, 0)
     captured = capsys.readouterr()
-    assert captured.out == ""  # Should not print anything when total is 0
+    assert captured.out == ""

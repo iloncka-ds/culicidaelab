@@ -14,7 +14,6 @@ from collections.abc import Callable
 from culicidaelab.modules.classifier import MosquitoClassifier
 from culicidaelab.modules.detector import MosquitoDetector
 
-# from culicidaelab.modules.segmenter import MosquitoSegmenter  # If exists
 from culicidaelab.core.config_manager import ConfigManager
 from culicidaelab.core.model_weights_manager import ModelWeightsManager
 
@@ -69,7 +68,7 @@ def run_batch_test(
     config: ConfigManager,
 ):
     results = measure_performance(model.evaluate_batch, inputs, ground_truths)
-    metrics = results.pop("result")  # Separate metrics from system measurements
+    metrics = results.pop("result")
     results.update(metrics)
     save_results(results, output_path.with_suffix(".json"), fmt="json")
     save_results(results, output_path.with_suffix(".csv"), fmt="csv")
@@ -80,20 +79,15 @@ if __name__ == "__main__":
     config_manager = ConfigManager(config_path="config.yaml")
     weights_manager = ModelWeightsManager(config_manager)
 
-    # Load models with weights
     cls_weights = weights_manager.get_weights("classification")
     det_weights = weights_manager.get_weights("detection")
-    # seg_weights = weights_manager.get_weights("segmentation")
 
     classifier = MosquitoClassifier(cls_weights, config_manager, load_model=True)
     detector = MosquitoDetector(det_weights, config_manager)
-    # segmenter = MosquitoSegmenter(seg_weights, config_manager)
 
-    # Dummy data: replace with real dataset loader
     inputs = [np.random.randint(0, 255, (512, 512, 3), dtype=np.uint8) for _ in range(8)]
     cls_truths = ["species_a"] * len(inputs)
     det_truths = [[(256.0, 256.0, 100.0, 100.0)]] * len(inputs)
 
     run_batch_test("classification", classifier, inputs, cls_truths, Path("logs/classification"), config_manager)
     run_batch_test("detection", detector, inputs, det_truths, Path("logs/detection"), config_manager)
-    # run_batch_test("segmentation", segmenter, inputs, seg_truths, Path("logs/segmentation"), config_manager)

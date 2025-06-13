@@ -26,17 +26,14 @@ def test_import_dataset_module(modname):
 def test_dataset_classes_callable(modname):
     """Test that dataset classes/functions in each module are instantiable/callable."""
     module = importlib.import_module(modname)
-    # Find classes or functions that look like datasets
     for name, obj in inspect.getmembers(module):
         if inspect.isclass(obj) and obj.__module__ == module.__name__:
-            # Try to instantiate with no args if possible
             try:
                 instance = obj()
             except Exception:
-                continue  # Skip if requires args
+                continue
         elif inspect.isfunction(obj) and obj.__module__ == module.__name__:
-            # Try to call with no args if possible
             try:
                 obj()
             except Exception:
-                continue  # Skip if requires args
+                continue

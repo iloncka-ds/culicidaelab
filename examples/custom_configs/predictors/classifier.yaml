@@ -1,0 +1,12 @@
+defaults:
+  model_arch: "tiny_vit_21m_224.in1k"
+  weights:
+    local_path: "../weights/classification/culico-net-cls-v1-17.pkl"
+    remote_repo: "iloncka/culico-net-cls-v1"
+    remote_file: "culico-net-cls-v1-17.pkl"
+  dataset_repository: "iloncka/mosquito-species-classification-dataset"
+  params:
+    species_classes: "../species/species_classes.yaml"
+    input_size: 224
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]

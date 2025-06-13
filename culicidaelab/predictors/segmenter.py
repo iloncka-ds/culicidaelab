@@ -54,16 +54,13 @@ class MosquitoSegmenter(BasePredictor):
         if not self.model_loaded:
             self.load_model()
 
-        # Convert image to RGB if needed
         if len(input_data.shape) == 2:
             input_data = cv2.cvtColor(input_data, cv2.COLOR_GRAY2RGB)
         elif input_data.shape[2] == 4:
             input_data = cv2.cvtColor(input_data, cv2.COLOR_RGBA2RGB)
 
-        # Set image in predictor
         self.predictor.set_image(input_data)
 
-        # If detection boxes provided, use them as prompts
         if detection_boxes:
             masks = []
             for box in detection_boxes:
@@ -78,7 +75,6 @@ class MosquitoSegmenter(BasePredictor):
                 masks.append(mask)
             return np.logical_or.reduce(masks) if masks else np.zeros(input_data.shape[:2], dtype=bool)
 
-        # Otherwise use automatic mask generation
         masks = self.predictor.generate()
         return (
             np.logical_or.reduce([m["segmentation"] for m in masks])
@@ -103,7 +99,6 @@ class MosquitoSegmenter(BasePredictor):
         Returns:
             np.ndarray: Image with overlay visualization
         """
-        # Create visualization
         overlay = input_data.copy()
         overlay[predictions] = cv2.addWeighted(
             overlay[predictions],
@@ -135,7 +130,6 @@ class MosquitoSegmenter(BasePredictor):
         """
         predictions = self.predict(input_data)
 
-        # Calculate metrics
         intersection = np.logical_and(predictions, ground_truth)
         union = np.logical_or(predictions, ground_truth)
 
