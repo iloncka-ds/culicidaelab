@@ -111,8 +111,6 @@ def test_detector_predict_batch(detector):
     for i, res_list_item in enumerate(results):
         assert res_list_item == single_prediction_result, f"Result for image {i} is incorrect"
 
-
-
     detector._model.reset_mock()
 
     with patch.object(detector, "predict", autospec=True) as mock_single_predict:
@@ -122,8 +120,6 @@ def test_detector_predict_batch(detector):
 
     assert len(results) == 3
     assert mock_single_predict.call_count == 3
-
-
 
     for res_item in results:
         assert res_item == single_prediction_result

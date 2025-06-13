@@ -90,7 +90,6 @@ class MockPyConfig:
 MOCK_MODEL_PATH_STR = "mock_model.pth"
 
 
-
 @pytest.fixture
 def mock_config_obj():
     return MockPyConfig()
@@ -139,8 +138,6 @@ def loaded_segmenter_instance(segmenter_instance, mocker):
 
     segmenter_instance.mocked_internal_predictor = mock_internal_sam_predictor
     return segmenter_instance
-
-
 
 
 def test_initialization(

@@ -21,30 +21,28 @@ from .datasets.huggingface import HuggingFaceDatasetLoader
 
 from .core.base_provider import BaseProvider
 from .providers.huggingface_provider import HuggingFaceProvider
+
 # from .providers.kaggle_provider import KaggleProvider
 # from .providers.remote_url_provider import RemoteURLProvider
 # from .providers.roboflow_provider import RoboflowProvider
 
 __all__ = [
-    'ConfigManager',
-    'ConfigurableComponent',
-    'ResourceManager',
-    'Settings',
-    'SpeciesConfig',
-    'download_file',
-    'default_progress_callback',
-
-    'BasePredictor',
-    'MosquitoClassifier',
-    'MosquitoDetector',
-    'MosquitoSegmenter',
-    'ModelWeightsManager',
-
-    'DatasetsManager',
-    'HuggingFaceDatasetLoader',
-
-    'BaseProvider',
-    'HuggingFaceProvider',
+    "ConfigManager",
+    "ConfigurableComponent",
+    "ResourceManager",
+    "Settings",
+    "SpeciesConfig",
+    "download_file",
+    "default_progress_callback",
+    "BasePredictor",
+    "MosquitoClassifier",
+    "MosquitoDetector",
+    "MosquitoSegmenter",
+    "ModelWeightsManager",
+    "DatasetsManager",
+    "HuggingFaceDatasetLoader",
+    "BaseProvider",
+    "HuggingFaceProvider",
     # 'KaggleProvider',
     # 'RemoteURLProvider',
     # 'RoboflowProvider',

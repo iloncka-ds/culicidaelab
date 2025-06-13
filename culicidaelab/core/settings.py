@@ -1,11 +1,9 @@
-
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional
 from contextlib import contextmanager
 import threading
 
 from culicidaelab.core.config_manager import ConfigManager
-from culicidaelab.core.resource_manager import ResourceManager
 from culicidaelab.core.species_config import SpeciesConfig
 
 
@@ -27,24 +25,23 @@ class Settings:
         custom_settings = get_settings(config_dir=custom_config_dir)
     """
 
-    _instance: Optional['Settings'] = None
+    _instance: Optional["Settings"] = None
     _lock = threading.Lock()
     _initialized = False
 
-    def __new__(cls, config_dir: Optional[Union[str, Path]] = None) -> 'Settings':
+    def __new__(cls, config_dir: str | Path | None = None) -> "Settings":
         """Create or return singleton instance, handling config directory changes."""
         with cls._lock:
             config_dir_str = str(Path(config_dir).resolve()) if config_dir else None
 
             # Create new instance if none exists or config directory changed
-            if (cls._instance is None or
-                (config_dir_str and cls._instance._current_config_dir != config_dir_str)):
+            if cls._instance is None or (config_dir_str and cls._instance._current_config_dir != config_dir_str):
                 cls._instance = super().__new__(cls)
                 cls._instance._initialized = False
 
             return cls._instance
 
-    def __init__(self, config_dir: Optional[Union[str, Path]] = None) -> None:
+    def __init__(self, config_dir: str | Path | None = None) -> None:
         """Initialize Settings facade with ConfigManager and ResourceManager."""
         if self._initialized:
             return
@@ -60,12 +57,12 @@ class Settings:
         self._config_manager.initialize_config()
 
         # Cache for species config (lazy loaded)
-        self._species_config: Optional[SpeciesConfig] = None
+        self._species_config: SpeciesConfig | None = None
 
         self._initialized = True
 
     # Configuration Access (delegated to ConfigManager)
-    def get_config(self, path: Optional[str] = None, default: Any = None) -> Any:
+    def get_config(self, path: str | None = None, default: Any = None) -> Any:
         """Get configuration value at specified path."""
         return self._config_manager.get_config(path) if path else self._config_manager.get_config()
 
@@ -73,12 +70,12 @@ class Settings:
         """Set configuration value at specified path."""
         self._config_manager.set_config_value(path, value)
 
-    def update_config(self, updates: Dict[str, Any]) -> None:
+    def update_config(self, updates: dict[str, Any]) -> None:
         """Update multiple configuration values."""
         for path, value in updates.items():
             self.set_config(path, value)
 
-    def save_config(self, file_path: Optional[Union[str, Path]] = None) -> None:
+    def save_config(self, file_path: str | Path | None = None) -> None:
         """Save current configuration to file."""
         if file_path is None:
             file_path = self._config_manager.config_path / "config.yaml"
@@ -132,7 +129,7 @@ class Settings:
             species_files = [
                 self.config_dir / "species" / "species_classes.yaml",
                 self.config_dir / "species" / "species_metadata.yaml",
-                self.config_dir / "species.yaml"
+                self.config_dir / "species.yaml",
             ]
 
             for species_file in species_files:
@@ -153,8 +150,8 @@ class Settings:
         if not dataset_config:
             raise ValueError(f"Dataset type '{dataset_type}' not configured")
 
-        if isinstance(dataset_config, dict) and 'path' in dataset_config:
-            dataset_path = dataset_config['path']
+        if isinstance(dataset_config, dict) and "path" in dataset_config:
+            dataset_path = dataset_config["path"]
         else:
             dataset_path = str(dataset_config)
 
@@ -172,7 +169,7 @@ class Settings:
         datasets_config = self.get_config("datasets", {})
         return list(datasets_config.keys()) if datasets_config else []
 
-    def add_dataset(self, dataset_type: str, dataset_path: Union[str, Path]) -> Path:
+    def add_dataset(self, dataset_type: str, dataset_path: str | Path) -> Path:
         """Add new dataset configuration."""
         self.set_config(f"datasets.{dataset_type}.path", str(dataset_path))
         return self.get_dataset_path(dataset_type)
@@ -189,10 +186,10 @@ class Settings:
         if not model_config:
             raise ValueError(f"Model type '{model_type}' not configured in models or predictors")
 
-        if isinstance(model_config, dict) and 'weights' in model_config:
-            weights_file = model_config['weights']
-        elif isinstance(model_config, dict) and 'model_path' in model_config:
-            weights_file = model_config['model_path']
+        if isinstance(model_config, dict) and "weights" in model_config:
+            weights_file = model_config["weights"]
+        elif isinstance(model_config, dict) and "model_path" in model_config:
+            weights_file = model_config["model_path"]
         else:
             weights_file = str(model_config)
 
@@ -216,7 +213,7 @@ class Settings:
 
         return list(model_types)
 
-    def set_model_weights(self, model_type: str, weights_path: Union[str, Path]) -> None:
+    def set_model_weights(self, model_type: str, weights_path: str | Path) -> None:
         """Set custom weights path for model type."""
         # Check if it's in models or predictors config
         if self.get_config(f"models.{model_type}"):
@@ -228,7 +225,7 @@ class Settings:
             self.set_config(f"models.{model_type}.weights", str(weights_path))
 
     # Processing Parameters
-    def get_processing_params(self, model_type: Optional[str] = None) -> Dict[str, Any]:
+    def get_processing_params(self, model_type: str | None = None) -> dict[str, Any]:
         """Get processing parameters for model inference."""
         if model_type:
             # Get model-specific params if available
@@ -244,7 +241,7 @@ class Settings:
         else:
             return self.get_config("processing", {})
 
-    def set_processing_param(self, param_name: str, value: Any, model_type: Optional[str] = None) -> None:
+    def set_processing_param(self, param_name: str, value: Any, model_type: str | None = None) -> None:
         """Set processing parameter."""
         if model_type:
             # Determine if it's in models or predictors
@@ -259,13 +256,14 @@ class Settings:
             self.set_config(f"processing.{param_name}", value)
 
     # API Key Management (delegated to ConfigManager)
-    def get_api_key(self, provider: str) -> Optional[str]:
+    def get_api_key(self, provider: str) -> str | None:
         """Get API key for external provider."""
         return self._config_manager.get_api_key(provider)
 
     def set_api_key(self, provider: str, api_key: str) -> None:
         """Set API key for provider."""
         import os
+
         env_keys = {
             "kaggle": "KAGGLE_API_KEY",
             "huggingface": "HUGGINGFACE_API_KEY",
@@ -287,16 +285,16 @@ class Settings:
         with self._resource_manager.temp_workspace(prefix) as workspace:
             yield workspace
 
-    def clean_old_files(self, days: int = 5, include_cache: bool = True) -> Dict[str, int]:
+    def clean_old_files(self, days: int = 5, include_cache: bool = True) -> dict[str, int]:
         """Clean up old files."""
         return self._resource_manager.clean_old_files(days, include_cache)
 
-    def get_disk_usage(self) -> Dict[str, Dict[str, Union[int, str]]]:
+    def get_disk_usage(self) -> dict[str, dict[str, int | str]]:
         """Get disk usage statistics."""
         return self._resource_manager.get_disk_usage()
 
     # Summary and Validation
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get summary of current settings configuration."""
         return {
             "config_dir": str(self.config_dir),
@@ -307,10 +305,9 @@ class Settings:
             "available_models": self.list_model_types(),
             "available_datasets": self.list_datasets(),
             "api_keys_configured": [
-                provider for provider in ["kaggle", "huggingface", "roboflow"]
-                if self.get_api_key(provider) is not None
+                provider for provider in ["kaggle", "huggingface", "roboflow"] if self.get_api_key(provider) is not None
             ],
-            "disk_usage": self.get_disk_usage()
+            "disk_usage": self.get_disk_usage(),
         }
 
     def print_summary(self) -> None:
@@ -327,7 +324,7 @@ class Settings:
             else:
                 print(f"{key.replace('_', ' ').title()}: {value}")
 
-    def validate_setup(self) -> Dict[str, bool]:
+    def validate_setup(self) -> dict[str, bool]:
         """Validate current setup and return status."""
         results = {}
 
@@ -353,7 +350,7 @@ class Settings:
         return results
 
     # Provider configurations
-    def get_provider_config(self, provider: str) -> Dict[str, Any]:
+    def get_provider_config(self, provider: str) -> dict[str, Any]:
         """Get provider configuration."""
         return self._config_manager.get_provider_config(provider)
 
@@ -364,7 +361,7 @@ class Settings:
 
 
 # Global access function
-def get_settings(config_dir: Optional[Union[str, Path]] = None) -> Settings:
+def get_settings(config_dir: str | Path | None = None) -> Settings:
     """
     Get Settings singleton instance.
 
