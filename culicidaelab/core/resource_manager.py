@@ -15,7 +15,6 @@ from pathlib import Path
 from threading import Lock
 import hashlib
 from contextlib import contextmanager
-from typing import Union
 import appdirs
 import toml
 
@@ -512,7 +511,7 @@ class ResourceManager:
             "file_count": file_count,
         }
 
-    def _format_bytes(self, bytes_count: Union[int, float]) -> str:
+    def _format_bytes(self, bytes_count: int | float) -> str:
         """
         Format bytes into human-readable string.
 
