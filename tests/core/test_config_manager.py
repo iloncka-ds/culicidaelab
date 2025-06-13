@@ -10,7 +10,6 @@ from culicidaelab.core.config_manager import ConfigManager, ConfigurableComponen
 
 @pytest.fixture(autouse=True)
 def reset_singleton():
-    # Reset singleton before each test
     ConfigManager._instance = None
 
 
@@ -18,7 +17,6 @@ def reset_singleton():
 def temp_config_dir():
     with tempfile.TemporaryDirectory() as temp_dir:
         config_dir = Path(temp_dir)
-        # Write a config file with the expected structure
         with open(config_dir / "config.yaml", "w") as f:
             f.write(
                 """
@@ -65,7 +63,6 @@ def mock_resource_manager():
 
 @pytest.fixture
 def config_manager(temp_config_dir, mock_resource_manager):
-    # Patch _default_config_path to a non-existent directory to avoid loading library config
     with (
         patch.object(
             ConfigManager,

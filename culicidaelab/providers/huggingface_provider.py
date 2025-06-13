@@ -22,7 +22,6 @@ class HuggingFaceProvider(BaseProvider):
         self.provider_name = "huggingface"
         self.config_manager = config_manager
 
-        # Get provider configuration with API key
         provider_config = self.config_manager.get_provider_config("huggingface")
         self.api_key = provider_config.get("api_key")
         self.provider_url = provider_config.get("provider_url")
@@ -64,7 +63,6 @@ class HuggingFaceProvider(BaseProvider):
             Path: Path to the downloaded dataset
         """
 
-        # Get save directory
         if save_dir is None:
             save_dir = Path.cwd() / "data" / dataset_name
         else:
@@ -72,14 +70,12 @@ class HuggingFaceProvider(BaseProvider):
 
         save_dir.mkdir(parents=True, exist_ok=True)
 
-        # Download dataset
         dataset = load_dataset(
             dataset_name,
             use_auth_token=self.api_key,
             **kwargs,
         )
 
-        # Save dataset
         dataset.save_to_disk(save_dir)
 
         return Path(save_dir)
@@ -102,11 +98,9 @@ class HuggingFaceProvider(BaseProvider):
         model_config = config.models[model_type]
         local_path = Path(model_config.local_path).resolve()
 
-        # Check if weights exist locally
         if local_path.exists():
             return Path(local_path)
 
-        # Download from remote if not found locally
         print(f"\nModel weights for {model_type} not found at: {local_path}")
         response = input(f"Would you like to download them from {model_config.remote_repo}? (y/n): ")
 
@@ -116,10 +110,8 @@ class HuggingFaceProvider(BaseProvider):
                 f"Please place the weights file at: {local_path}",
             )
 
-        # Create directory if it doesn't exist
         local_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Download weights from Hugging Face
         try:
             hf_hub_download(
                 repo_id=model_config.remote_repo,

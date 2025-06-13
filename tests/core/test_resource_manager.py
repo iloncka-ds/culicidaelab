@@ -50,11 +50,9 @@ def test_create_temp_workspace(resource_manager):
 
 def test_clean_temp_workspace(resource_manager):
     """Test cleaning temporary workspace."""
-    # Create and verify workspace
     workspace = resource_manager.create_temp_workspace()
     assert workspace.exists()
 
-    # Clean and verify removal
     resource_manager.clean_temp_workspace(workspace)
     assert not workspace.exists()
 
@@ -68,5 +66,4 @@ def test_clean_temp_workspace_safety(resource_manager):
         with pytest.raises(ResourceManagerError):
             resource_manager.clean_temp_workspace(external_path)
 
-        # Should work with force=True
         resource_manager.clean_temp_workspace(external_path, force=True)

@@ -73,9 +73,7 @@ def test_load_dataset(datasets_manager, mock_dataset_loader):
 
 
 def test_get_loaded_dataset(datasets_manager):
-    # First load the dataset
     datasets_manager.load_dataset("test_dataset")
-    # Then try to get it
     dataset = datasets_manager.get_loaded_dataset("test_dataset")
     assert dataset == {"data": "mock_dataset"}
 

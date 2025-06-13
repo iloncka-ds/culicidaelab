@@ -46,7 +46,6 @@ def mock_config_manager(mock_config):
     mock = MagicMock()
     mock.get_config.return_value = mock_config
 
-    # Mock resource directories
     mock.get_resource_dirs.return_value = {
         "cache_dir": Path("cache"),
         "weights_dir": Path("weights"),
@@ -60,9 +59,8 @@ def mock_config_manager(mock_config):
 def settings(mock_env_vars, mock_config_manager):
     """Create a settings instance with mocked dependencies."""
     with patch("culicidaelab.core.settings.ConfigManager", return_value=mock_config_manager):
-        Settings._instance = None  # Reset singleton
+        Settings._instance = None
         settings = Settings()
-        # Mock _get_abs_path method
         settings._get_abs_path = lambda x: Path(x)
         return settings
 
@@ -70,7 +68,7 @@ def settings(mock_env_vars, mock_config_manager):
 def test_singleton_pattern():
     """Test that Settings follows the singleton pattern."""
     with patch("culicidaelab.core.settings.ConfigManager"):
-        Settings._instance = None  # Reset singleton
+        Settings._instance = None
         settings1 = Settings()
         settings2 = Settings()
         assert settings1 is settings2
@@ -80,14 +78,13 @@ def test_get_settings_singleton():
     """Test get_settings function maintains singleton pattern."""
     with patch("culicidaelab.core.settings.ConfigManager"):
         global _settings_instance
-        Settings._instance = None  # Reset singleton
-        _settings_instance = None  # Reset module-level instance
+        Settings._instance = None
+        _settings_instance = None
 
         settings1 = get_settings()
         settings2 = get_settings()
         assert settings1 is settings2
 
-        # New instance with config_dir should be different
         settings3 = get_settings("custom/config/dir")
         assert settings1 is not settings3
 
@@ -99,34 +96,29 @@ def test_environment_setup(settings):
 
 def test_get_resource_dir(settings):
     """Test get_resource_dir method."""
-    # Test valid resource type
     cache_dir = settings.get_resource_dir("cache_dir")
     assert isinstance(cache_dir, Path)
     assert cache_dir.name == "cache"
 
-    # Test invalid resource type
     with pytest.raises(ValueError, match="Unknown resource type"):
         settings.get_resource_dir("invalid_dir")
 
 
 def test_get_dataset_path(settings, tmp_path):
     """Test get_dataset_path method."""
-    # Mock the get_resource_dir to return tmp_path
     settings.get_resource_dir = lambda x: tmp_path if x == "dataset_dir" else Path(x)
 
-    # Test valid dataset type
     detection_path = settings.get_dataset_path("detection")
     assert isinstance(detection_path, Path)
     assert detection_path.name == "detection_data"
 
-    # Test invalid dataset type
     with pytest.raises(ValueError, match="Unknown dataset type"):
         settings.get_dataset_path("invalid_type")
 
 
 def test_get_processing_params(settings, mock_config):
     """Test get_processing_params method."""
-    settings._config = mock_config  # Use the OmegaConf mock config
+    settings._config = mock_config
     params = settings.get_processing_params()
     assert isinstance(params, dict)
     assert params["batch_size"] == 32
@@ -144,7 +136,7 @@ def test_property_getters(settings):
 def test_initialize_with_custom_config():
     """Test initialization with custom config directory."""
     custom_config = "custom/config/path"
-    Settings._instance = None  # Reset singleton
+    Settings._instance = None
 
     with patch("culicidaelab.core.settings.ConfigManager") as mock_cm:
         mock_cm.return_value = MagicMock()
@@ -155,7 +147,6 @@ def test_initialize_with_custom_config():
 
 def test_directory_setup(settings, tmp_path):
     """Test directory setup with temporary path."""
-    # Mock resource directories with temporary path
     resource_dirs = {
         "cache_dir": tmp_path / "cache",
         "weights_dir": tmp_path / "weights",
@@ -163,10 +154,8 @@ def test_directory_setup(settings, tmp_path):
     }
     settings.config_manager.get_resource_dirs.return_value = resource_dirs
 
-    # Trigger directory setup
     settings._setup_directories()
 
-    # Check if directories were created
     for dir_path in resource_dirs.values():
         assert dir_path.exists()
         assert dir_path.is_dir()
