@@ -18,6 +18,7 @@ species_info_mapping:
   culiseta_annulata: "Culiseta annulata"
   culiseta_longiareolata: "Culiseta longiareolata"
 
+
 species_metadata:
   "Aedes aegypti":
     common_name: "Yellow fever mosquito"
