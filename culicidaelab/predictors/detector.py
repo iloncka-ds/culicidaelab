@@ -31,9 +31,6 @@ class MosquitoDetector(BasePredictor):
         """
         super().__init__(model_path, config_manager=config_manager)
 
-
-
-
         self.load_config(config_path=None)
 
         if self.config is None or not hasattr(self.config, "model"):
@@ -132,7 +129,6 @@ class MosquitoDetector(BasePredictor):
         Note: This is a simplified evaluation. For rigorous mAP, use `evaluate_batch` or dedicated libraries.
         """
         predictions_with_conf = self.predict(input_data)
-
 
         if not ground_truth and not predictions_with_conf:
             return {
@@ -257,14 +253,12 @@ class MosquitoDetector(BasePredictor):
                     detections.append((center_x, center_y, w, h, conf))
                 all_predictions_batched.append(detections)
 
-
         per_image_metrics_list = []
 
         from concurrent.futures import ThreadPoolExecutor, as_completed
         from tqdm import tqdm
 
         def evaluate_single_with_preds(idx: int) -> dict[str, float]:
-
             def _calculate_metrics_from_predictions(
                 predictions_with_conf: list[tuple[float, float, float, float, float]],
                 ground_truth: list[tuple[float, float, float, float]],
@@ -324,8 +318,6 @@ class MosquitoDetector(BasePredictor):
                     "ap": ap,
                     "mean_iou": mean_iou_val,
                 }
-
-
 
             return _calculate_metrics_from_predictions(all_predictions_batched[idx], ground_truth_batch[idx])
 

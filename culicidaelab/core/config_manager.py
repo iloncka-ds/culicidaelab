@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, Generic, TypeVar
+from typing import Any, Optional, Generic, TypeVar
 import shutil
 import os
 import importlib
@@ -29,7 +28,7 @@ class ConfigManager:
     _instance: Optional["ConfigManager"] = None
     _lock = threading.Lock()
 
-    _env_keys: Dict[str, str] = {
+    _env_keys: dict[str, str] = {
         "kaggle": "KAGGLE_API_KEY",
         "huggingface": "HUGGINGFACE_API_KEY",
         "roboflow": "ROBOFLOW_API_KEY",
@@ -39,8 +38,8 @@ class ConfigManager:
 
     def __new__(
         cls,
-        library_config_path: Optional[str] = None,
-        config_path: Optional[str] = None,
+        library_config_path: str | None = None,
+        config_path: str | None = None,
         **kwargs,
     ) -> "ConfigManager":
         """
@@ -58,9 +57,7 @@ class ConfigManager:
             config_path_str = str(Path(config_path).resolve()) if config_path else None
 
             # Create new instance if none exists or config path changed
-            if cls._instance is None or (
-                config_path_str and cls._instance.config_path != config_path_str
-            ):
+            if cls._instance is None or (config_path_str and cls._instance.config_path != config_path_str):
                 cls._instance = super().__new__(cls)
                 cls._instance._initialized = False
 
@@ -68,8 +65,8 @@ class ConfigManager:
 
     def __init__(
         self,
-        library_config_path: Optional[str] = None,
-        config_path: Optional[str] = None,
+        library_config_path: str | None = None,
+        config_path: str | None = None,
         **kwargs,
     ) -> None:
         """
@@ -93,11 +90,11 @@ class ConfigManager:
         self._load_env_vars()
 
         # Configuration will be loaded when initialize_config is called
-        self.config: Optional[DictConfig] = None
+        self.config: DictConfig | None = None
 
         self._initialized = True
 
-    def _get_library_config_path(self, library_config_path: Optional[str]) -> Path:
+    def _get_library_config_path(self, library_config_path: str | None) -> Path:
         """Get the library configuration path."""
         if library_config_path:
             return Path(library_config_path).resolve()
@@ -145,7 +142,7 @@ class ConfigManager:
         if env_file.exists():
             load_dotenv(env_file)
 
-    def get_api_key(self, provider: str) -> Optional[str]:
+    def get_api_key(self, provider: str) -> str | None:
         """
         Get API key for a specific provider from environment variables.
 
@@ -160,7 +157,7 @@ class ConfigManager:
         """
         if provider not in self._env_keys:
             raise ValueError(
-                f"Unknown provider: {provider}. Available: {list(self._env_keys.keys())}"
+                f"Unknown provider: {provider}. Available: {list(self._env_keys.keys())}",
             )
 
         env_key = self._env_keys[provider]
@@ -189,7 +186,7 @@ class ConfigManager:
         self,
         config_path: Path,
         config_name: str,
-    ) -> Optional[DictConfig]:
+    ) -> DictConfig | None:
         """
         Load a configuration file from the specified path.
 
@@ -213,7 +210,9 @@ class ConfigManager:
         return None
 
     def ensure_config_structure(
-        self, config_dir: Path, is_external: bool = False
+        self,
+        config_dir: Path,
+        is_external: bool = False,
     ) -> None:
         """
         Ensure configuration directory has required structure.
@@ -251,7 +250,7 @@ class ConfigManager:
                 # Create minimal default configs
                 self._create_default_configs(config_dir, missing_files, missing_dirs)
 
-    def _get_required_config_structure(self) -> Dict[str, list[str]]:
+    def _get_required_config_structure(self) -> dict[str, list[str]]:
         """Get the required configuration structure."""
         return {
             "files": [
@@ -278,7 +277,10 @@ class ConfigManager:
         }
 
     def _repair_config_structure(
-        self, config_dir: Path, missing_dirs: list[str], missing_files: list[str]
+        self,
+        config_dir: Path,
+        missing_dirs: list[str],
+        missing_files: list[str],
     ) -> None:
         """
         Repair missing configuration files by copying from defaults.
@@ -307,7 +309,10 @@ class ConfigManager:
                 self._create_minimal_config_file(target_file)
 
     def _create_default_configs(
-        self, config_dir: Path, missing_files: list[str], missing_dirs: list[str]
+        self,
+        config_dir: Path,
+        missing_files: list[str],
+        missing_dirs: list[str],
     ) -> None:
         """
         Create minimal default configuration files.
@@ -433,7 +438,7 @@ class ConfigManager:
     def load_config(
         self,
         config_name: str = "config",
-        overrides: Optional[Dict[str, Any]] = None,
+        overrides: dict[str, Any] | None = None,
     ) -> DictConfig:
         """
         Load configuration with optional overrides.
@@ -476,7 +481,7 @@ class ConfigManager:
     def initialize_config(
         self,
         config_name: str = "config",
-        overrides: Optional[Dict[str, Any]] = None,
+        overrides: dict[str, Any] | None = None,
     ) -> DictConfig:
         """
         Initialize configuration with support for both project and library configurations.
@@ -502,7 +507,7 @@ class ConfigManager:
 
         return self.config
 
-    def get_config(self, config_path: Optional[str] = None) -> Any:
+    def get_config(self, config_path: str | None = None) -> Any:
         """
         Retrieve a specific configuration value or the entire configuration.
 
@@ -518,7 +523,7 @@ class ConfigManager:
         """
         if self.config is None:
             raise ValueError(
-                "Configuration not loaded. Call initialize_config() first."
+                "Configuration not loaded. Call initialize_config() first.",
             )
 
         if config_path is None:
@@ -559,7 +564,7 @@ class ConfigManager:
 
         if not isinstance(config, DictConfig):
             raise ValueError(
-                f"Configuration at {config_path} is not a valid config object"
+                f"Configuration at {config_path} is not a valid config object",
             )
 
         if _target_key not in config:
@@ -595,7 +600,7 @@ class ConfigManager:
         except (ValueError, ImportError, AttributeError) as e:
             raise ImportError(f"Could not import and instantiate '{target}': {e}")
 
-    def _resolve_config_path(self, base_path: Optional[str] = None) -> str:
+    def _resolve_config_path(self, base_path: str | None = None) -> str:
         """
         Resolve the configuration path with multiple fallback strategies.
 
@@ -632,7 +637,7 @@ class ConfigManager:
                     project_root / "conf",
                     project_root / "config",
                     project_root / "configs",
-                ]
+                ],
             )
         except FileNotFoundError:
             pass
@@ -645,7 +650,7 @@ class ConfigManager:
         default_path = Path.cwd() / "conf"
         return str(default_path.resolve())
 
-    def get_provider_config(self, provider: str) -> Dict[str, Any]:
+    def get_provider_config(self, provider: str) -> dict[str, Any]:
         """
         Get configuration for a specific provider.
 
@@ -672,7 +677,7 @@ class ConfigManager:
 
         return config_dict
 
-    def get_resource_dirs(self) -> Dict[str, Path]:
+    def get_resource_dirs(self) -> dict[str, Path]:
         """
         Get standard resource directories for the application using ResourceManager.
 
@@ -694,12 +699,12 @@ class ConfigManager:
         """
         if self.config is None:
             raise ValueError(
-                "Configuration not loaded. Call initialize_config() first."
+                "Configuration not loaded. Call initialize_config() first.",
             )
 
         OmegaConf.set(self.config, config_path, value)
 
-    def save_config(self, file_path: Union[str, Path]) -> None:
+    def save_config(self, file_path: str | Path) -> None:
         """
         Save the current configuration to a file.
 
@@ -711,7 +716,7 @@ class ConfigManager:
         """
         if self.config is None:
             raise ValueError(
-                "Configuration not loaded. Call initialize_config() first."
+                "Configuration not loaded. Call initialize_config() first.",
             )
 
         path = Path(file_path)
@@ -731,7 +736,9 @@ class ConfigurableComponent(Generic[T]):
     """
 
     def __init__(
-        self, config_manager: ConfigManager, config_path: Optional[str] = None
+        self,
+        config_manager: ConfigManager,
+        config_path: str | None = None,
     ) -> None:
         """
         Initialize the configurable component.
@@ -741,15 +748,15 @@ class ConfigurableComponent(Generic[T]):
             config_path: Optional path to component-specific configuration.
         """
         self.config_manager = config_manager
-        self._component_config: Optional[DictConfig] = None
+        self._component_config: DictConfig | None = None
         self._config_path = config_path
-        self._config_hash: Optional[str] = None
+        self._config_hash: str | None = None
         self._auto_reload = True
 
         # Load initial configuration
         self.load_config(config_path)
 
-    def load_config(self, config_path: Optional[str] = None) -> None:
+    def load_config(self, config_path: str | None = None) -> None:
         """
         Load component-specific configuration.
 
@@ -816,7 +823,9 @@ class ConfigurableComponent(Generic[T]):
         pass
 
     def _on_config_changed(
-        self, old_hash: Optional[str], new_hash: Optional[str]
+        self,
+        old_hash: str | None,
+        new_hash: str | None,
     ) -> None:
         """
         Hook called when configuration changes are detected.
@@ -827,7 +836,7 @@ class ConfigurableComponent(Generic[T]):
         """
         pass
 
-    def update_config(self, updates: Dict[str, Any], save: bool = False) -> None:
+    def update_config(self, updates: dict[str, Any], save: bool = False) -> None:
         """
         Update configuration with new values.
 
@@ -837,7 +846,7 @@ class ConfigurableComponent(Generic[T]):
         """
         if self._component_config is None:
             raise ValueError(
-                "Component configuration not loaded. Call load_config() first."
+                "Component configuration not loaded. Call load_config() first.",
             )
 
         # Apply updates to component config
@@ -906,7 +915,7 @@ class ConfigurableComponent(Generic[T]):
         """
         return []
 
-    def check_required_config(self) -> Dict[str, bool]:
+    def check_required_config(self) -> dict[str, bool]:
         """
         Check if all required configuration keys are present.
 
@@ -938,7 +947,7 @@ class ConfigurableComponent(Generic[T]):
         """
         if self._component_config is None:
             raise ValueError(
-                "Component configuration not loaded. Call load_config() first."
+                "Component configuration not loaded. Call load_config() first.",
             )
 
         # Auto-reload if enabled (check for changes)
@@ -961,7 +970,7 @@ class ConfigurableComponent(Generic[T]):
         return self._component_config
 
     @property
-    def config_path(self) -> Optional[str]:
+    def config_path(self) -> str | None:
         """Get the configuration path for this component."""
         return self._config_path
 
