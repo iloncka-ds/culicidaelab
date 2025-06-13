@@ -10,6 +10,15 @@ from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
+def _deep_merge(source: Dict, destination: Dict) -> Dict:
+    """Recursively merge two dictionaries. Source values overwrite destination."""
+    for key, value in source.items():
+        if isinstance(value, dict):
+            node = destination.setdefault(key, {})
+            _deep_merge(value, node)
+        else:
+            destination[key] = value
+    return destination
 
 class ConfigManager:
     """
@@ -119,14 +128,14 @@ class ConfigManager:
         Returns:
             Instantiated object.
         """
-        if not hasattr(config_obj, "_target_"):
+        if not hasattr(config_obj, "target_"):
             raise ValueError(f"Target key '_target_' not found in configuration object")
 
-        target_path = config_obj._target_
+        target_path = config_obj.target_
 
         # Get parameters from the model, excluding the target key
         config_params = config_obj.model_dump()
-        config_params.pop("_target_", None)
+        config_params.pop("target_", None)
 
         # Merge with any runtime kwargs
         config_params.update(kwargs)
@@ -139,258 +148,3 @@ class ConfigManager:
         except (ValueError, ImportError, AttributeError) as e:
             raise ImportError(f"Could not import and instantiate '{target_path}': {e}")
 
-
-class ConfigurableComponent(Generic[T]):
-    """
-    Base class for components that require configuration.
-
-    This class provides a standard interface for components that need access
-    to configuration management functionality with automatic configuration updates.
-
-    Attributes:
-        config_manager (ConfigManager): The configuration manager instance.
-    """
-
-    def __init__(
-        self,
-        config_manager: ConfigManager,
-        config_path: str | None = None,
-    ) -> None:
-        """
-        Initialize the configurable component.
-
-        Args:
-            config_manager: Configuration manager instance.
-            config_path: Optional path to component-specific configuration.
-        """
-        self.config_manager = config_manager
-        self._component_config: DictConfig | None = None
-        self._config_path = config_path
-        self._config_hash: str | None = None
-        self._auto_reload = True
-
-        # Load initial configuration
-        self.load_config(config_path)
-
-    def load_config(self, config_path: str | None = None) -> None:
-        """
-        Load component-specific configuration.
-
-        Args:
-            config_path: Path to a specific configuration file.
-                        If None, uses the stored config path or manager's configuration.
-        """
-        # Update config path if provided
-        if config_path is not None:
-            self._config_path = config_path
-
-        # Load configuration
-        if self._config_path:
-            self._component_config = self.config_manager.get_config(self._config_path)
-        else:
-            self._component_config = self.config_manager.get_config()
-
-        # Update configuration hash for change detection
-        if self._component_config is not None:
-            self._config_hash = self._compute_config_hash(self._component_config)
-
-        # Call hook for subclasses to handle configuration changes
-        self._on_config_loaded()
-
-    def reload_config(self) -> bool:
-        """
-        Reload configuration and check for changes.
-
-        Returns:
-            True if configuration changed, False otherwise.
-        """
-        old_hash = self._config_hash
-        self.load_config()
-
-        # Check if configuration actually changed
-        changed = old_hash != self._config_hash
-
-        if changed:
-            self._on_config_changed(old_hash, self._config_hash)
-
-        return changed
-
-    def _compute_config_hash(self, config: DictConfig) -> str:
-        """
-        Compute a hash of the configuration for change detection.
-
-        Args:
-            config: Configuration to hash.
-
-        Returns:
-            Configuration hash string.
-        """
-        import hashlib
-
-        # Convert config to string representation and hash it
-        config_str = OmegaConf.to_yaml(config)
-        return hashlib.md5(config_str.encode()).hexdigest()
-
-    def _on_config_loaded(self) -> None:
-        """
-        Hook called when configuration is loaded.
-        Subclasses can override this to perform initialization.
-        """
-        pass
-
-    def _on_config_changed(
-        self,
-        old_hash: str | None,
-        new_hash: str | None,
-    ) -> None:
-        """
-        Hook called when configuration changes are detected.
-
-        Args:
-            old_hash: Previous configuration hash.
-            new_hash: New configuration hash.
-        """
-        pass
-
-    def update_config(self, updates: dict[str, Any], save: bool = False) -> None:
-        """
-        Update configuration with new values.
-
-        Args:
-            updates: Dictionary of configuration updates.
-            save: Whether to save changes to the configuration manager.
-        """
-        if self._component_config is None:
-            raise ValueError(
-                "Component configuration not loaded. Call load_config() first.",
-            )
-
-        # Apply updates to component config
-        for key, value in updates.items():
-            OmegaConf.set(self._component_config, key, value)
-
-        # Update hash
-        self._config_hash = self._compute_config_hash(self._component_config)
-
-        # Optionally save to config manager
-        if save and self._config_path:
-            for key, value in updates.items():
-                full_path = f"{self._config_path}.{key}" if self._config_path else key
-                self.config_manager.set_config_value(full_path, value)
-
-        # Notify about configuration change
-        self._on_config_changed(None, self._config_hash)
-
-    def get_config_value(self, key: str, default: Any = None) -> Any:
-        """
-        Get a specific configuration value.
-
-        Args:
-            key: Dot-separated key path.
-            default: Default value if key not found.
-
-        Returns:
-            Configuration value or default.
-        """
-        if self._component_config is None:
-            return default
-
-        try:
-            return OmegaConf.select(self._component_config, key, default=default)
-        except Exception:
-            return default
-
-    def set_config_value(self, key: str, value: Any, save: bool = False) -> None:
-        """
-        Set a specific configuration value.
-
-        Args:
-            key: Dot-separated key path.
-            value: Value to set.
-            save: Whether to save to configuration manager.
-        """
-        self.update_config({key: value}, save=save)
-
-    def validate_config(self) -> bool:
-        """
-        Validate the current configuration.
-        Subclasses should override this to implement validation logic.
-
-        Returns:
-            True if configuration is valid, False otherwise.
-        """
-        return self._component_config is not None
-
-    def get_required_config_keys(self) -> list[str]:
-        """
-        Get list of required configuration keys.
-        Subclasses should override this to specify required keys.
-
-        Returns:
-            List of required configuration keys.
-        """
-        return []
-
-    def check_required_config(self) -> dict[str, bool]:
-        """
-        Check if all required configuration keys are present.
-
-        Returns:
-            Dictionary mapping required keys to their presence status.
-        """
-        required_keys = self.get_required_config_keys()
-        return {key: self.get_config_value(key) is not None for key in required_keys}
-
-    def enable_auto_reload(self, enabled: bool = True) -> None:
-        """
-        Enable or disable automatic configuration reloading.
-
-        Args:
-            enabled: Whether to enable auto-reload.
-        """
-        self._auto_reload = enabled
-
-    @property
-    def config(self) -> DictConfig:
-        """
-        Get the component's configuration with automatic reload check.
-
-        Returns:
-            The component's configuration.
-
-        Raises:
-            ValueError: If configuration is not loaded.
-        """
-        if self._component_config is None:
-            raise ValueError(
-                "Component configuration not loaded. Call load_config() first.",
-            )
-
-        # Auto-reload if enabled (check for changes)
-        if self._auto_reload:
-            # Only check for changes, don't force reload every time
-            try:
-                current_config = (
-                    self.config_manager.get_config(self._config_path)
-                    if self._config_path
-                    else self.config_manager.get_config()
-                )
-                if current_config is not None:
-                    current_hash = self._compute_config_hash(current_config)
-                    if current_hash != self._config_hash:
-                        self.reload_config()
-            except Exception:
-                # If reload fails, continue with current config
-                pass
-
-        return self._component_config
-
-    @property
-    def config_path(self) -> str | None:
-        """Get the configuration path for this component."""
-        return self._config_path
-
-    @property
-    def is_config_loaded(self) -> bool:
-        """Check if configuration is loaded."""
-        return self._component_config is not None

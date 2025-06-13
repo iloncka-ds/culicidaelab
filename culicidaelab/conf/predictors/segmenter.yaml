@@ -1,11 +1,21 @@
-defaults:
-  model_arch: "sam2.1_hiera_tiny"
-  weights:
-    local_path: "weights/segmentation/sam2.1_hiera_tiny.pt"
-    remote_repo: "iloncka/culico-net-segm-v1-nano"
-    remote_file: "sam2.1_hiera_tiny.pt"
-  dataset_repository: "iloncka/mosquito-species-segmentation-dataset"
-  params:
-    points_per_side: 32
-    pred_iou_thresh: 0.88
-    stability_score_thresh: 0.95
+# defaults:
+#   model_arch: "sam2.1_hiera_tiny"
+#   weights:
+#     local_path: "weights/segmentation/sam2.1_hiera_tiny.pt"
+#     remote_repo: "iloncka/culico-net-segm-v1-nano"
+#     remote_file: "sam2.1_hiera_tiny.pt"
+#   dataset_repository: "iloncka/mosquito-species-segmentation-dataset"
+#   params:
+#     points_per_side: 32
+#     pred_iou_thresh: 0.88
+#     stability_score_thresh: 0.95
+_target_: "culicidaelab.predictors.Segmenter"
+model_path: "weights/segmentation/sam2.1_hiera_tiny.pt"
+confidence: 0.5 # Default confidence
+device: "auto"
+params:
+  points_per_side: 32
+  pred_iou_thresh: 0.88
+  stability_score_thresh: 0.95
+model_arch: "sam2.1_hiera_tiny"
+dataset_repository: "iloncka/mosquito-species-segmentation-dataset"

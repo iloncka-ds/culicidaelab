@@ -1,99 +1,111 @@
-"""
-Module for managing datasets configuration and loading.
-"""
-
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any
-from omegaconf import OmegaConf
+from typing import Any, Dict
 
-from ..core.config_manager import ConfigurableComponent, ConfigManager
-
+from ..core.settings import Settings
+from ..core.config_models import DatasetConfig
 from ..core.loader_protocol import DatasetLoader
 
 
-class DatasetsManager(ConfigurableComponent):
-    """Manages datasets configuration and loading."""
+class DatasetsManager:
+    """
+    Manages access, loading, and caching of datasets defined in the configuration.
 
-    def __init__(
-        self,
-        config_manager: ConfigManager,
-        dataset_loader: DatasetLoader,
-        datasets_dir: str | Path | None = None,
-        config_path: str | Path | None = None,
-    ):
-        """Initialize with explicit dependencies."""
-        super().__init__(config_manager)
+    This manager acts as a high-level interface that uses the global Settings
+    for configuration and a dedicated loader for the actual data loading,
+    decoupling the logic of what datasets are available from how they are loaded.
+    """
+
+    def __init__(self, settings: Settings, dataset_loader: DatasetLoader):
+        """
+        Initialize the DatasetsManager with its dependencies.
+
+        Args:
+            settings: The main Settings object for the library.
+            dataset_loader: An object that conforms to the DatasetLoader protocol.
+        """
+        self.settings = settings
         self.dataset_loader = dataset_loader
-        self.datasets_dir = Path(datasets_dir) if datasets_dir else None
-        self.config_path = Path(config_path) if config_path else None
-        self.datasets_config: dict[str, Any] = {}
-        self.loaded_datasets: dict[str, Any] = {}
+        self.loaded_datasets: Dict[str, Any] = {}
 
-        if self.config_path:
-            self.load_config()
+    def get_dataset_info(self, dataset_name: str) -> DatasetConfig:
+        """
+        Get the validated configuration object for a specific dataset.
 
-    def load_config(self) -> dict[str, Any]:
-        """Load datasets configuration."""
-        if not self.config_path or not self.config_path.exists():
-            raise FileNotFoundError(f"Configuration file not found: {self.config_path}")
+        Args:
+            dataset_name: The name of the dataset (e.g., 'classification').
 
-        config = OmegaConf.load(self.config_path)
-        self.datasets_config = config.get("datasets", {})
-        return self.datasets_config
+        Returns:
+            A DatasetConfig Pydantic model instance.
 
-    def save_config(self, config_path: Path | None = None) -> None:
-        """Save datasets configuration."""
-        save_path = config_path or self.config_path
-        if not save_path:
-            raise ValueError("No configuration path specified")
-
-        config = {"datasets": self.datasets_config}
-        OmegaConf.save(config=OmegaConf.create(config), f=save_path)
-
-    def get_dataset_info(self, dataset_name: str) -> dict[str, Any]:
-        """Get information about a specific dataset."""
-        if dataset_name not in self.datasets_config:
-            raise KeyError(f"Dataset {dataset_name} not found in configuration")
-        return self.datasets_config[dataset_name]
+        Raises:
+            KeyError: If the dataset is not found in the configuration.
+        """
+        dataset_config = self.settings.get_config(f"datasets.{dataset_name}")
+        if not dataset_config:
+            raise KeyError(f"Dataset '{dataset_name}' not found in configuration.")
+        return dataset_config
 
     def list_datasets(self) -> list[str]:
-        """List all available datasets."""
-        return list(self.datasets_config.keys())
+        """
+        List all available dataset names from the configuration.
 
-    def add_dataset(self, name: str, info: dict[str, Any]) -> None:
-        """Add a new dataset to the configuration."""
-        if name in self.datasets_config:
-            raise ValueError(f"Dataset {name} already exists")
-        self.datasets_config[name] = info
-
-    def remove_dataset(self, name: str) -> None:
-        """Remove a dataset from the configuration."""
-        if name not in self.datasets_config:
-            raise KeyError(f"Dataset {name} not found")
-        del self.datasets_config[name]
-
-    def update_dataset(self, name: str, info: dict[str, Any]) -> None:
-        """Update dataset information."""
-        if name not in self.datasets_config:
-            raise KeyError(f"Dataset {name} not found")
-        self.datasets_config[name].update(info)
+        Returns:
+            A list of configured dataset names.
+        """
+        # Delegate directly to the Settings object's helper method
+        return self.settings.list_datasets()
 
     def load_dataset(self, dataset_name: str, split: str | None = None, **kwargs) -> Any:
-        """Load dataset with improved error handling and separation of concerns."""
-        config = self.get_dataset_info(dataset_name)
-        dataset_path = config.get("path")
+        """
+        Load a specific dataset using the injected loader.
 
-        if not dataset_path:
-            raise ValueError(f"Dataset path not specified for {dataset_name}")
+        Checks a local cache first. If the dataset is not cached, it resolves
+        the dataset's path using the settings and instructs the loader to load it.
 
-        dataset = self.dataset_loader.load_dataset(dataset_path, split=split, **kwargs)
+        Args:
+            dataset_name: The name of the dataset to load.
+            split: Optional dataset split to load (e.g., 'train', 'test').
+            **kwargs: Additional keyword arguments to pass to the dataset loader.
+
+        Returns:
+            The loaded dataset object.
+
+        Raises:
+            KeyError: If the dataset configuration doesn't exist.
+        """
+        # First, check if the dataset is already loaded and cached
+        if dataset_name in self.loaded_datasets:
+            # Note: This simple cache doesn't handle different splits/kwargs.
+            # A more complex key would be needed for that, e.g., f"{dataset_name}_{split}"
+            return self.get_loaded_dataset(dataset_name)
+
+        # Get the absolute path from the settings object, which handles resolution.
+        dataset_path = self.settings.get_dataset_path(dataset_name)
+
+        print(f"Loading dataset '{dataset_name}' from: {dataset_path}...")
+        dataset = self.dataset_loader.load_dataset(str(dataset_path), split=split, **kwargs)
+
+        # Cache the loaded dataset
         self.loaded_datasets[dataset_name] = dataset
+        print(f"Dataset '{dataset_name}' loaded and cached.")
         return dataset
 
     def get_loaded_dataset(self, dataset_name: str) -> Any:
-        """Get previously loaded dataset with improved error handling."""
+        """
+        Get a dataset from the cache if it has been previously loaded.
+
+        Args:
+            dataset_name: The name of the loaded dataset.
+
+        Returns:
+            The cached dataset object.
+
+        Raises:
+            KeyError: If the dataset has not been loaded yet.
+        """
         if dataset_name not in self.loaded_datasets:
-            raise ValueError(f"Dataset {dataset_name} has not been loaded")
+            raise KeyError(
+                f"Dataset '{dataset_name}' has not been loaded. " f"Call `load_dataset('{dataset_name}')` first."
+            )
         return self.loaded_datasets[dataset_name]

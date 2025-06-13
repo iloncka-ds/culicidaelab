@@ -17,7 +17,7 @@ class SpeciesConfig:
             config: A validated SpeciesModel Pydantic object.
         """
         self._config = config
-        self._species_map = {idx: name for idx, name in enumerate(self._config.classes)}
+        self._species_map = self._config.species_classes
         self._reverse_species_map = {name: idx for idx, name in self._species_map.items()}
 
     @property
@@ -27,7 +27,7 @@ class SpeciesConfig:
 
     def get_species_metadata(self, species_name: str) -> Dict[str, Any]:
         """Get metadata for a specific species."""
-        return self._config.metadata.get(species_name, {})
+        return self._config.species_metadata.get(species_name, {})
 
     def get_species_by_index(self, index: int) -> Optional[str]:
         """Get species name by class index."""
