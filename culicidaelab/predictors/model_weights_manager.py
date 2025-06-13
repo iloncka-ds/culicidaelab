@@ -36,11 +36,9 @@ class ModelWeightsManager(ConfigurableComponent):
         config = self._config.models.weights[model_type]
         local_path = self._get_abs_path(config.local_path)
 
-        # Check if weights exist locally
         if os.path.exists(local_path):
             return local_path
 
-        # Ask permission to download
         print(f"\nModel weights for {model_type} not found at: {local_path}")
         response = input(f"Would you like to download them from {config.remote_repo}? (y/n): ")
 
@@ -55,17 +53,14 @@ class ModelWeightsManager(ConfigurableComponent):
     def _download_weights(self, config, local_path: str | Path) -> str:
         """Download weights from remote repository."""
         try:
-            # Ensure the directory exists
             os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
-            # Download weights
             downloaded_path = hf_hub_download(
                 repo_id=config.remote_repo,
                 filename=config.remote_file,
                 local_dir=os.path.dirname(local_path),
             )
 
-            # Move to the correct location if necessary
             if downloaded_path != local_path:
                 shutil.move(downloaded_path, local_path)
 

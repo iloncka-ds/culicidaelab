@@ -1,0 +1,2 @@
+provider_url: "https://www.kaggle.com/api/v1/datasets/download/{username}/{dataset_id}"
+api_key: "{api_key}"

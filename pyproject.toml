@@ -41,6 +41,7 @@ dependencies = [
     "appdirs>=1.4.4",
     "requests>=2.25.1",
     "toml>=0.10.2",
+    "dotenv>=0.9.9",
 ]
 
 [project.urls]

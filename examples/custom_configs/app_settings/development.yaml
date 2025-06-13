@@ -1,0 +1,16 @@
+base_dirs:
+  user_data: "../development/user_data"
+  cache: "../development/cache"
+  models: "../development/models"
+  datasets: "../development/datasets"
+  downloads: "../development/downloads"
+  archives: "../development/archives"
+
+# Mapping to ConfigManager's get_resource_dirs() method
+resource_mapping:
+  user_data_dir: "${base_dirs.user_data}"
+  cache_dir: "${base_dirs.cache}"
+  model_dir: "${base_dirs.models}"
+  dataset_dir: "${base_dirs.datasets}"
+  downloads_dir: "${base_dirs.downloads}"
+  archived_files_dir: "${base_dirs.archives}"

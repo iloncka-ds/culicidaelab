@@ -121,7 +121,6 @@ class BasePredictor(ConfigurableComponent, ABC):
         if len(input_data_batch) == 0:
             raise ValueError("Input batch cannot be empty")
 
-        # Function to process a single batch
         def process_batch(batch_idx: int) -> dict[str, float]:
             start_idx = batch_idx * batch_size
             end_idx = min(start_idx + batch_size, len(input_data_batch))
@@ -133,16 +132,13 @@ class BasePredictor(ConfigurableComponent, ABC):
 
             return self._aggregate_metrics(batch_metrics)
 
-        # Calculate number of batches
         num_batches = (len(input_data_batch) + batch_size - 1) // batch_size
         batch_indices = range(num_batches)
 
-        # Process batches in parallel
         all_metrics = []
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             futures = [executor.submit(process_batch, idx) for idx in batch_indices]
 
-            # Show progress bar
             for future in tqdm(as_completed(futures), total=len(futures), desc="Evaluating batches"):
                 try:
                     batch_result = future.result()
@@ -150,7 +146,6 @@ class BasePredictor(ConfigurableComponent, ABC):
                 except Exception as e:
                     print(f"Error processing batch: {str(e)}")
 
-        # Aggregate metrics from all batches
         return self._aggregate_metrics(all_metrics)
 
     def predict_batch(
@@ -212,18 +207,14 @@ class BasePredictor(ConfigurableComponent, ABC):
         if not metrics_list:
             return {}
 
-        # Get all metric keys
         metric_keys = metrics_list[0].keys()
 
-        # Initialize aggregated metrics
         aggregated = {}
 
-        # Calculate mean for each metric
         for key in metric_keys:
             values = [m[key] for m in metrics_list if key in m]
             if values:
                 aggregated[key] = float(np.mean(values))
-                # Add std dev for each metric
                 aggregated[f"{key}_std"] = float(np.std(values))
 
         return aggregated

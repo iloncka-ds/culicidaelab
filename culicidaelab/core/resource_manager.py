@@ -59,13 +59,10 @@ class ResourceManager:
         self._lock = Lock()
         self._workspace_registry: dict[str, Path] = {}
 
-        # Determine application name
         self.app_name = self._determine_app_name(app_name)
 
-        # Initialize directory paths
         self._initialize_paths(custom_base_dir)
 
-        # Create necessary directories
         self._initialize_directories()
 
         logger.info(f"ResourceManager initialized for app: {self.app_name}")
@@ -84,7 +81,6 @@ class ResourceManager:
         if app_name:
             return app_name
 
-        # Try to load from pyproject.toml
         try:
             project_root = self._find_project_root()
             config_path = project_root / "pyproject.toml"
@@ -95,7 +91,6 @@ class ResourceManager:
                 if name:
                     return name
 
-                # Fallback to tool.poetry.name for poetry projects
                 name = config.get("tool", {}).get("poetry", {}).get("name")
                 if name:
                     return name
@@ -103,7 +98,6 @@ class ResourceManager:
         except Exception as e:
             logger.warning(f"Could not load app name from pyproject.toml: {e}")
 
-        # Fallback to default
         return "culicidaelab"
 
     def _find_project_root(self) -> Path:
@@ -118,15 +112,13 @@ class ResourceManager:
         """
         current_path = Path(__file__).resolve()
 
-        # Look for common project indicators
         indicators = ["pyproject.toml", "setup.py", "setup.cfg", ".git", "requirements.txt"]
 
-        while current_path.parent != current_path:  # Stop at filesystem root
+        while current_path.parent != current_path:
             if any((current_path / indicator).exists() for indicator in indicators):
                 return current_path
             current_path = current_path.parent
 
-        # If we can't find project root, use the directory containing this file
         logger.warning("Could not find project root, using module directory")
         return Path(__file__).parent.parent
 
@@ -142,14 +134,11 @@ class ResourceManager:
             self.user_data_dir = base_dir / "data"
             self.user_cache_dir = base_dir / "cache"
         else:
-            # Use platform-appropriate directories
             self.user_data_dir = Path(appdirs.user_data_dir(self.app_name))
             self.user_cache_dir = Path(appdirs.user_cache_dir(self.app_name))
 
-        # Temporary directory for runtime operations
         self.temp_dir = Path(tempfile.gettempdir()) / self.app_name
 
-        # Subdirectories for different resource types
         self.model_dir = self.user_data_dir / "models"
         self.dataset_dir = self.user_data_dir / "datasets"
         self.downloads_dir = self.user_data_dir / "downloads"
@@ -181,7 +170,6 @@ class ResourceManager:
             except Exception as e:
                 raise ResourceManagerError(f"Failed to create directory {directory}: {e}") from e
 
-        # Set appropriate permissions (Unix-like systems only)
         if platform.system() != "Windows":
             self._set_directory_permissions(directories)
 

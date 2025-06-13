@@ -11,22 +11,18 @@ class DummyPredictor(BasePredictor):
         self.dummy_loaded = True
 
     def predict(self, input_data: np.ndarray):
-        # Return a dummy prediction (sum of all elements)
         return float(np.sum(input_data))
 
     def visualize(self, input_data: np.ndarray, predictions, save_path=None):
-        # Return the input as visualization
         return input_data
 
     def evaluate(self, input_data: np.ndarray, ground_truth):
-        # Return a dummy metric dict
         pred = self.predict(input_data)
         return {"accuracy": float(pred == ground_truth)}
 
 
 @pytest.fixture
 def dummy_config_manager(tmp_path):
-    # Return a mock config manager
     return Mock(spec=ConfigManager)
 
 
@@ -49,7 +45,6 @@ def test_predict_and_call(dummy_predictor):
     arr = np.ones((2, 2))
     pred = dummy_predictor.predict(arr)
     assert pred == 4.0
-    # __call__ should also work and trigger model loading
     dummy_predictor.model_loaded = False
     pred2 = dummy_predictor(arr)
     assert pred2 == 4.0

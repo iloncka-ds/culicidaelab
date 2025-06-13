@@ -1,0 +1,16 @@
+base_dirs:
+  user_data: "../production/user_data"
+  cache: "../production/cache"
+  models: "../production/models"
+  datasets: "../production/datasets"
+  downloads: "../production/downloads"
+  archives: "../production/archives"
+
+# Mapping to ConfigManager's get_resource_dirs() method
+resource_mapping:
+  user_data_dir: "${base_dirs.user_data}"
+  cache_dir: "${base_dirs.cache}"
+  model_dir: "${base_dirs.models}"
+  dataset_dir: "${base_dirs.datasets}"
+  downloads_dir: "${base_dirs.downloads}"
+  archived_files_dir: "${base_dirs.archives}"

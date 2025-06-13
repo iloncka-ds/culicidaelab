@@ -1,332 +1,387 @@
-"""
-Configuration module for CulicidaeLab.
-"""
 
-from __future__ import annotations
-
-import os
-import shutil
 from pathlib import Path
-from typing import Any
-from omegaconf import OmegaConf
-from dotenv import load_dotenv
+from typing import Any, Dict, Optional, Union
+from contextlib import contextmanager
+import threading
 
-from .config_manager import ConfigManager, ConfigurableComponent
-from .species_config import SpeciesConfig
-
-# Load environment variables from .env file
-load_dotenv()
+from culicidaelab.core.config_manager import ConfigManager
+from culicidaelab.core.resource_manager import ResourceManager
+from culicidaelab.core.species_config import SpeciesConfig
 
 
-class Settings(ConfigurableComponent):
-    _instance = None
+class Settings:
+    """
+    User-friendly facade for CulicidaeLab configuration management.
 
-    def __new__(cls, *args, **kwargs):
-        # If no existing instance, create a new one
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
+    This class provides a simple interface to access configuration values,
+    resource directories, and application settings. All actual operations
+    are delegated to ConfigManager and ResourceManager.
+
+    Usage Examples:
+        settings = get_settings()
+        settings.get_model_weights('detection')
+        print(f"Config directory: {settings.config_dir}")
+        print(f"Weights directory: {settings.weights_dir}")
+
+        # Custom config directory
+        custom_settings = get_settings(config_dir=custom_config_dir)
+    """
+
+    _instance: Optional['Settings'] = None
+    _lock = threading.Lock()
+    _initialized = False
+
+    def __new__(cls, config_dir: Optional[Union[str, Path]] = None) -> 'Settings':
+        """Create or return singleton instance, handling config directory changes."""
+        with cls._lock:
+            config_dir_str = str(Path(config_dir).resolve()) if config_dir else None
+
+            # Create new instance if none exists or config directory changed
+            if (cls._instance is None or
+                (config_dir_str and cls._instance._current_config_dir != config_dir_str)):
+                cls._instance = super().__new__(cls)
+                cls._instance._initialized = False
+
             return cls._instance
 
-        # If config_dir is provided, check if it's different from the existing instance
-        if args or kwargs:
-            config_dir = args[0] if args else kwargs.get("config_dir")
-            if config_dir is not None:
-                # Normalize paths
-                new_config_dir = Path(config_dir).resolve()
-                existing_config_dir = Path(cls._instance.config_manager.config_path).resolve()
-
-                # If config directories are different, create a new instance
-                if new_config_dir != existing_config_dir:
-                    cls._instance = super().__new__(cls)
-
-        return cls._instance
-
-    def __init__(self, config_dir: str | Path | None = None):
-        if hasattr(self, "initialized") and self.initialized:
+    def __init__(self, config_dir: Optional[Union[str, Path]] = None) -> None:
+        """Initialize Settings facade with ConfigManager and ResourceManager."""
+        if self._initialized:
             return
 
-        self.root_dir = Path(__file__).parent.parent  # culicidaelab directory
-        self.environment = os.getenv("APP_ENV", "development")
+        # Store current config directory for singleton comparison
+        self._current_config_dir = str(Path(config_dir).resolve()) if config_dir else None
 
-        # Set default config directory to culicidaelab/conf
-        self.default_config_dir = self.root_dir / "conf"
+        # Initialize managers
+        self._config_manager = ConfigManager(config_path=config_dir)
+        self._resource_manager = self._config_manager.resource_manager
 
-        # Set up configuration directory
-        effective_config_dir = self._setup_config_dir(config_dir)
+        # Load initial configuration
+        self._config_manager.initialize_config()
 
-        # Initialize configuration with ConfigManager
-        config_manager = ConfigManager(
-            library_config_path=str(self.default_config_dir),
-            config_path=effective_config_dir,
-        )
-        super().__init__(config_manager)
+        # Cache for species config (lazy loaded)
+        self._species_config: Optional[SpeciesConfig] = None
 
-        # Load configuration
-        self.config_manager.load_config("config")
-        self._config = self.config_manager.get_config()  # Initialize config as a regular attribute
-        self.load_config()
+        self._initialized = True
 
-        # Initialize components
-        self._initialize_components()
+    # Configuration Access (delegated to ConfigManager)
+    def get_config(self, path: Optional[str] = None, default: Any = None) -> Any:
+        """Get configuration value at specified path."""
+        return self._config_manager.get_config(path) if path else self._config_manager.get_config()
 
-        self.initialized = True
+    def set_config(self, path: str, value: Any) -> None:
+        """Set configuration value at specified path."""
+        self._config_manager.set_config_value(path, value)
 
-    def _initialize_components(self) -> None:
-        """Initialize individual components from configuration."""
-        # Set up directories
-        self._setup_directories()
+    def update_config(self, updates: Dict[str, Any]) -> None:
+        """Update multiple configuration values."""
+        for path, value in updates.items():
+            self.set_config(path, value)
 
-    def _setup_directories(self) -> None:
-        """Set up required directories using ConfigManager's resource directories."""
-        # Get resource directories from config manager
-        resource_dirs = self.config_manager.get_resource_dirs()
+    def save_config(self, file_path: Optional[Union[str, Path]] = None) -> None:
+        """Save current configuration to file."""
+        if file_path is None:
+            file_path = self._config_manager.config_path / "config.yaml"
+        self._config_manager.save_config(file_path)
 
-        # Create directories if they don't exist
-        for dir_name, dir_path in resource_dirs.items():
-            if not dir_path.exists():
-                dir_path.mkdir(parents=True, exist_ok=True)
+    def reload_config(self) -> None:
+        """Reload configuration from files."""
+        self._config_manager.initialize_config()
+        # Clear species config cache
+        self._species_config = None
 
-        # Optional: Map config-specific directories to resource directories
-        resource_mapping = self._config.get("resource_mapping", {})
-        for key, relative_path in resource_mapping.items():
-            # Convert relative path to absolute
-            abs_path = Path(relative_path).resolve()
-
-            # Ensure the mapped directory exists
-            if not abs_path.exists():
-                abs_path.mkdir(parents=True, exist_ok=True)
-
-            # Optionally set as an attribute if needed
-            setattr(self, f"_{key}", abs_path)
-
+    # Resource Directory Access (delegated to ResourceManager)
     def get_resource_dir(self, resource_type: str) -> Path:
-        """
-        Get a specific resource directory.
-
-        Args:
-            resource_type (str): Type of resource directory
-            (e.g., 'user_data_dir', 'cache_dir', 'model_dir', etc.)
-
-        Returns:
-            Path: Path to the requested resource directory
-        """
-        resource_dirs = self.config_manager.get_resource_dirs()
-
+        """Get path to a specific resource directory."""
+        resource_dirs = self._resource_manager.get_all_directories()
         if resource_type not in resource_dirs:
-            raise ValueError(f"Unknown resource type: {resource_type}")
-
+            raise ValueError(f"Unknown resource type: {resource_type}. Available: {list(resource_dirs.keys())}")
         return resource_dirs[resource_type]
-
-    def get_dataset_path(self, dataset_type: str) -> Path:
-        """
-        Get dataset path, using resource directory management.
-
-        Args:
-            dataset_type (str): Type of dataset
-            ('detection', 'segmentation', or 'classification')
-
-        Returns:
-            Path: Path to the dataset directory
-        """
-        # Get dataset directory from resource directories
-        dataset_dir = self.get_resource_dir("dataset_dir")
-
-        # Check if dataset type exists in config
-        if dataset_type not in self._config.datasets.paths:
-            raise ValueError(f"Unknown dataset type: {dataset_type}")
-
-        # Combine dataset directory with specific dataset path
-        dataset_path = dataset_dir / self._config.datasets.paths[dataset_type]
-
-        # Create directory if it doesn't exist
-        dataset_path.mkdir(parents=True, exist_ok=True)
-
-        return dataset_path
-
-    def get_processing_params(self) -> dict[str, Any]:
-        """Get processing parameters for model inference."""
-        return OmegaConf.to_container(self._config.processing, resolve=True)
-
-    def _setup_config_dir(self, config_dir: str | Path | None) -> str:
-        """
-        Set up configuration directory, handling both external and default configs.
-
-        Args:
-            config_dir: External config directory path or None
-
-        Returns:
-            str: Path to the active config directory
-        """
-        if config_dir is None:
-            return str(self.default_config_dir)
-
-        # Convert to absolute path if relative
-        if not os.path.isabs(str(config_dir)):
-            config_dir = os.path.join(str(self.root_dir), str(config_dir))
-
-        # Check if external config directory exists
-        config_dir = str(config_dir)
-        if not os.path.exists(config_dir):
-            print(f"Warning: Config directory {config_dir} not found. Using default configs.")
-            return str(self.default_config_dir)
-
-        # Check for required config structure
-        required_dirs = ["app_settings", "species"]
-        missing_dirs = [d for d in required_dirs if not os.path.exists(os.path.join(config_dir, d))]
-
-        # Check for required files
-        required_files = [
-            os.path.join("app_settings", f"{self.environment}.yaml"),
-            os.path.join("species", "species_classes.yaml"),
-            os.path.join("species", "species_metadata.yaml"),
-            "config.yaml",
-        ]
-        missing_files = [f for f in required_files if not os.path.exists(os.path.join(config_dir, f))]
-
-        if missing_dirs or missing_files:
-            print(f"Warning: Missing required config structure in {config_dir}")
-            if missing_dirs:
-                print(f"Missing directories: {missing_dirs}")
-            if missing_files:
-                print(f"Missing files: {missing_files}")
-            print("Copying default configs to external directory...")
-
-            # Create config directory if it doesn't exist
-            os.makedirs(config_dir, exist_ok=True)
-
-            # Create missing directories
-            for dir_name in missing_dirs:
-                os.makedirs(os.path.join(config_dir, dir_name), exist_ok=True)
-
-            # Copy missing files
-            for file_path in missing_files:
-                src = os.path.join(self.default_config_dir, file_path)
-                dst = os.path.join(config_dir, file_path)
-                # Create parent directories if they don't exist
-                os.makedirs(os.path.dirname(dst), exist_ok=True)
-                if os.path.exists(src):
-                    shutil.copy2(src, dst)
-                    print(f"Copied {file_path} to {config_dir}")
-                else:
-                    print(f"Warning: Default config {file_path} not found")
-
-        return config_dir
 
     @property
     def model_dir(self) -> Path:
-        """Get the weights directory path."""
-        return self.get_resource_dir("model_dir")
+        """Model weights directory."""
+        return self._resource_manager.model_dir
 
     @property
     def weights_dir(self) -> Path:
-        """Get the weights directory path (alias for model_dir)."""
+        """Alias for model_dir."""
         return self.model_dir
 
     @property
     def dataset_dir(self) -> Path:
-        """Get the datasets directory path."""
-        return self.get_resource_dir("dataset_dir")
-
-    @property
-    def datasets_dir(self) -> Path:
-        """Get the datasets directory path (alias for dataset_dir)."""
-        return self.dataset_dir
+        """Datasets directory."""
+        return self._resource_manager.dataset_dir
 
     @property
     def cache_dir(self) -> Path:
-        """Get the cache directory path."""
-        return self.get_resource_dir("cache_dir")
+        """Cache directory."""
+        return self._resource_manager.user_cache_dir
 
     @property
     def config_dir(self) -> Path:
-        """Get the configuration directory path."""
-        return Path(self._config.config_dir).resolve()
+        """Configuration directory."""
+        return Path(self._config_manager.config_path)
 
+    # Species Configuration (lazy loaded)
     @property
     def species_config(self) -> SpeciesConfig:
-        """
-        Get the species configuration.
+        """Species configuration (lazily loaded)."""
+        if self._species_config is None:
+            # Try to load from species directory
+            species_files = [
+                self.config_dir / "species" / "species_classes.yaml",
+                self.config_dir / "species" / "species_metadata.yaml",
+                self.config_dir / "species.yaml"
+            ]
 
-        Returns:
-            SpeciesConfig instance
-        """
-        if not hasattr(self, "_species_config"):
-            self._species_config = SpeciesConfig(self._config)
+            for species_file in species_files:
+                if species_file.exists():
+                    self._species_config = SpeciesConfig.from_yaml(species_file)
+                    break
+
+            if self._species_config is None:
+                # Create default species config
+                self._species_config = SpeciesConfig()
+
         return self._species_config
 
-    def get_model_weights(self, model_type: str) -> Path:
-        """
-        Get the path to model weights for a specific model type.
+    # Dataset Management
+    def get_dataset_path(self, dataset_type: str) -> Path:
+        """Get path to dataset directory for specified type."""
+        dataset_config = self.get_config(f"datasets.{dataset_type}")
+        if not dataset_config:
+            raise ValueError(f"Dataset type '{dataset_type}' not configured")
 
-        Args:
-            model_type: Type of model ('detection', 'segmentation', or 'classification')
-
-        Returns:
-            Path to the model weights
-
-        Raises:
-            ValueError: If model type is not recognized
-        """
-        valid_types = ["detection", "segmentation", "classification"]
-        if model_type not in valid_types:
-            raise ValueError(f"Unknown model type: {model_type}. Must be one of {valid_types}")
-
-        # Get model weights directory
-        weights_dir = self.weights_dir
-
-        # Get model-specific weights path from configuration
-        model_config = None
-
-        # Check if we have datasets configuration with model repositories
-        if hasattr(self._config, "datasets"):
-            # Try to get from specific dataset config
-            if hasattr(self._config.datasets, model_type):
-                dataset_config = getattr(self._config.datasets, model_type)
-                if (
-                    hasattr(dataset_config, "trained_models_repositories")
-                    and dataset_config.trained_models_repositories
-                ):
-                    # Use the first repository as default
-                    model_repo = dataset_config.trained_models_repositories[0]
-                    model_config = model_repo.split("/")[-1]
-
-        # If we have a model config, use it to construct the path
-        if model_config:
-            # Format: model_type/model_name/weights.pt
-            weights_path = weights_dir / model_type / model_config / "weights.pt"
+        if isinstance(dataset_config, dict) and 'path' in dataset_config:
+            dataset_path = dataset_config['path']
         else:
-            # Default path if not specified in config
-            weights_path = weights_dir / model_type / "weights.pt"
+            dataset_path = str(dataset_config)
 
-        # Ensure the directory exists
-        weights_path.parent.mkdir(parents=True, exist_ok=True)
+        # Resolve path relative to dataset directory
+        path = Path(dataset_path)
+        if not path.is_absolute():
+            path = self.dataset_dir / path
+
+        # Create directory if it doesn't exist
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    def list_datasets(self) -> list[str]:
+        """Get list of configured dataset types."""
+        datasets_config = self.get_config("datasets", {})
+        return list(datasets_config.keys()) if datasets_config else []
+
+    def add_dataset(self, dataset_type: str, dataset_path: Union[str, Path]) -> Path:
+        """Add new dataset configuration."""
+        self.set_config(f"datasets.{dataset_type}.path", str(dataset_path))
+        return self.get_dataset_path(dataset_type)
+
+    # Model Management
+    def get_model_weights(self, model_type: str) -> Path:
+        """Get path to model weights file."""
+        # First try to get from models configuration
+        model_config = self.get_config(f"models.{model_type}")
+        if not model_config:
+            # Try predictors configuration
+            model_config = self.get_config(f"predictors.{model_type}")
+
+        if not model_config:
+            raise ValueError(f"Model type '{model_type}' not configured in models or predictors")
+
+        if isinstance(model_config, dict) and 'weights' in model_config:
+            weights_file = model_config['weights']
+        elif isinstance(model_config, dict) and 'model_path' in model_config:
+            weights_file = model_config['model_path']
+        else:
+            weights_file = str(model_config)
+
+        # Resolve path relative to model directory
+        weights_path = Path(weights_file)
+        if not weights_path.is_absolute():
+            weights_path = self.model_dir / weights_path
 
         return weights_path
 
+    def list_model_types(self) -> list[str]:
+        """Get list of available model types."""
+        models_config = self.get_config("models", {})
+        predictors_config = self.get_config("predictors", {})
 
-# Module-level settings instance
-_settings_instance = None
+        model_types = set()
+        if models_config:
+            model_types.update(models_config.keys())
+        if predictors_config:
+            model_types.update(predictors_config.keys())
+
+        return list(model_types)
+
+    def set_model_weights(self, model_type: str, weights_path: Union[str, Path]) -> None:
+        """Set custom weights path for model type."""
+        # Check if it's in models or predictors config
+        if self.get_config(f"models.{model_type}"):
+            self.set_config(f"models.{model_type}.weights", str(weights_path))
+        elif self.get_config(f"predictors.{model_type}"):
+            self.set_config(f"predictors.{model_type}.model_path", str(weights_path))
+        else:
+            # Default to models
+            self.set_config(f"models.{model_type}.weights", str(weights_path))
+
+    # Processing Parameters
+    def get_processing_params(self, model_type: Optional[str] = None) -> Dict[str, Any]:
+        """Get processing parameters for model inference."""
+        if model_type:
+            # Get model-specific params if available
+            model_params = self.get_config(f"models.{model_type}.params", {})
+            predictor_params = self.get_config(f"predictors.{model_type}.params", {})
+            general_params = self.get_config("processing", {})
+
+            # Merge params with model-specific taking precedence
+            merged_params = {**general_params}
+            merged_params.update(model_params)
+            merged_params.update(predictor_params)
+            return merged_params
+        else:
+            return self.get_config("processing", {})
+
+    def set_processing_param(self, param_name: str, value: Any, model_type: Optional[str] = None) -> None:
+        """Set processing parameter."""
+        if model_type:
+            # Determine if it's in models or predictors
+            if self.get_config(f"models.{model_type}"):
+                self.set_config(f"models.{model_type}.params.{param_name}", value)
+            elif self.get_config(f"predictors.{model_type}"):
+                self.set_config(f"predictors.{model_type}.params.{param_name}", value)
+            else:
+                # Default to models
+                self.set_config(f"models.{model_type}.params.{param_name}", value)
+        else:
+            self.set_config(f"processing.{param_name}", value)
+
+    # API Key Management (delegated to ConfigManager)
+    def get_api_key(self, provider: str) -> Optional[str]:
+        """Get API key for external provider."""
+        return self._config_manager.get_api_key(provider)
+
+    def set_api_key(self, provider: str, api_key: str) -> None:
+        """Set API key for provider."""
+        import os
+        env_keys = {
+            "kaggle": "KAGGLE_API_KEY",
+            "huggingface": "HUGGINGFACE_API_KEY",
+            "roboflow": "ROBOFLOW_API_KEY",
+        }
+
+        if provider in env_keys:
+            # Set environment variable
+            os.environ[env_keys[provider]] = api_key
+            # Also save to config
+            self.set_config(f"api_keys.{provider}", api_key)
+        else:
+            raise ValueError(f"Unknown provider: {provider}")
+
+    # Utility Methods (delegated to ResourceManager)
+    @contextmanager
+    def temp_workspace(self, prefix: str = "workspace"):
+        """Context manager for temporary workspaces."""
+        with self._resource_manager.temp_workspace(prefix) as workspace:
+            yield workspace
+
+    def clean_old_files(self, days: int = 5, include_cache: bool = True) -> Dict[str, int]:
+        """Clean up old files."""
+        return self._resource_manager.clean_old_files(days, include_cache)
+
+    def get_disk_usage(self) -> Dict[str, Dict[str, Union[int, str]]]:
+        """Get disk usage statistics."""
+        return self._resource_manager.get_disk_usage()
+
+    # Summary and Validation
+    def get_summary(self) -> Dict[str, Any]:
+        """Get summary of current settings configuration."""
+        return {
+            "config_dir": str(self.config_dir),
+            "is_external_config": self._current_config_dir is not None,
+            "model_dir": str(self.model_dir),
+            "dataset_dir": str(self.dataset_dir),
+            "cache_dir": str(self.cache_dir),
+            "available_models": self.list_model_types(),
+            "available_datasets": self.list_datasets(),
+            "api_keys_configured": [
+                provider for provider in ["kaggle", "huggingface", "roboflow"]
+                if self.get_api_key(provider) is not None
+            ],
+            "disk_usage": self.get_disk_usage()
+        }
+
+    def print_summary(self) -> None:
+        """Print formatted configuration summary."""
+        summary = self.get_summary()
+        print("=== CulicidaeLab Settings Summary ===")
+        for key, value in summary.items():
+            if key == "disk_usage":
+                print(f"{key.replace('_', ' ').title()}:")
+                for dir_name, usage in value.items():
+                    print(f"  {dir_name}: {usage.get('human_readable', 'N/A')}")
+            elif isinstance(value, list):
+                print(f"{key.replace('_', ' ').title()}: {', '.join(value) if value else 'None'}")
+            else:
+                print(f"{key.replace('_', ' ').title()}: {value}")
+
+    def validate_setup(self) -> Dict[str, bool]:
+        """Validate current setup and return status."""
+        results = {}
+
+        # Check directories
+        results["config_dir_exists"] = self.config_dir.exists()
+        results["model_dir_exists"] = self.model_dir.exists()
+        results["dataset_dir_exists"] = self.dataset_dir.exists()
+
+        # Check configuration files
+        required_files = ["config.yaml"]
+        for file_name in required_files:
+            file_path = self.config_dir / file_name
+            results[f"{file_name.replace('.', '_')}_exists"] = file_path.exists()
+
+        # Check if any models are configured
+        results["models_configured"] = len(self.list_model_types()) > 0
+        results["datasets_configured"] = len(self.list_datasets()) > 0
+
+        # Check API keys
+        for provider in ["kaggle", "huggingface", "roboflow"]:
+            results[f"{provider}_api_key_configured"] = self.get_api_key(provider) is not None
+
+        return results
+
+    # Provider configurations
+    def get_provider_config(self, provider: str) -> Dict[str, Any]:
+        """Get provider configuration."""
+        return self._config_manager.get_provider_config(provider)
+
+    # Object instantiation from config
+    def instantiate_from_config(self, config_path: str, **kwargs) -> Any:
+        """Instantiate object from configuration."""
+        return self._config_manager.instantiate_from_config(config_path, **kwargs)
 
 
-def get_settings(config_dir: str | Path | None = None) -> Settings:
+# Global access function
+def get_settings(config_dir: Optional[Union[str, Path]] = None) -> Settings:
     """
-    Get settings instance with optional config directory.
-    This ensures settings are properly initialized with the desired configuration.
-    If no config_dir is provided and an instance already exists, returns the existing instance.
+    Get Settings singleton instance.
+
+    This is the primary way to access Settings throughout the application.
 
     Args:
-        config_dir: Optional path to external config directory
+        config_dir: Optional external configuration directory
 
     Returns:
         Settings instance
+
+    Examples:
+        >>> settings = get_settings()
+        >>> settings.get_model_weights('detection')
+        >>> print(f"Config directory: {settings.config_dir}")
+        >>>
+        >>> # Custom config directory
+        >>> custom_settings = get_settings(config_dir="/path/to/custom/config")
     """
-    global _settings_instance
-
-    # Create or get the settings instance
-    settings = Settings(config_dir)
-
-    # If no config_dir is provided, set as the module-level instance
-    if config_dir is None and _settings_instance is None:
-        _settings_instance = settings
-
-    return settings
+    return Settings(config_dir)

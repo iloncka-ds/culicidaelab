@@ -5,7 +5,6 @@ import torch
 import sys
 import types
 
-# Patch sys.modules to mock missing species_classes_manager before import
 sys.modules["culicidaelab.species_classes_manager"] = types.SimpleNamespace(
     SpeciesClassesManager=Mock(),
 )
@@ -32,7 +31,6 @@ def mock_config(tmp_path):
 
 @pytest.fixture
 def species_yaml(tmp_path):
-    # Write a simple species mapping file
     species_path = tmp_path / "species.yaml"
     species_path.write_text("0: species1\n1: species2\n2: species3\n")
     return species_path
@@ -47,7 +45,6 @@ def mock_config_manager(mock_config):
 
 @pytest.fixture
 def classifier(tmp_path, mock_config, mock_config_manager, species_yaml):
-    # Patch FastAI learner and timm.create_model
     with (
         patch(
             "culicidaelab.predictors.classifier.timm.create_model",
@@ -73,7 +70,6 @@ def test_species_loading(classifier):
 
 def test_predict(classifier):
     dummy_image = np.ones((224, 224, 3), dtype=np.uint8)
-    # Mock learner.predict
     mock_probs = torch.tensor([0.7, 0.2, 0.1])
     classifier.learner = Mock()
     classifier.learner.predict.return_value = ("species1", 0, mock_probs)
@@ -110,7 +106,6 @@ def test_evaluate(classifier):
 def test_evaluate_batch(classifier):
     dummy_images = [np.ones((224, 224, 3), dtype=np.uint8) for _ in range(2)]
     ground_truths = ["species1", "species1"]
-    # Patch learner.predict to always return the same, with pred_idx as a tensor
     classifier.learner = Mock()
     classifier.learner.predict.return_value = (
         "species1",

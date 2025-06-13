@@ -95,13 +95,11 @@ class MosquitoClassifier(BasePredictor):
             ValueError: If configuration parameters are invalid.
         """
         super().__init__(model_path, config_manager, load_model)
-        self._config = self.config_manager.get_config()  # <-- assign to _config, not config
+        self._config = self.config_manager.get_config()
 
-        # Set up model architecture and paths
         self.arch = self.config.classifier.model_arch
         self.data_dir = Path(self.config.data.data_dir) if hasattr(self.config.data, "data_dir") else None
 
-        # Initialize species configuration
         self._load_species_classes()
 
         print(f"Initialized classifier with {self.num_classes} species classes")
@@ -360,7 +358,6 @@ class MosquitoClassifier(BasePredictor):
         if not self.model_loaded:
             self.load_model()
 
-        # Convert numpy arrays to PIL Images for FastAI processing
         print("Converting images to PIL format...")
         images = []
         for img in tqdm(input_data_batch, desc="Converting images"):
@@ -369,7 +366,6 @@ class MosquitoClassifier(BasePredictor):
             else:
                 images.append(Image.fromarray((img * 255).astype(np.uint8)))
 
-        # Get predictions for entire batch using FastAI
         print("Getting model predictions...")
         all_predictions = []
         with torch.no_grad():
@@ -383,7 +379,6 @@ class MosquitoClassifier(BasePredictor):
 
                 all_predictions.extend(batch_preds)
 
-        # Create reverse species mapping for ground truth lookup
         species_to_idx = {v: k for k, v in self.species_map.items()}
 
         def process_evaluation_batch(batch_idx: int) -> dict[str, float]:
@@ -404,9 +399,7 @@ class MosquitoClassifier(BasePredictor):
                 pred_idx, probs = all_predictions[i]
                 ground_truth = ground_truth_batch[i]
 
-                # Convert ground truth to numerical label
                 if ground_truth not in species_to_idx:
-                    # Unknown species - mark as incorrect
                     metrics = {
                         "accuracy": 0.0,
                         "precision": 0.0,
@@ -421,21 +414,18 @@ class MosquitoClassifier(BasePredictor):
 
                 true_label = species_to_idx[ground_truth]
 
-                # Calculate basic metrics
                 correct = true_label == pred_idx
                 accuracy = 1.0 if correct else 0.0
                 precision = 1.0 if correct else 0.0
                 recall = 1.0 if correct else 0.0
                 f1 = 1.0 if correct else 0.0
 
-                # Calculate top-k accuracy
                 top_k = min(5, self.num_classes)
                 top_probs, top_indices = torch.topk(probs, top_k)
 
                 top_1 = 1.0 if true_label == top_indices[0].item() else 0.0
                 top_5 = 1.0 if true_label in top_indices.cpu().numpy() else 0.0
 
-                # Calculate ROC-AUC for this sample
                 try:
                     y_true_bin = label_binarize(
                         [true_label],
@@ -459,7 +449,6 @@ class MosquitoClassifier(BasePredictor):
 
             return self._aggregate_metrics(batch_metrics)
 
-        # Process evaluation batches in parallel
         num_eval_batches = (len(input_data_batch) + batch_size - 1) // batch_size
         batch_indices = range(num_eval_batches)
 
@@ -478,10 +467,8 @@ class MosquitoClassifier(BasePredictor):
                 except Exception as e:
                     print(f"Error processing evaluation batch: {e}")
 
-        # Aggregate final metrics
         final_metrics = self._aggregate_metrics(all_metrics)
 
-        # Calculate overall confusion matrix
         y_true, y_pred = [], []
         for i in range(len(input_data_batch)):
             gt = ground_truth_batch[i]
@@ -521,18 +508,15 @@ class MosquitoClassifier(BasePredictor):
                 "Cannot create learner: data directory not specified or doesn't exist",
             )
 
-        # Create model with timm architecture
         model = timm.create_model(
             self.arch,
             pretrained=True,
             num_classes=self.num_classes,
         )
 
-        # Get configuration parameters
         params = self.config.classifier.params
         input_size = params.input_size
 
-        # Create data block for FastAI
         dblock = DataBlock(
             blocks=(ImageBlock, CategoryBlock),
             get_items=get_image_files,
@@ -542,11 +526,9 @@ class MosquitoClassifier(BasePredictor):
             batch_tfms=aug_transforms(size=input_size),
         )
 
-        # Create data loaders
         batch_size = getattr(self.config.training, "batch_size", 32)
         dls = dblock.dataloaders(self.data_dir, bs=batch_size)
 
-        # Create vision learner
         metrics = getattr(self.config.training, "metrics", ["accuracy"])
         learn = vision_learner(
             dls,
@@ -556,7 +538,6 @@ class MosquitoClassifier(BasePredictor):
             model=model,
         )
 
-        # Export the model
         learn.export(model_path)
         print(f"New learner created and saved to: {model_path}")
 
