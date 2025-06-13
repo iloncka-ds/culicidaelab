@@ -2,8 +2,8 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-class BaseProvider(ABC):
 
+class BaseProvider(ABC):
     @abstractmethod
     def download_dataset(
         self,
@@ -11,7 +11,7 @@ class BaseProvider(ABC):
         save_dir: str | None = None,
         *args,
         **kwargs,
-        ) -> Path:
+    ) -> Path:
         """Download a dataset from HuggingFace.
 
         Args:
