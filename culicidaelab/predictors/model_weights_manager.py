@@ -3,75 +3,97 @@ Model weights management module for CulicidaeLab.
 """
 
 from __future__ import annotations
-
 import os
 import shutil
 from pathlib import Path
 from huggingface_hub import hf_hub_download
+from typing import Optional
 
-from culicidaelab.core.config_manager import ConfigurableComponent
+from culicidaelab.core.settings import Settings
 
 
-class ModelWeightsManager(ConfigurableComponent):
-    """Manages model weights downloading and access."""
+class ModelWeightsManager:
+    """Manages model weights downloading and access in a non-interactive way."""
 
-    def __init__(self, config_manager):
+    def __init__(self, settings: Settings):
         """Initialize the model weights manager."""
-        super().__init__(config_manager)
-        self._config = self.config_manager.get_config()
+        self.settings = settings
 
-    def get_weights(self, model_type: str) -> str:
+    def get_weights_path(self, model_type: str) -> Path:
         """
-        Get model weights, checking local path first and handling remote download.
+        Get the absolute local path to the model weights file.
+
+        This method resolves the path but does not check for existence or download.
 
         Args:
-            model_type: Type of model ('detection', 'segmentation', or 'classification')
+            model_type: The key for the predictor (e.g., 'classifier').
 
         Returns:
-            str: Path to the model weights file
+            The absolute Path to where the model file should be.
+
+        Raises:
+            ValueError: If the model_type or its configuration is not found.
         """
-        if model_type not in self._config.models.weights:
-            raise ValueError(f"Unknown model type: {model_type}")
+        predictor_config = self.settings.get_config(f"predictors.{model_type}")
+        if not predictor_config:
+            raise ValueError(f"Configuration for predictor '{model_type}' not found.")
 
-        config = self._config.models.weights[model_type]
-        local_path = self._get_abs_path(config.local_path)
+        # Use the settings.weights_dir for robust, centralized path management
+        return self.settings.weights_dir / predictor_config.model_path
 
-        if os.path.exists(local_path):
+    def download_weights(self, model_type: str, force: bool = False) -> Path:
+        """
+        Download weights from a Hugging Face repository if they don't exist locally.
+
+        This is an explicit, user-initiated action.
+
+        Args:
+            model_type: The key for the predictor (e.g., 'classifier').
+            force: If True, re-download the weights even if a local file exists.
+
+        Returns:
+            The absolute Path to the downloaded model file.
+
+        Raises:
+            ValueError: If remote repository information is missing in the config.
+            Exception: If the download fails for any reason.
+        """
+        local_path = self.get_weights_path(model_type)
+
+        if local_path.exists() and not force:
+            print(f"Weights for '{model_type}' already exist at: {local_path}")
             return local_path
 
-        print(f"\nModel weights for {model_type} not found at: {local_path}")
-        response = input(f"Would you like to download them from {config.remote_repo}? (y/n): ")
+        predictor_config = self.settings.get_config(f"predictors.{model_type}")
+        repo_id = predictor_config.repository_id
+        filename = predictor_config.filename
 
-        if response.lower() != "y":
-            raise FileNotFoundError(
-                f"Model weights not found and download was declined. "
-                f"Please place the weights file at: {local_path}",
+        if not repo_id or not filename:
+            raise ValueError(
+                f"Cannot download weights for '{model_type}'. "
+                f"Missing 'repository_id' or 'filename' in configuration."
             )
 
-        return self._download_weights(config, local_path)
-
-    def _download_weights(self, config, local_path: str | Path) -> str:
-        """Download weights from remote repository."""
+        print(f"Downloading weights for '{model_type}' from repo '{repo_id}'...")
         try:
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            # Create the parent directory if it doesn't exist
+            local_path.parent.mkdir(parents=True, exist_ok=True)
 
-            downloaded_path = hf_hub_download(
-                repo_id=config.remote_repo,
-                filename=config.remote_file,
-                local_dir=os.path.dirname(local_path),
+            # hf_hub_download handles caching and temporary files gracefully
+            downloaded_path_str = hf_hub_download(
+                repo_id=repo_id,
+                filename=filename,
+                cache_dir=self.settings.cache_dir / "huggingface",
+                force_download=force,
             )
 
-            if downloaded_path != local_path:
-                shutil.move(downloaded_path, local_path)
+            # Copy the file from the cache to the desired final location
+            shutil.copy(downloaded_path_str, local_path)
 
             print(f"Successfully downloaded weights to: {local_path}")
             return local_path
         except Exception as e:
-            raise Exception(f"Failed to download weights: {str(e)}")
-
-    def _get_abs_path(self, path: str | Path) -> Path:
-        """Convert relative path to absolute path."""
-        path = Path(path)
-        if not path.is_absolute():
-            path = self._config.paths.root_dir / path
-        return path
+            # Clean up a potentially partial file on failure
+            if local_path.exists():
+                local_path.unlink()
+            raise Exception(f"Failed to download weights for '{model_type}': {e}")

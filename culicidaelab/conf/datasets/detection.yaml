@@ -1,7 +1,14 @@
-defaults:
-  repository: "iloncka/mosquito-species-detection-dataset"
-  dataset_name: "detection"
-  dataset_metadata: None
-  dataset_dir: "datasets"
-  trained_models_repositories:
-    - "iloncka/culico-net-det-v1"
+# defaults:
+#   repository: "iloncka/mosquito-species-detection-dataset"
+#   dataset_name: "detection"
+#   dataset_metadata: None
+#   dataset_dir: "datasets"
+#   trained_models_repositories:
+#     - "iloncka/culico-net-det-v1"
+name: "mosquito-detection"
+path: "datasets/detection"
+format: "yolo"
+classes: ["mosquito"]
+repository: "iloncka/mosquito-species-detection-dataset"
+trained_models_repositories:
+  - "iloncka/culico-net-det-v1"

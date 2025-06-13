@@ -4,11 +4,12 @@ CulicidaeLab - A Python library for mosquito detection, segmentation, and classi
 
 from __future__ import annotations
 
-from .core.config_manager import ConfigManager, ConfigurableComponent
+from .core.config_manager import ConfigManager
 from .core.resource_manager import ResourceManager
 from .core.settings import Settings, get_settings
 from .core.species_config import SpeciesConfig
 from .core.utils import download_file, default_progress_callback
+from .core.config_models import CulicidaeLabConfig
 
 from .core.base_predictor import BasePredictor
 from .predictors.classifier import MosquitoClassifier
@@ -28,7 +29,7 @@ from .providers.huggingface_provider import HuggingFaceProvider
 
 __all__ = [
     "ConfigManager",
-    "ConfigurableComponent",
+    # "ConfigurableComponent",
     "ResourceManager",
     "Settings",
     "SpeciesConfig",
@@ -46,6 +47,9 @@ __all__ = [
     # 'KaggleProvider',
     # 'RemoteURLProvider',
     # 'RoboflowProvider',
+    "SpeciesConfig",
+    "get_settings",
+    "CulicidaeLabConfig",
 ]
 
 

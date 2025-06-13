@@ -16,7 +16,6 @@ import cv2
 import numpy as np
 import timm
 import torch
-import yaml
 from fastai.vision.all import (
     CategoryBlock,
     CrossEntropyLossFlat,
@@ -37,7 +36,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
 from culicidaelab.core.base_predictor import BasePredictor
-from culicidaelab.core.config_manager import ConfigManager
+from culicidaelab.core.settings import Settings
 
 
 @contextmanager
@@ -62,86 +61,32 @@ def set_posix_windows():
 
 
 class MosquitoClassifier(BasePredictor):
-    """Mosquito species classifier using FastAI and timm models.
-
-    This class provides functionality for classifying mosquito species from images
-    using deep learning models. It supports both single image and batch prediction,
-    visualization of results, and comprehensive evaluation metrics.
-
-    Attributes:
-        arch (str): Model architecture name from timm.
-        data_dir (Path): Directory containing training data.
-        species_map (dict): Mapping from class indices to species names.
-        num_classes (int): Number of species classes.
-        learner: FastAI learner instance.
-    """
+    """Mosquito species classifier using FastAI and timm models."""
 
     def __init__(
         self,
-        model_path: str | Path,
-        config_manager: ConfigManager,
+        settings: Settings,
         load_model: bool = False,
     ) -> None:
-        """Initialize the mosquito classifier.
+        """
+        Initialize the mosquito classifier.
 
         Args:
-            model_path: Path to pre-trained model weights (.pkl file).
-            config_manager: Configuration manager instance containing model settings.
-            load_model: Whether to load the model immediately during initialization.
-                Defaults to False for lazy loading.
-
-        Raises:
-            FileNotFoundError: If species classes file is not found.
-            ValueError: If configuration parameters are invalid.
+            settings: The main Settings object for the library.
+            load_model: Whether to load the model immediately.
         """
-        super().__init__(model_path, config_manager, load_model)
-        self._config = self.config_manager.get_config()
+        # CHANGED: This now calls the new BasePredictor.__init__
+        # It passes the settings object and identifies itself as the "classifier".
+        super().__init__(settings=settings, predictor_type="classifier", load_model=load_model)
 
-        self.arch = self.config.classifier.model_arch
+        self.arch = self.config.model_arch
         self.data_dir = Path(self.config.data.data_dir) if hasattr(self.config.data, "data_dir") else None
-
-        self._load_species_classes()
+        self.species_map = self.settings.species_config.species_map
+        self.num_classes = len(self.species_map)
 
         print(f"Initialized classifier with {self.num_classes} species classes")
         print(f"Using architecture: {self.arch}")
 
-    def _load_species_classes(self) -> None:
-        """Load species classes from YAML configuration file.
-
-        Reads the species classes configuration and creates a mapping from
-        class indices to species names.
-
-        Raises:
-            FileNotFoundError: If the species classes file doesn't exist.
-            yaml.YAMLError: If the YAML file is malformed.
-        """
-        species_config_path = Path(self.config.classifier.params.species_classes)
-
-        # Make path absolute if relative
-        if not species_config_path.is_absolute():
-            species_config_path = self.config_manager.get_config().paths.root_dir / species_config_path
-
-        if not species_config_path.exists():
-            raise FileNotFoundError(
-                f"Species classes file not found: {species_config_path}",
-            )
-
-        try:
-            with open(species_config_path, encoding="utf-8") as f:
-                species_data = yaml.safe_load(f)
-
-            # Extract species mapping - assuming format: {0: 'species_name', 1: 'other_species', ...}
-            if isinstance(species_data, dict):
-                self.species_map = {int(k): str(v) for k, v in species_data.items()}
-            elif isinstance(species_data, list):
-                self.species_map = {i: str(species) for i, species in enumerate(species_data)}
-            else:
-                raise ValueError("Species classes file must contain a dict or list")
-
-            self.num_classes = len(self.species_map)
-
-        except yaml.YAMLError as e:
-            raise yaml.YAMLError(f"Error parsing species classes YAML: {e}")
 
     def _load_model(self) -> None:
         """Load the FastAI model with timm backbone.
@@ -560,5 +505,5 @@ class MosquitoClassifier(BasePredictor):
         Returns:
             Class index if species exists, None otherwise.
         """
-        species_to_idx = {v: k for k, v in self.species_map.items()}
-        return species_to_idx.get(species_name)
+        return self.settings.species_config.get_index_by_species(species_name)
+

@@ -8,34 +8,43 @@ import numpy as np
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
-from .config_manager import ConfigurableComponent, ConfigManager
+from .settings import Settings
 
 
-class BasePredictor(ConfigurableComponent, ABC):
+class BasePredictor(ABC):
     """
     Abstract base class for all predictors (detector, segmenter, classifier).
-    Defines common interface that all predictors must implement.
+    It depends on the main Settings object for configuration.
     """
 
     def __init__(
         self,
-        model_path: str | Path,
-        config_manager: ConfigManager,
+        settings: Settings,
+        predictor_type: str,
         load_model: bool = False,
     ):
         """
-        Initialize the predictor.
+        Initialize the predictor using the global Settings object.
 
         Args:
-            model_path: Path to the model weights
-            config_manager: Configuration manager instance
-            load_model: If True, loads model immediately. If False, delays loading until explicitly called.
+            settings: The main Settings object for the library.
+            predictor_type: The key for this predictor in the configuration (e.g., 'classifier').
+            load_model: If True, loads model immediately.
         """
-        super().__init__(config_manager)
-        self.model_path = Path(model_path)
+        self.settings = settings
+        self.predictor_type = predictor_type
+
+        # The base class now fetches the specific config block for the child.
+        self.config = self.settings.get_config(f"predictors.{self.predictor_type}")
+        if self.config is None:
+            raise ValueError(f"Configuration for predictor '{self.predictor_type}' not found.")
+
+        # The base class also gets the model path.
+        self.model_path = self.settings.get_model_weights(self.predictor_type)
+
         self.model_loaded = False
         if load_model:
-            self._load_model()
+            self.load_model()
 
     @abstractmethod
     def _load_model(self) -> None:
