@@ -12,11 +12,13 @@ import tempfile
 import time
 import logging
 from pathlib import Path
-from contextlib import contextmanager
-import appdirs
-import toml
 from threading import Lock
 import hashlib
+from contextlib import contextmanager
+from typing import Union
+import appdirs
+import toml
+
 
 logger = logging.getLogger(__name__)
 
@@ -510,7 +512,7 @@ class ResourceManager:
             "file_count": file_count,
         }
 
-    def _format_bytes(self, bytes_count: int) -> str:
+    def _format_bytes(self, bytes_count: Union[int, float]) -> str:
         """
         Format bytes into human-readable string.
 
@@ -520,11 +522,15 @@ class ResourceManager:
         Returns:
             Human-readable size string.
         """
-        for unit in ["B", "KB", "MB", "GB", "TB"]:
-            if bytes_count < 1024.0:
+        if bytes_count is None:
+            raise ValueError("bytes_count must not be None")
+
+        units = ["B", "KB", "MB", "GB", "TB", "PB"]
+        for unit in units:
+            if bytes_count < 1024:
                 return f"{bytes_count:.1f} {unit}"
-            bytes_count /= 1024.0
-        return f"{bytes_count:.1f} PB"
+            bytes_count /= 1024
+        return f"{bytes_count:.1f} {units[-1]}"
 
     def _sanitize_name(self, name: str) -> str:
         """
