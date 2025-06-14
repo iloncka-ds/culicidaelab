@@ -11,13 +11,15 @@ from sam2.build_sam import build_sam2
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 from pathlib import Path
 from culicidaelab.core.base_predictor import BasePredictor
-from culicidaelab.core.config_manager import ConfigManager
+from culicidaelab.core.settings import Settings
+from culicidaelab.core.utils import str_to_bgr
 
 
 class MosquitoSegmenter(BasePredictor):
     """Class for segmenting mosquitos in images using SAM."""
 
-    def __init__(self, model_path: str | Path, config_manager: ConfigManager) -> None:
+    def __init__(self, settings: Settings,
+                load_model: bool = False) -> None:
         """
         Initialize the mosquito segmenter.
 
@@ -25,16 +27,17 @@ class MosquitoSegmenter(BasePredictor):
             model_path: Path to SAM model checkpoint
             config_manager: Configuration manager instance
         """
-        super().__init__(model_path, config_manager)
-        self._config = self.config_manager.get_config()
-        self.predictor = None
+        super().__init__(settings=settings,
+                         predictor_type="segmenter",
+                         load_model=load_model)
 
     def _load_model(self) -> None:
         """Load the SAM model."""
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        sam_config_path = self._config.model.sam_config_path
-        sam2_model = build_sam2(sam_config_path, self.model_path, device=self.device)
-        self.predictor = SAM2ImagePredictor(sam2_model)
+
+        sam2_model = build_sam2(self.config.sam_config_path,
+                                self.model_path,
+                                device=self.config.device)
+        self._model = SAM2ImagePredictor(sam2_model)
 
     def predict(
         self,
@@ -59,14 +62,18 @@ class MosquitoSegmenter(BasePredictor):
         elif input_data.shape[2] == 4:
             input_data = cv2.cvtColor(input_data, cv2.COLOR_RGBA2RGB)
 
-        self.predictor.set_image(input_data)
+        self._model.set_image(input_data)
 
         if detection_boxes:
             masks = []
             for box in detection_boxes:
                 x, y, w, h, _ = box
-                input_box = np.array([x, y, x + w, y + h])
-                mask, _, _ = self.predictor.predict(
+                x1 = int(x - w / 2)
+                y1 = int(y - h / 2)
+                x2 = int(x + w / 2)
+                y2 = int(y + h / 2)
+                input_box = np.array([x1, y1, x2, y2])
+                mask, _, _ = self._model.predict(
                     point_coords=None,
                     point_labels=None,
                     box=input_box[None, :],
@@ -75,7 +82,7 @@ class MosquitoSegmenter(BasePredictor):
                 masks.append(mask)
             return np.logical_or.reduce(masks) if masks else np.zeros(input_data.shape[:2], dtype=bool)
 
-        masks = self.predictor.generate()
+        masks = self._model.generate()
         return (
             np.logical_or.reduce([m["segmentation"] for m in masks])
             if masks
@@ -102,9 +109,9 @@ class MosquitoSegmenter(BasePredictor):
         overlay = input_data.copy()
         overlay[predictions] = cv2.addWeighted(
             overlay[predictions],
-            self._config.visualization.alpha,
-            np.array(self._config.visualization.overlay_color),
-            1 - self._config.visualization.alpha,
+            self.config.visualization["alpha"],
+            np.array(str_to_bgr(self.config.visualization["overlay_color"])),
+            1 - self.config.visualization["alpha"],
             0,
         )
 

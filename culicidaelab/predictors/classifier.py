@@ -39,6 +39,7 @@ from culicidaelab.core.base_predictor import BasePredictor
 from culicidaelab.core.settings import Settings
 
 
+
 @contextmanager
 def set_posix_windows():
     """Context manager to handle path compatibility between Windows and POSIX systems.
@@ -67,6 +68,7 @@ class MosquitoClassifier(BasePredictor):
         self,
         settings: Settings,
         load_model: bool = False,
+
     ) -> None:
         """
         Initialize the mosquito classifier.
@@ -77,16 +79,17 @@ class MosquitoClassifier(BasePredictor):
         """
         # CHANGED: This now calls the new BasePredictor.__init__
         # It passes the settings object and identifies itself as the "classifier".
-        super().__init__(settings=settings, predictor_type="classifier", load_model=load_model)
+        super().__init__(settings=settings,
+                         predictor_type="classifier",
+                         load_model=load_model)
 
         self.arch = self.config.model_arch
-        self.data_dir = Path(self.config.data.data_dir) if hasattr(self.config.data, "data_dir") else None
+        self.data_dir = self.settings.dataset_dir
         self.species_map = self.settings.species_config.species_map
         self.num_classes = len(self.species_map)
 
         print(f"Initialized classifier with {self.num_classes} species classes")
         print(f"Using architecture: {self.arch}")
-
 
     def _load_model(self) -> None:
         """Load the FastAI model with timm backbone.
@@ -97,6 +100,7 @@ class MosquitoClassifier(BasePredictor):
         Raises:
             Exception: If model loading fails and a new learner cannot be created.
         """
+
         with set_posix_windows():
             try:
                 print(f"Loading model from: {self.model_path}")
@@ -149,7 +153,7 @@ class MosquitoClassifier(BasePredictor):
         species_probs.sort(key=lambda x: x[1], reverse=True)
 
         # Return top predictions based on config
-        top_k = getattr(self.config.model, "top_k", 5)
+        top_k = getattr(self.config.params, "top_k", 5)
         return species_probs[:top_k]
 
     def visualize(
@@ -506,4 +510,3 @@ class MosquitoClassifier(BasePredictor):
             Class index if species exists, None otherwise.
         """
         return self.settings.species_config.get_index_by_species(species_name)
-

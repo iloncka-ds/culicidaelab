@@ -11,8 +11,17 @@
 #     stability_score_thresh: 0.95
 _target_: "culicidaelab.predictors.Segmenter"
 model_path: "weights/segmentation/sam2.1_hiera_tiny.pt"
+repository_id: "iloncka/culico-net-segm-v1-nano"
+filename: "sam2.1_hiera_tiny.pt"
+sam_config_path: "weights/segmentation/sam2.1_hiera_t.yaml"
+sam_config_filename: "sam2.1_hiera_t.yaml"
+visualization:
+  overlay_color: "#F00F00"
+  alpha: 0.7
+  format: "png"
+  dpi: 300
 confidence: 0.5 # Default confidence
-device: "auto"
+device: "cpu"
 params:
   points_per_side: 32
   pred_iou_thresh: 0.88
