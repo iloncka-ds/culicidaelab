@@ -15,7 +15,7 @@ model_path: "weights/classification/culico-net-cls-v1-17.pkl"
 repository_id: "iloncka/culico-net-cls-v1"
 filename: "culico-net-cls-v1-17.pkl"
 confidence: 0.5
-device: "auto"
+device: "cpu"
 params:
   input_size: 224
   mean: [0.485, 0.456, 0.406]

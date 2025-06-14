@@ -9,6 +9,7 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 from .settings import Settings
+from .model_weights_manager import ModelWeightsManager
 
 
 class BasePredictor(ABC):
@@ -33,14 +34,14 @@ class BasePredictor(ABC):
         """
         self.settings = settings
         self.predictor_type = predictor_type
+        weights_manager = ModelWeightsManager(self.settings)
+        # The ensure_weights method returns the validated path.
+        self.model_path = weights_manager.ensure_weights(self.predictor_type)
 
         # The base class now fetches the specific config block for the child.
         self.config = self.settings.get_config(f"predictors.{self.predictor_type}")
         if self.config is None:
             raise ValueError(f"Configuration for predictor '{self.predictor_type}' not found.")
-
-        # The base class also gets the model path.
-        self.model_path = self.settings.get_model_weights(self.predictor_type)
 
         self.model_loaded = False
         if load_model:
