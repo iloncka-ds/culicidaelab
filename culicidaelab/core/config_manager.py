@@ -66,7 +66,8 @@ class ConfigManager:
                     if data is None:  # Handle empty YAML files
                         continue
 
-                # Create nested structure based on file path, e.g., 'datasets/classification.yaml' -> {'datasets': {'classification': ...}}
+                # Create nested structure based on file path,
+                # # e.g., 'datasets/classification.yaml' -> {'datasets': {'classification': ...}}
                 relative_path = yaml_file.relative_to(config_dir)
                 keys = list(relative_path.parts[:-1]) + [relative_path.stem]
 
