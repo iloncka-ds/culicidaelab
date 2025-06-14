@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch
-from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
+from culicidaelab.core.model_weights_manager import ModelWeightsManager
 
 
 @pytest.fixture

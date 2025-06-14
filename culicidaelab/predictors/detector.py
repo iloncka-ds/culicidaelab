@@ -10,47 +10,46 @@ from ultralytics import YOLO
 from typing import Any
 from pathlib import Path
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from tqdm import tqdm
 
 from culicidaelab.core.base_predictor import BasePredictor
-from culicidaelab.core.config_manager import ConfigManager
-
-
+from culicidaelab.core.settings import Settings
+from culicidaelab.core.utils import str_to_bgr
 logger = logging.getLogger(__name__)
 
 
 class MosquitoDetector(BasePredictor):
     """Class for detecting mosquitos in images using YOLO."""
 
-    def __init__(self, model_path: str | Path, config_manager: ConfigManager) -> None:
+    def __init__(self, settings: Settings,
+                load_model: bool = False,) -> None:
         """
         Initialize the mosquito detector.
-
         Args:
-            model_path: Path to pre-trained YOLO model weights
-            config_manager: Configuration manager instance
+            settings: The main Settings object for the library.
+            load_model: Whether to load the model immediately.
+
         """
-        super().__init__(model_path, config_manager=config_manager)
+        super().__init__(settings=settings, predictor_type="detector", load_model=load_model)
 
-        self.load_config(config_path=None)
-
-        if self.config is None or not hasattr(self.config, "model"):
-            raise ValueError(
-                "Detector configuration is missing or does not have a 'model' section. "
-                "Ensure ConfigManager is correctly set up and 'detector' config is available.",
-            )
-
-        self.confidence_threshold = self.config.model.confidence_threshold
-        self._model: YOLO | None = None
+        self.confidence_threshold = self.config.confidence
 
     def _load_model(self) -> None:
         """Load the YOLO model."""
-        logger.info(f"Loading YOLO model from: {self.model_path}")
-        self._model = YOLO(str(self.model_path))
-        if hasattr(self.config.model, "device") and self.config.model.device:
-            logger.info(f"Moving model to device: {self.config.model.device}")
-            self._model.to(self.config.model.device)
-        self.model_loaded = True
-        logger.info("YOLO model loaded successfully.")
+        try:
+            logger.info(f"Loading YOLO model from: {self.model_path}")
+            print(self.model_path)
+            self._model = YOLO(str(self.model_path), task="detect")
+            if hasattr(self.config, "device") and self.config.device:
+                logger.info(f"Moving model to device: {self.config.device}")
+                print(self.config.device)
+                self._model.to(self.config.device)
+            self.model_loaded = True
+            logger.info("YOLO model loaded successfully.")
+        except Exception as e:
+            logger.error(f"Failed to load YOLO model: {e}", exc_info=True)
+            raise RuntimeError(f"Could not load YOLO model from {self.model_path}.") from e
 
     def predict(self, input_data: np.ndarray) -> list[tuple[float, float, float, float, float]]:
         """
@@ -66,8 +65,8 @@ class MosquitoDetector(BasePredictor):
         results = self._model(
             input_data,
             conf=self.confidence_threshold,
-            iou=self.config.model.iou_threshold,
-            max_det=self.config.model.max_detections,
+            iou=self.config.params["iou_threshold"],
+            max_det=self.config.params["max_detections"],
         )
 
         detections: list[tuple[float, float, float, float, float]] = []
@@ -99,21 +98,20 @@ class MosquitoDetector(BasePredictor):
             x2 = int(x + w / 2)
             y2 = int(y + h / 2)
 
-            box_color_bgr = self.config.visualization.box_color
-            if isinstance(box_color_bgr, str):
-                hex_color = box_color_bgr.lstrip("#")
-                box_color_bgr = tuple(int(hex_color[i : i + 2], 16) for i in (4, 2, 0))
 
-            cv2.rectangle(vis_img, (x1, y1), (x2, y2), box_color_bgr, self.config.visualization.box_thickness)
+            box_color_bgr = str_to_bgr(self.config.visualization["box_color"])
+
+            cv2.rectangle(vis_img, (x1, y1), (x2, y2), box_color_bgr,
+                          self.config.visualization["box_thickness"])
             text = f"{conf:.2f}"
             cv2.putText(
                 vis_img,
                 text,
                 (x1, y1 - 5),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                self.config.visualization.font_scale,
-                self.config.visualization.text_color,
-                self.config.visualization.text_thickness,
+                self.config.visualization["font_scale"],
+                str_to_bgr(self.config.visualization["text_color"]),
+                self.config.visualization["text_thickness"],
             )
         if save_path:
             cv2.imwrite(str(save_path), cv2.cvtColor(vis_img, cv2.COLOR_RGB2BGR))
@@ -150,7 +148,7 @@ class MosquitoDetector(BasePredictor):
         gt_matched = [False] * len(ground_truth)
         all_ious_for_mean = []
 
-        iou_threshold = self.config.evaluation.get("iou_threshold", 0.5)
+        iou_threshold = self.config.params.get("iou_threshold", 0.5)
 
         for i, pred_box_with_conf in enumerate(predictions_sorted):
             pred_box = pred_box_with_conf[:4]
@@ -230,15 +228,15 @@ class MosquitoDetector(BasePredictor):
 
         # 1. Get all predictions using YOLO's batching
         all_predictions_batched: list[list[tuple[float, float, float, float, float]]] = []
-        yolo_predict_batch_size = self.config.model.get("predict_batch_size", batch_size)
+        yolo_predict_batch_size = self.config.get("predict_batch_size", batch_size)
 
         for i in range(0, len(input_data_batch), yolo_predict_batch_size):
             current_input_batch = input_data_batch[i : i + yolo_predict_batch_size]
             yolo_results = self._model(
                 current_input_batch,
                 conf=self.confidence_threshold,
-                iou=self.config.model.iou_threshold,
-                max_det=self.config.model.max_detections,
+                iou=self.config.params["iou_threshold"],
+                max_det=self.config.params["max_detections"],
             )
             for r_idx, r in enumerate(yolo_results):
                 detections = []
@@ -254,9 +252,6 @@ class MosquitoDetector(BasePredictor):
                 all_predictions_batched.append(detections)
 
         per_image_metrics_list = []
-
-        from concurrent.futures import ThreadPoolExecutor, as_completed
-        from tqdm import tqdm
 
         def evaluate_single_with_preds(idx: int) -> dict[str, float]:
             def _calculate_metrics_from_predictions(
@@ -383,3 +378,4 @@ class MosquitoDetector(BasePredictor):
         union = area1 + area2 - intersection
 
         return float(intersection / union) if union > 0 else 0.0
+    

@@ -15,7 +15,7 @@ from .core.base_predictor import BasePredictor
 from .predictors.classifier import MosquitoClassifier
 from .predictors.detector import MosquitoDetector
 from .predictors.segmenter import MosquitoSegmenter
-from .predictors.model_weights_manager import ModelWeightsManager
+from .core.model_weights_manager import ModelWeightsManager
 
 from .datasets.datasets_manager import DatasetsManager
 from .datasets.huggingface import HuggingFaceDatasetLoader
@@ -50,6 +50,7 @@ __all__ = [
     "SpeciesConfig",
     "get_settings",
     "CulicidaeLabConfig",
+    
 ]
 
 
