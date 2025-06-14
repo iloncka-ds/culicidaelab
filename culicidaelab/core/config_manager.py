@@ -1,14 +1,14 @@
 import yaml
 from importlib import resources
 from pathlib import Path
-from typing import Any, Dict
-from omegaconf import OmegaConf, DictConfig
+from typing import Any, Dict, TypeVar
+from omegaconf import OmegaConf
 from pydantic import ValidationError
 
 from .config_models import CulicidaeLabConfig
-from typing import Generic, TypeVar
 
 T = TypeVar("T")
+
 
 def _deep_merge(source: Dict, destination: Dict) -> Dict:
     """Recursively merge two dictionaries. Source values overwrite destination."""
@@ -19,6 +19,7 @@ def _deep_merge(source: Dict, destination: Dict) -> Dict:
         else:
             destination[key] = value
     return destination
+
 
 class ConfigManager:
     """
@@ -48,7 +49,8 @@ class ConfigManager:
                 return dev_path
             raise FileNotFoundError(
                 "Could not find the default 'conf' directory. "
-                "Ensure the 'culicidaelab' package is installed correctly or you are in the project root."
+                "Ensure the 'culicidaelab' package is installed correctly or "
+                "you are in the project root."
             )
 
     def _load_config_from_dir(self, config_dir: Path) -> Dict[str, Any]:
@@ -73,7 +75,7 @@ class ConfigManager:
                     d = d.setdefault(key, {})
                 d[keys[-1]] = data
             except Exception as e:
-                print(f"Warning: Could not load or parse {yaml_file}: {e}")
+                print("Warning: Could not load or parse {}: {}".format(yaml_file, e))
 
         return config_dict
 
@@ -93,7 +95,7 @@ class ConfigManager:
             validated_config = CulicidaeLabConfig(**merged_config)
             return validated_config
         except ValidationError as e:
-            print(f"FATAL: Configuration validation failed. Please check your YAML files or environment variables.")
+            print("FATAL: Configuration validation failed. Please check your YAML files or environment variables.")
             print(e)
             raise
 
@@ -129,7 +131,7 @@ class ConfigManager:
             Instantiated object.
         """
         if not hasattr(config_obj, "target_"):
-            raise ValueError(f"Target key '_target_' not found in configuration object")
+            raise ValueError("Target key '_target_' not found in configuration object")
 
         target_path = config_obj.target_
 
@@ -147,4 +149,3 @@ class ConfigManager:
             return cls(**config_params)
         except (ValueError, ImportError, AttributeError) as e:
             raise ImportError(f"Could not import and instantiate '{target_path}': {e}")
-

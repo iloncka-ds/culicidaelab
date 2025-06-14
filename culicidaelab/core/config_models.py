@@ -89,7 +89,7 @@ class ProcessingConfig(BaseModel):
 class PredictorConfig(BaseModel):
     """Configuration for a single predictor."""
 
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(extra="allow", protected_namespaces=())
 
     target_: str = Field(..., alias="_target_")
     model_path: str
