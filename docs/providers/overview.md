@@ -38,11 +38,11 @@ providers:
   huggingface:
     api_key: "your_hf_api_key"
     provider_url: "https://huggingface.co/api/datasets/{dataset_name}"
-  
+
   kaggle:
     api_key: "your_kaggle_api_key"
     username: "your_kaggle_username"
-  
+
   roboflow:
     api_key: "your_roboflow_api_key"
     workspace: "your_workspace"

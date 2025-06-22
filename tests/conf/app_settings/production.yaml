@@ -1,4 +1,0 @@
-base_dirs:
-  cache: "../production/cache"
-  weights: "../production/weights"
-  datasets: "../production/datasets"

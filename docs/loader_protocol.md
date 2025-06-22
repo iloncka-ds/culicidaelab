@@ -56,17 +56,17 @@ Load a dataset from the specified path.
    ```python
    from typing import Any
    from culicidaelab.core.loader_protocol import DatasetLoader
-   
+
    class MyDatasetLoader:
        def load_dataset(self, path: str, split: str | None = None, **kwargs) -> Any:
            """
            Load a dataset from the given path.
-           
+
            Args:
                path: Path to the dataset or dataset identifier
                split: Dataset split to load (e.g., 'train', 'val', 'test')
                **kwargs: Additional arguments
-               
+
            Returns:
                The loaded dataset
            """
@@ -80,18 +80,18 @@ Load a dataset from the specified path.
    from typing import Dict, List
    from dataclasses import dataclass
    from culicidaelab.core.loader_protocol import DatasetLoader
-   
+
    @dataclass
    class DataPoint:
        image: bytes
        label: int
        metadata: Dict[str, Any]
-   
+
    class TypedDatasetLoader:
        def load_dataset(
-           self, 
-           path: str, 
-           split: str | None = None, 
+           self,
+           path: str,
+           split: str | None = None,
            **kwargs
        ) -> List[DataPoint]:
            """Load and return a list of typed data points."""
@@ -136,19 +136,19 @@ from culicidaelab.core.loader_protocol import DatasetLoader
 
 class ImageDatasetLoader:
     """Loader for image classification datasets."""
-    
+
     def __init__(self, image_size: tuple[int, int] = (224, 224)):
         self.image_size = image_size
-    
+
     def load_dataset(
-        self, 
-        path: str, 
-        split: str | None = None, 
+        self,
+        path: str,
+        split: str | None = None,
         **kwargs
     ) -> List[Dict[str, Any]]:
         """
         Load images from a directory structure:
-        
+
         path/
           class1/
             img1.jpg
@@ -159,22 +159,22 @@ class ImageDatasetLoader:
         """
         path = Path(path)
         data = []
-        
+
         # If split is specified, look in a subdirectory
         if split:
             path = path / split
-        
+
         # Load images from class directories
         for class_dir in path.iterdir():
             if not class_dir.is_dir():
                 continue
-                
+
             class_name = class_dir.name
             for img_path in class_dir.glob('*.jpg'):
                 try:
                     img = Image.open(img_path).convert('RGB')
                     img = img.resize(self.image_size)
-                    
+
                     data.append({
                         'image': np.array(img),
                         'label': class_name,
@@ -182,7 +182,7 @@ class ImageDatasetLoader:
                     })
                 except Exception as e:
                     print(f"Error loading {img_path}: {e}")
-        
+
         return data
 ```
 
@@ -194,21 +194,21 @@ from culicidaelab.core.loader_protocol import DatasetLoader
 
 class CSVDatasetLoader:
     """Loader for tabular datasets in CSV format."""
-    
+
     def load_dataset(
-        self, 
-        path: str, 
-        split: str | None = None, 
+        self,
+        path: str,
+        split: str | None = None,
         **kwargs
     ) -> List[Dict[str, Any]]:
         """
         Load data from a CSV file.
-        
+
         Args:
             path: Path to the CSV file
             split: Optional split name (e.g., 'train', 'test')
             **kwargs: Additional arguments passed to pandas.read_csv()
-            
+
         Returns:
             List of dictionaries, one per row in the CSV
         """

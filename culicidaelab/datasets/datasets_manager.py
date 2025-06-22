@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
 from ..core.settings import Settings
 from ..core.config_models import DatasetConfig
@@ -26,7 +26,7 @@ class DatasetsManager:
         """
         self.settings = settings
         self.dataset_loader = dataset_loader
-        self.loaded_datasets: Dict[str, Any] = {}
+        self.loaded_datasets: dict[str, Any] = {}
 
     def get_dataset_info(self, dataset_name: str) -> DatasetConfig:
         """
@@ -106,6 +106,6 @@ class DatasetsManager:
         """
         if dataset_name not in self.loaded_datasets:
             raise KeyError(
-                f"Dataset '{dataset_name}' has not been loaded. " f"Call `load_dataset('{dataset_name}')` first."
+                f"Dataset '{dataset_name}' has not been loaded. " f"Call `load_dataset('{dataset_name}')` first.",
             )
         return self.loaded_datasets[dataset_name]

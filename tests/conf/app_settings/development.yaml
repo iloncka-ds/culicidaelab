@@ -1,4 +1,0 @@
-base_dirs:
-  cache: "../development/cache"
-  weights: "../development/weights"
-  datasets: "../development/datasets"

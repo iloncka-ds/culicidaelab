@@ -1,7 +1,0 @@
-defaults:
-  repository: "iloncka/mosquito-species-segmentation-dataset"
-  dataset_name: "segmentation"
-  dataset_metadata: None
-  dataset_dir: "datasets"
-  trained_models_repositories:
-    - "iloncka/culico-net-segm-v1"

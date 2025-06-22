@@ -113,7 +113,7 @@ species:
     - "aedes_aegypti"
     - "anopheles_gambiae"
     - "culex_quinquefasciatus"
-  
+
   metadata:  # Optional metadata for each species
     aedes_aegypti:
       common_name: "Yellow fever mosquito"
@@ -174,7 +174,7 @@ def classify_mosquito(image):
     prediction = model.predict(image)
     species_idx = prediction.argmax()
     species_name = species_config.get_species_by_index(int(species_idx))
-    
+
     if species_name:
         metadata = species_config.get_species_metadata(species_name)
         return {
@@ -221,7 +221,7 @@ species:
     - "anopheles_gambiae"
     - "culex_quinquefasciatus"
     - "aedes_albopictus"  # New species
-  
+
   metadata:
     aedes_albopictus:
       common_name: "Asian tiger mosquito"

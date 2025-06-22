@@ -175,22 +175,22 @@ def download_model_weights(
 ) -> Path:
     """
     Download model weights from a URL.
-    
+
     Args:
         model_url: URL of the model weights
         model_name: Name for the downloaded file
         models_dir: Directory to save the model
-        
+
     Returns:
         Path to the downloaded model weights
     """
     # Create models directory if it doesn't exist
     models_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Determine file extension from URL or use .pth as default
     file_extension = Path(model_url).suffix or ".pth"
     destination = models_dir / f"{model_name}{file_extension}"
-    
+
     # Download with progress
     print(f"Downloading {model_name} model...")
     download_file(
@@ -198,7 +198,7 @@ def download_model_weights(
         destination=destination,
         desc=f"Downloading {model_name}"
     )
-    
+
     print(f"Model saved to {destination}")
     return destination
 

@@ -170,12 +170,12 @@ datasets:
     path: path/to/dataset1
     type: custom_type
     description: Description of dataset1
-    
+
   dataset2:
     path: path/to/dataset2
     type: another_type
     description: Description of dataset2
-    
+
   # Additional datasets...
 ```
 

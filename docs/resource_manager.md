@@ -36,7 +36,7 @@ with resource_manager.temp_workspace("processing_job") as workspace:
     # Work with files in the temporary workspace
     output_file = workspace / "result.txt"
     output_file.write_text("Processing complete")
-    
+
     # Workspace will be automatically cleaned up when the context exits
 ```
 
