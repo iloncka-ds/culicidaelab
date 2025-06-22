@@ -178,12 +178,18 @@ class ResourceManager:
         """
         Set appropriate permissions for directories on Unix-like systems.
 
+        Uses 0o750 permissions (rwxr-x---) which allows:
+        - Owner: read, write, execute
+        - Group: read, execute
+        - Others: no access
+
         Args:
             directories: List of directories to set permissions for.
         """
         try:
             for directory in directories:
-                os.chmod(directory, 0o755)
+                # 0o750 is more secure than 0o755 as it doesn't allow others to access the directory
+                os.chmod(directory, 0o750)  # nosec: Explicitly setting intended permissions
         except Exception as e:
             logger.warning(f"Could not set directory permissions: {e}")
 

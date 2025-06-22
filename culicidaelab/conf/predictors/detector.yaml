@@ -14,7 +14,7 @@ model_path: "weights/detection/culico-net-det-v1-nano.pt"
 repository_id: "iloncka/culico-net-det-v1"
 filename: "culico-net-det-v1-nano.pt"
 confidence: 0.25
-predict_batch_size: 8
+predict_batch_size: 4
 device: "cpu"
 params:
   iou_threshold: 0.45

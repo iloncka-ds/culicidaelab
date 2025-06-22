@@ -104,7 +104,7 @@ detector:
     iou_threshold: 0.45         # IOU threshold for NMS
     max_detections: 100         # Maximum number of detections per image
     device: "cuda:0"            # Device to run inference on (cuda:0, cpu, etc.)
-  
+
   visualization:
     box_color: [0, 255, 0]     # BGR color for bounding boxes
     box_thickness: 2            # Thickness of bounding box lines
@@ -126,7 +126,7 @@ for path in image_paths:
     image = cv2.imread(path)
     detections = detector.predict(image)
     detection_results.append(detections)
-    
+
     # Visualize and save
     vis = detector.visualize(image, detections)
     cv2.imwrite(f"detected_{path}", vis)
@@ -144,13 +144,13 @@ for x, y, w, h, conf in detections:
     y1 = int(y - h/2)
     x2 = int(x + w/2)
     y2 = int(y + h/2)
-    
+
     # Draw custom bounding box
     cv2.rectangle(image, (x1, y1), (x2, y2), (0, 0, 255), 2)  # Red box
-    
+
     # Add custom label
     label = f"Mosquito: {conf:.2f}"
-    cv2.putText(image, label, (x1, y1 - 10), 
+    cv2.putText(image, label, (x1, y1 - 10),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 ```
 

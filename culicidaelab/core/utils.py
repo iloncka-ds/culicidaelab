@@ -100,6 +100,7 @@ def default_progress_callback(downloaded: int, total: int) -> None:
         percentage = (downloaded / total) * 100
         print(f"Download progress: {percentage:.2f}% ({downloaded}/{total} bytes)")
 
+
 def str_to_bgr(str_color: str) -> tuple[int, int, int]:
     """
     Convert a hexadecimal color string to a BGR tuple.
@@ -112,5 +113,5 @@ def str_to_bgr(str_color: str) -> tuple[int, int, int]:
     """
 
     hex_color = str_color.lstrip("#")
-    (r, g, b) =tuple(int(hex_color[i : i + 2], 16) for i in (4, 2, 0))
+    (r, g, b) = tuple(int(hex_color[i : i + 2], 16) for i in (4, 2, 0))
     return (b, g, r)  # Return in BGR order

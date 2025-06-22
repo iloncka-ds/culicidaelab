@@ -1,16 +1,25 @@
+from __future__ import annotations
+
 import yaml
 from importlib import resources
 from pathlib import Path
-from typing import Any, Dict, TypeVar
+from types import ModuleType
+from typing import Any, TypeVar, Union, cast
+
 from omegaconf import OmegaConf
 from pydantic import ValidationError
+from typing import TypeAlias
 
 from .config_models import CulicidaeLabConfig
+
+# Type aliases for better readability
+ConfigDict: TypeAlias = dict[str, Any]
+ConfigPath: TypeAlias = Union[Path, ModuleType, str, None]  # For resources.files() compatibility
 
 T = TypeVar("T")
 
 
-def _deep_merge(source: Dict, destination: Dict) -> Dict:
+def _deep_merge(source: dict, destination: dict) -> dict:
     """Recursively merge two dictionaries. Source values overwrite destination."""
     for key, value in source.items():
         if isinstance(value, dict):
@@ -41,7 +50,13 @@ class ConfigManager:
         """Reliably find the path to the bundled 'conf' directory."""
         try:
             # The modern and correct way to access package data
-            return resources.files("culicidaelab") / "conf"
+            files = resources.files("culicidaelab")
+            # Convert Traversable to Path
+            if hasattr(files, "_path"):  # For Python 3.9+
+                return Path(files._path) / "conf"  # type: ignore[attr-defined]
+            else:
+                # Fallback for older Python versions
+                return Path(str(files)) / "conf"
         except (ModuleNotFoundError, FileNotFoundError):
             # Fallback for development environments where the package might not be installed
             dev_path = Path(__file__).parent.parent / "conf"
@@ -50,13 +65,20 @@ class ConfigManager:
             raise FileNotFoundError(
                 "Could not find the default 'conf' directory. "
                 "Ensure the 'culicidaelab' package is installed correctly or "
-                "you are in the project root."
+                "you are in the project root.",
             )
 
-    def _load_config_from_dir(self, config_dir: Path) -> Dict[str, Any]:
-        """Loads all YAML files from a directory into a nested dictionary."""
-        config_dict = {}
-        if not config_dir or not config_dir.is_dir():
+    def _load_config_from_dir(self, config_dir: Path | None) -> ConfigDict:
+        """Loads all YAML files from a directory into a nested dictionary.
+
+        Args:
+            config_dir: Directory containing YAML config files, or None to return empty config
+
+        Returns:
+            Nested dictionary containing the loaded configuration
+        """
+        config_dict: ConfigDict = {}
+        if config_dir is None or not config_dir.is_dir():
             return config_dict
 
         for yaml_file in config_dir.glob("**/*.yaml"):
@@ -76,17 +98,21 @@ class ConfigManager:
                     d = d.setdefault(key, {})
                 d[keys[-1]] = data
             except Exception as e:
-                print("Warning: Could not load or parse {}: {}".format(yaml_file, e))
+                print(f"Warning: Could not load or parse {yaml_file}: {e}")
 
         return config_dict
 
     def _load(self) -> CulicidaeLabConfig:
         """Executes the full load, merge, and validation process."""
         # 1. Load default configs
-        default_config_dict = self._load_config_from_dir(self.default_config_path)
+        default_config_dict = self._load_config_from_dir(
+            cast(Path, self.default_config_path),  # We know this is not None from _get_default_config_path
+        )
 
-        # 2. Load user configs
-        user_config_dict = self._load_config_from_dir(self.user_config_dir)
+        # 2. Load user configs if directory exists
+        user_config_dict = self._load_config_from_dir(
+            self.user_config_dir,  # This can be None, but _load_config_from_dir handles it
+        )
 
         # 3. Merge user configs on top of defaults
         merged_config = _deep_merge(user_config_dict, default_config_dict)

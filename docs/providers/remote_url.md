@@ -114,7 +114,7 @@ from tqdm import tqdm
 def download_with_progress(url, destination):
     response = requests.get(url, stream=True)
     total_size = int(response.headers.get('content-length', 0))
-    
+
     with open(destination, 'wb') as file, tqdm(
         desc=destination.name,
         total=total_size,

@@ -108,16 +108,16 @@ classifier:
   model_arch: "resnet50"  # timm model architecture
   img_size: 224  # Input image size
   batch_size: 32  # Batch size for inference
-  
+
   # Training parameters (if training)
   lr: 1e-3
   epochs: 10
-  
+
   # Data augmentation
   augment: True
   item_tfms: [Resize(460)]
   batch_tfms: [*aug_transforms(size=224)]
-  
+
   # Species mapping
   species_classes: "path/to/species_classes.yaml"
 ```

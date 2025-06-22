@@ -50,7 +50,6 @@ __all__ = [
     "SpeciesConfig",
     "get_settings",
     "CulicidaeLabConfig",
-    
 ]
 
 

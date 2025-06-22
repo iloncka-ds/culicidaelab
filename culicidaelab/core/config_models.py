@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 
 class TaxonomyModel(BaseModel):
@@ -9,8 +9,8 @@ class TaxonomyModel(BaseModel):
     family: str
     subfamily: str
     genus: str
-    subgenus: Optional[str] = None
-    species_complex: Optional[str] = None
+    subgenus: str | None = None
+    species_complex: str | None = None
 
 
 class SpeciesAttributesModel(BaseModel):
@@ -20,10 +20,10 @@ class SpeciesAttributesModel(BaseModel):
     """
 
     vector_status: bool
-    diseases: List[str]
+    diseases: list[str]
     habitat: str
-    breeding_sites: List[str]
-    sources: List[str]
+    breeding_sites: list[str]
+    sources: list[str]
 
 
 class SingleSpeciesMetadataModel(BaseModel):
@@ -36,6 +36,7 @@ class SingleSpeciesMetadataModel(BaseModel):
     taxonomy: TaxonomyModel
     metadata: SpeciesAttributesModel
 
+
 class SpeciesFiles(BaseModel):
     """
     A helper model that represents the contents of a single YAML file in the species directory.
@@ -45,10 +46,10 @@ class SpeciesFiles(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     # This field will capture the `species_info_mapping` block.
-    species_info_mapping: Dict[str, str] = {}
+    species_info_mapping: dict[str, str] = {}
 
     # This field will capture the `species_metadata` block.
-    species_metadata: Dict[str, SingleSpeciesMetadataModel] = {}
+    species_metadata: dict[str, SingleSpeciesMetadataModel] = {}
 
 
 class SpeciesModel(BaseModel):
@@ -62,7 +63,7 @@ class SpeciesModel(BaseModel):
 
     # This field captures the content of 'species_classes.yaml'
     # It expects a dictionary mapping integers to strings.
-    species_classes: Dict[int, str] = Field(default_factory=dict)
+    species_classes: dict[int, str] = Field(default_factory=dict)
 
     # This field captures the content of 'species_metadata.yaml'
     # Its value is validated by the SpeciesFiles helper model.
@@ -83,7 +84,20 @@ class ProcessingConfig(BaseModel):
 
     batch_size: int = 32
     confidence_threshold: float = 0.5
-    device: str = "auto"
+    device: str = "cpu"
+
+
+class VisualizationConfig(BaseModel):
+    """Configuration for visualization settings."""
+
+    model_config = ConfigDict(extra="allow")
+
+    overlay_color: str = "blue"
+    alpha: float = 0.5
+    box_color: str = "green"
+    text_color: str = "white"
+    font_scale: float = 0.5
+    thickness: int = 2
 
 
 class PredictorConfig(BaseModel):
@@ -94,10 +108,12 @@ class PredictorConfig(BaseModel):
     target_: str = Field(..., alias="_target_")
     model_path: str
     confidence: float = 0.5
-    device: str = "auto"
-    params: Dict[str, Any] = {}
-    repository_id: Optional[str] = None
-    filename: Optional[str] = None
+    device: str = "cpu"
+    params: dict[str, Any] = {}
+    repository_id: str | None = None
+    filename: str | None = None
+    model_arch: str | None = None
+    visualization: VisualizationConfig = Field(default_factory=VisualizationConfig)
 
 
 class DatasetConfig(BaseModel):
@@ -108,7 +124,7 @@ class DatasetConfig(BaseModel):
     name: str
     path: str
     format: str
-    classes: List[str]
+    classes: list[str]
 
 
 class ProviderConfig(BaseModel):
@@ -117,7 +133,7 @@ class ProviderConfig(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     target_: str = Field(..., alias="_target_")
-    api_key: Optional[str] = None
+    api_key: str | None = None
 
 
 class CulicidaeLabConfig(BaseModel):
@@ -131,7 +147,7 @@ class CulicidaeLabConfig(BaseModel):
     app_settings: AppSettings = Field(default_factory=AppSettings)
     processing: ProcessingConfig = Field(default_factory=ProcessingConfig)
 
-    datasets: Dict[str, DatasetConfig] = {}
-    predictors: Dict[str, PredictorConfig] = {}
-    providers: Dict[str, ProviderConfig] = {}
+    datasets: dict[str, DatasetConfig] = {}
+    predictors: dict[str, PredictorConfig] = {}
+    providers: dict[str, ProviderConfig] = {}
     species: SpeciesModel = Field(default_factory=SpeciesModel)

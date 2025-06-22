@@ -1,3 +1,0 @@
-provider_url: "https://datasets-server.huggingface.co/croissant-crumbs?dataset={dataset_name}"
-api_key: ${oc.env:HUGGINGFACE_API_KEY}
-provider_name: "huggingface"

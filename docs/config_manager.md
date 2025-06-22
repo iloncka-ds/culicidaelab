@@ -158,7 +158,7 @@ class MyComponent(ConfigurableComponent):
     def __init__(self, config_manager):
         super().__init__(config_manager)
         self.load_config()
-        
+
     def process(self):
         # Access configuration
         param = self.config["my_parameter"]

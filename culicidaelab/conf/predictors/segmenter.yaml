@@ -22,6 +22,7 @@ visualization:
   dpi: 300
 confidence: 0.5 # Default confidence
 device: "cpu"
+predict_batch_size: 4
 params:
   points_per_side: 32
   pred_iou_thresh: 0.88

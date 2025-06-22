@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Any
+from typing import Any
 
 from .config_models import SpeciesModel, SingleSpeciesMetadataModel
 
@@ -26,7 +26,7 @@ class SpeciesConfig:
 
         # --- Create the user-friendly species_map ---
         # This combines the class index map with the full name map.
-        self._species_map: Dict[int, str] = {}
+        self._species_map: dict[int, str] = {}
         class_to_full_name_map = self._config.species_metadata.species_info_mapping
 
         for idx, class_name in self._config.species_classes.items():
@@ -35,21 +35,20 @@ class SpeciesConfig:
             self._species_map[idx] = full_name
 
         # --- Create a reverse map for convenience ---
-        self._reverse_species_map: Dict[str, int] = {name: idx for idx, name in self._species_map.items()}
+        self._reverse_species_map: dict[str, int] = {name: idx for idx, name in self._species_map.items()}
 
         # --- Store a direct reference to the detailed metadata dictionary ---
-        self._metadata_store: Dict[str, SingleSpeciesMetadataModel] = self._config.species_metadata.species_metadata
+        self._metadata_store: dict[str, SingleSpeciesMetadataModel] = self._config.species_metadata.species_metadata
 
     @property
-    def species_map(self) -> Dict[int, str]:
+    def species_map(self) -> dict[int, str]:
         """
         Get the mapping of class indices to full, human-readable species names.
         Example: {0: "Aedes aegypti", 1: "Aedes albopictus"}
         """
         return self._species_map
 
-
-    def get_species_metadata(self, species_name: str) -> Optional[Dict[str, Any]]:
+    def get_species_metadata(self, species_name: str) -> dict[str, Any] | None:
         """
         Get the detailed metadata for a specific species as a dictionary.
 
@@ -65,11 +64,11 @@ class SpeciesConfig:
             return model_object.model_dump()
         return None
 
-    def get_species_by_index(self, index: int) -> Optional[str]:
+    def get_species_by_index(self, index: int) -> str | None:
         """Get the full species name by its class index."""
         return self._species_map.get(index)
 
-    def get_index_by_species(self, species_name: str) -> Optional[int]:
+    def get_index_by_species(self, species_name: str) -> int | None:
         """Get the class index by its full species name."""
         return self._reverse_species_map.get(species_name)
 

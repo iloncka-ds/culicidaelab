@@ -101,7 +101,6 @@ Model weights management module for CulicidaeLab.
 """
 
 from __future__ import annotations
-import shutil
 from pathlib import Path
 
 from huggingface_hub import hf_hub_download
@@ -146,7 +145,7 @@ class ModelWeightsManager:
         # We must now download the file.
         print(f"Model weights for '{model_type}' not found. Attempting to download...")
 
-        predictor_config = self.settings.get_config(f'predictors.{model_type}')
+        predictor_config = self.settings.get_config(f"predictors.{model_type}")
         repo_id = predictor_config.repository_id
         filename = predictor_config.filename
 
@@ -154,7 +153,7 @@ class ModelWeightsManager:
             raise ValueError(
                 f"Cannot download weights for '{model_type}'. "
                 f"Configuration is missing 'repository_id' or 'filename'. "
-                f"Please place the file manually at: {local_path}"
+                f"Please place the file manually at: {local_path}",
             )
 
         try:
@@ -172,15 +171,15 @@ class ModelWeightsManager:
                 filename=filename,
                 cache_dir=self.settings.cache_dir / "huggingface",
                 local_dir=str(local_path.parent),
-                )
+            )
             print(f"Downloaded weights to: {downloaded_path_str}")
             if model_type == "segmenter":
                 # For segmenter, we need to ensure the file is not a symlink
                 downloaded_yaml = hf_hub_download(
-                repo_id=repo_id,
-                filename=predictor_config.sam_config_filename,
-                cache_dir=self.settings.cache_dir / "huggingface",
-                local_dir=str(local_path.parent),
+                    repo_id=repo_id,
+                    filename=predictor_config.sam_config_filename,
+                    cache_dir=self.settings.cache_dir / "huggingface",
+                    local_dir=str(local_path.parent),
                 )
                 print(f"Downloaded SAM config to: {downloaded_yaml}")
             # # Now we can safely copy the file.
@@ -198,5 +197,5 @@ class ModelWeightsManager:
             dir_type = "directory" if dest_dir.is_dir() else "not-a-directory"
             raise RuntimeError(
                 f"Failed to download weights for '{model_type}' to {local_path}. "
-                f"Directory status: {dir_status} ({dir_type}). Error: {e}"
+                f"Directory status: {dir_status} ({dir_type}). Error: {e}",
             ) from e

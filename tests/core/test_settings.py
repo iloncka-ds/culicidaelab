@@ -1,136 +1,175 @@
 """Tests for core settings module."""
 
-import os
 from pathlib import Path
-import pytest
-from unittest.mock import patch, MagicMock
-from omegaconf import OmegaConf
+from unittest.mock import MagicMock, patch
 
+import pytest
+
+from culicidaelab.core.config_models import AppSettings, ProcessingConfig
 from culicidaelab.core.settings import Settings, get_settings
 
 
 @pytest.fixture
-def mock_env_vars():
-    """Mock environment variables."""
-    with patch.dict(os.environ, {"APP_ENV": "testing"}, clear=True):
-        yield
-
-
-@pytest.fixture
 def mock_config():
-    """Create a mock configuration."""
-    return OmegaConf.create(
-        {
-            "paths": {"config_dir": "conf"},
-            "datasets": {
-                "paths": {
-                    "detection": "detection_data",
-                    "segmentation": "segmentation_data",
-                    "classification": "classification_data",
-                },
-            },
-            "processing": {
-                "batch_size": 32,
-                "num_workers": 4,
-            },
-            "resource_mapping": {
-                "data_dir": "data",
-            },
+    """Create a mock configuration with proper Pydantic models."""
+    return {
+        "app_settings": AppSettings(environment="testing"),
+        "datasets": {
+            "detection": MagicMock(path="detection_data"),
+            "segmentation": MagicMock(path="segmentation_data"),
+            "classification": MagicMock(path="classification_data"),
         },
-    )
+        "processing": ProcessingConfig(batch_size=32, num_workers=4),
+        "predictors": {
+            "default": MagicMock(model_path="models/default.pt"),
+        },
+        "species": {},
+    }
 
 
 @pytest.fixture
 def mock_config_manager(mock_config):
     """Create a mock config manager."""
     mock = MagicMock()
-    mock.get_config.return_value = mock_config
-
-    mock.get_resource_dirs.return_value = {
-        "cache_dir": Path("cache"),
-        "weights_dir": Path("weights"),
-        "datasets_dir": Path("datasets"),
-        "dataset_dir": Path("datasets"),
-    }
+    mock.get_config.return_value = MagicMock(**mock_config)
     return mock
 
 
 @pytest.fixture
-def settings(mock_env_vars, mock_config_manager):
+def settings(mock_config_manager):
     """Create a settings instance with mocked dependencies."""
     with patch("culicidaelab.core.settings.ConfigManager", return_value=mock_config_manager):
         Settings._instance = None
-        settings = Settings()
-        settings._get_abs_path = lambda x: Path(x)
-        return settings
+        Settings._initialized = False
+        return Settings()
 
 
-def test_singleton_pattern():
-    """Test that Settings follows the singleton pattern."""
-    with patch("culicidaelab.core.settings.ConfigManager"):
-        Settings._instance = None
-        settings1 = Settings()
-        settings2 = Settings()
-        assert settings1 is settings2
+def test_get_settings_singleton(monkeypatch):
+    """Test that get_settings() maintains singleton pattern."""
+    import importlib
+
+    settings_module = importlib.import_module("culicidaelab.core.settings")
+
+    # Create a mock for ConfigManager
+    mock_config_manager = MagicMock()
+    mock_config = MagicMock()
+    mock_config_manager.get_config.return_value = mock_config
+    mock_config_manager.user_config_dir = None
+
+    # Save original instance to restore later
+    original_instance = settings_module._SETTINGS_INSTANCE
+
+    try:
+        # Replace with our own lock for testing
+        test_lock = type("FakeLock", (), {"__enter__": lambda self: None, "__exit__": lambda *args: None})()
+        monkeypatch.setattr("culicidaelab.core.settings._SETTINGS_LOCK", test_lock)
+
+        with patch("culicidaelab.core.settings.ConfigManager", return_value=mock_config_manager):
+            # Clear the singleton
+            monkeypatch.setattr("culicidaelab.core.settings._SETTINGS_INSTANCE", None)
+            settings_module.Settings._initialized = False
+
+            # First call should create a new instance
+            settings1 = get_settings()
+            assert settings_module._SETTINGS_INSTANCE is settings1
+
+            # Second call should return the same instance
+            settings2 = get_settings()
+            assert settings1 is settings2, "get_settings() should return the same instance"
+
+            # Different config dir should create new instance
+            with patch("culicidaelab.core.settings.Path") as mock_path:
+                mock_path.return_value.resolve.return_value = Path("different/config")
+                settings3 = get_settings("different/config")
+                assert settings1 is not settings3, "Different config dir should create new instance"
+
+    finally:
+        # Restore original instance using monkeypatch to ensure thread safety
+        monkeypatch.setattr("culicidaelab.core.settings._SETTINGS_INSTANCE", original_instance)
 
 
-def test_get_settings_singleton():
-    """Test get_settings function maintains singleton pattern."""
-    with patch("culicidaelab.core.settings.ConfigManager"):
-        global _settings_instance
-        Settings._instance = None
-        _settings_instance = None
-
-        settings1 = get_settings()
-        settings2 = get_settings()
-        assert settings1 is settings2
-
-        settings3 = get_settings("custom/config/dir")
-        assert settings1 is not settings3
+# Removed duplicate test in favor of the more comprehensive one above
 
 
-def test_environment_setup(settings):
-    """Test environment setup."""
-    assert settings.environment == "testing"
-
-
-def test_get_resource_dir(settings):
-    """Test get_resource_dir method."""
-    cache_dir = settings.get_resource_dir("cache_dir")
-    assert isinstance(cache_dir, Path)
-    assert cache_dir.name == "cache"
-
-    with pytest.raises(ValueError, match="Unknown resource type"):
-        settings.get_resource_dir("invalid_dir")
+def test_environment_property(settings):
+    """Test environment property."""
+    assert settings.config.app_settings.environment == "testing"
 
 
 def test_get_dataset_path(settings, tmp_path):
     """Test get_dataset_path method."""
-    settings.get_resource_dir = lambda x: tmp_path if x == "dataset_dir" else Path(x)
+    # Patch the resource manager's dataset_dir
+    with patch.object(settings._resource_manager, "dataset_dir", tmp_path):
+        with patch("pathlib.Path.mkdir") as mock_mkdir:
+            detection_path = settings.get_dataset_path("detection")
+            assert isinstance(detection_path, Path)
+            assert str(detection_path).endswith("detection_data")
+            mock_mkdir.assert_called_once_with(parents=True, exist_ok=True)
 
-    detection_path = settings.get_dataset_path("detection")
-    assert isinstance(detection_path, Path)
-    assert detection_path.name == "detection_data"
-
-    with pytest.raises(ValueError, match="Unknown dataset type"):
+    # Test with invalid dataset type
+    with pytest.raises(ValueError, match="not configured"):
         settings.get_dataset_path("invalid_type")
 
 
-def test_get_processing_params(settings, mock_config):
-    """Test get_processing_params method."""
-    settings._config = mock_config
-    params = settings.get_processing_params()
-    assert isinstance(params, dict)
-    assert params["batch_size"] == 32
-    assert params["num_workers"] == 4
+def test_property_getters(settings, monkeypatch, tmp_path):
+    """Test that all property getters return the expected values."""
 
+    # Create a mock ResourceManager with property methods
+    class MockResourceManager:
+        def __init__(self, base_dir):
+            self._dataset_dir = base_dir / "datasets"
+            self._model_dir = base_dir / "models"
+            self._user_cache_dir = base_dir / "cache"
+            # Create the directories
+            self._dataset_dir.mkdir(parents=True, exist_ok=True)
+            self._model_dir.mkdir(parents=True, exist_ok=True)
+            self._user_cache_dir.mkdir(parents=True, exist_ok=True)
 
-def test_property_getters(settings):
-    """Test property getters."""
-    assert isinstance(settings.weights_dir, Path)
-    assert isinstance(settings.datasets_dir, Path)
+        @property
+        def dataset_dir(self) -> Path:
+            return self._dataset_dir
+
+        @property
+        def model_dir(self) -> Path:
+            return self._model_dir
+
+        @property
+        def user_cache_dir(self) -> Path:
+            return self._user_cache_dir
+
+    # Create a unique subdirectory for this test
+    test_dir = tmp_path / "test_property_getters"
+    test_dir.mkdir()
+
+    # Replace the resource manager with our mock
+    mock_rm = MockResourceManager(test_dir)
+    settings._resource_manager = mock_rm
+
+    # Ensure config_dir uses a subdirectory called 'config' for meaningful path
+    config_subdir = test_dir / "config"
+    config_subdir.mkdir(exist_ok=True)
+    settings._config_manager.user_config_dir = config_subdir
+
+    # Test properties
+    assert settings.dataset_dir == mock_rm.dataset_dir
+    assert settings.model_dir == mock_rm.model_dir
+    assert settings.weights_dir == mock_rm.model_dir  # Alias for model_dir
+    assert settings.cache_dir == mock_rm.user_cache_dir
+
+    # Verify paths exist
+    assert mock_rm.dataset_dir.exists()
+    assert mock_rm.model_dir.exists()
+    assert mock_rm.user_cache_dir.exists()
+
+    # Verify string representations
+    assert "dataset" in str(settings.dataset_dir).lower()
+    assert "model" in str(settings.model_dir).lower()
+    assert "cache" in str(settings.cache_dir).lower()
+
+    # Verify types and config dir
     assert isinstance(settings.cache_dir, Path)
     assert isinstance(settings.config_dir, Path)
+    assert "config" in str(settings.config_dir).lower()
 
 
 def test_initialize_with_custom_config():
@@ -140,30 +179,29 @@ def test_initialize_with_custom_config():
 
     with patch("culicidaelab.core.settings.ConfigManager") as mock_cm:
         mock_cm.return_value = MagicMock()
-        settings = Settings(custom_config)
+        # settings = Settings(custom_config)
         mock_cm.assert_called_once()
-        assert mock_cm.call_args[0][0] == custom_config
+        assert mock_cm.call_args[1]["user_config_dir"] == custom_config
 
 
-def test_directory_setup(settings, tmp_path):
-    """Test directory setup with temporary path."""
-    resource_dirs = {
-        "cache_dir": tmp_path / "cache",
-        "weights_dir": tmp_path / "weights",
-        "datasets_dir": tmp_path / "datasets",
-    }
-    settings.config_manager.get_resource_dirs.return_value = resource_dirs
-
-    settings._setup_directories()
-
-    for dir_path in resource_dirs.values():
-        assert dir_path.exists()
-        assert dir_path.is_dir()
+def test_list_datasets(settings):
+    """Test listing available datasets."""
+    datasets = settings.list_datasets()
+    assert set(datasets) == {"detection", "segmentation", "classification"}
 
 
-def test_config_reload(settings, mock_config):
-    """Test configuration reloading."""
-    settings._config = mock_config
-    original_config = settings._config
-    settings.__init__()
-    assert settings._config is original_config
+def test_get_model_weights(settings, tmp_path):
+    """Test getting model weights path."""
+    # Setup mock config with model path
+    settings.config.predictors = {"default": MagicMock(model_path="models/default.pt")}
+
+    # Patch the resource manager's model_dir
+    settings._resource_manager.model_dir = tmp_path
+
+    weights_path = settings.get_model_weights("default")
+    assert isinstance(weights_path, Path)
+    assert str(weights_path) == str(tmp_path / "models/default.pt")
+
+    # Test with invalid model type
+    with pytest.raises(ValueError, match="not configured in 'predictors'"):
+        settings.get_model_weights("invalid_model")

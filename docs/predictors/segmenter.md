@@ -128,10 +128,10 @@ image_paths = ["image1.jpg", "image2.jpg", "image3.jpg"]
 # Process all images
 for path in image_paths:
     image = cv2.imread(path)
-    
+
     # Get segmentation mask
     mask = segmenter.predict(image)
-    
+
     # Visualize and save
     vis = segmenter.visualize(image, mask)
     cv2.imwrite(f"segmented_{path}", vis)
