@@ -30,15 +30,15 @@ class MyPredictor(BasePredictor):
     def _load_model(self):
         # Implement model loading
         pass
-        
+
     def predict(self, input_data):
         # Implement prediction logic
         pass
-        
+
     def visualize(self, input_data, predictions, save_path=None):
         # Implement visualization
         pass
-        
+
     def evaluate(self, input_data, ground_truth):
         # Implement evaluation
         pass
@@ -157,15 +157,15 @@ Aggregate metrics from multiple evaluations.
 ```python
 class CustomPredictor(BasePredictor):
     # ... other methods ...
-    
+
     def evaluate(self, input_data, ground_truth):
         predictions = self.predict(input_data)
-        
+
         # Calculate custom metrics
         accuracy = self._calculate_accuracy(predictions, ground_truth)
         precision = self._calculate_precision(predictions, ground_truth)
         recall = self._calculate_recall(predictions, ground_truth)
-        
+
         return {
             'accuracy': accuracy,
             'precision': precision,
@@ -178,7 +178,7 @@ class CustomPredictor(BasePredictor):
 ```python
 class CustomPredictor(BasePredictor):
     # ... other methods ...
-    
+
     def predict_batch(self, input_data_batch, num_workers=4, batch_size=32):
         # Custom batch processing logic
         results = []
@@ -226,19 +226,19 @@ class ImageClassifier(BasePredictor):
         self.model.eval()
         self.classes = self.model.get_classes()
         self.model_loaded = True
-    
+
     def predict(self, image):
         if not self.model_loaded:
             self._load_model()
-            
+
         # Preprocess image
         tensor = preprocess_image(image)
-        
+
         # Make prediction
         with torch.no_grad():
             outputs = self.model(tensor)
             probs = torch.nn.functional.softmax(outputs, dim=1)
-            
+
         return {
             'class': self.classes[torch.argmax(probs)],
             'confidence': torch.max(probs).item(),

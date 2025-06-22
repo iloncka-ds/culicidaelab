@@ -9,7 +9,7 @@ from unittest.mock import Mock, patch
 from pydantic import ValidationError
 import tempfile
 import shutil
-from typing import Dict, Any
+from typing import Any
 
 from culicidaelab.core.config_manager import ConfigManager, _deep_merge
 from culicidaelab.core.config_models import CulicidaeLabConfig
@@ -40,7 +40,7 @@ def mock_config_data():
                     "target_": "culicidaelab.classifiers.DefaultClassifier",
                     "model_name": "default_model",
                     "threshold": 0.5,
-                }
+                },
             },
             "datasets": {"batch_size": 32, "num_workers": 4},
         },
@@ -52,7 +52,7 @@ def mock_config_data():
 
 
 # Helper functions
-def create_yaml_files(config_dir: Path, config_data: Dict[str, Any]):
+def create_yaml_files(config_dir: Path, config_data: dict[str, Any]):
     """Helper to create YAML files in a directory."""
     for section, data in config_data.items():
         yaml_file = config_dir / f"{section}.yaml"
@@ -81,7 +81,7 @@ def test_deep_merge_nested_dict():
         "level1": {
             "level2": {"key1": "new_value", "key2": "source_value", "key3": "dest_value"},
             "other_key": "preserved",
-        }
+        },
     }
     assert result == expected
 
@@ -308,7 +308,8 @@ def test_load_validation_error(mock_load_config, temp_config_dirs, capsys):
 
     # Mock validation error
     validation_error = ValidationError.from_exception_data(
-        "CulicidaeLabConfig", [{"type": "missing", "loc": ("required_field",), "msg": "Field required"}]
+        "CulicidaeLabConfig",
+        [{"type": "missing", "loc": ("required_field",), "msg": "Field required"}],
     )
 
     with patch("culicidaelab.core.config_manager.CulicidaeLabConfig", side_effect=validation_error):
@@ -467,8 +468,8 @@ def test_config_merge_with_complex_structures():
             "classifier": {
                 "target_": "test.Classifier",
                 "params": {"threshold": 0.5, "nested": {"deep_param": "default"}},
-            }
-        }
+            },
+        },
     }
 
     user_config = {"predictors": {"classifier": {"params": {"threshold": 0.8, "new_param": "user_value"}}}}
@@ -480,8 +481,8 @@ def test_config_merge_with_complex_structures():
             "classifier": {
                 "target_": "test.Classifier",
                 "params": {"threshold": 0.8, "new_param": "user_value", "nested": {"deep_param": "default"}},
-            }
-        }
+            },
+        },
     }
 
     assert result == expected

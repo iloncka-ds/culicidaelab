@@ -23,17 +23,38 @@ def test_import_dataset_module(modname):
 
 
 @pytest.mark.parametrize("modname", list(get_dataset_modules()))
-def test_dataset_classes_callable(modname):
-    """Test that dataset classes/functions in each module are instantiable/callable."""
+def test_dataset_classes_callable(modname, caplog):
+    """Test that dataset classes/functions in each module are instantiable/callable.
+
+    Args:
+        modname: Name of the module to test
+        caplog: pytest fixture for capturing log output
+    """
     module = importlib.import_module(modname)
+
     for name, obj in inspect.getmembers(module):
-        if inspect.isclass(obj) and obj.__module__ == module.__name__:
+        # Skip imported members
+        if obj.__module__ != module.__name__:
+            continue
+
+        if inspect.isclass(obj):
             try:
                 instance = obj()
-            except Exception:
-                continue
-        elif inspect.isfunction(obj) and obj.__module__ == module.__name__:
+                assert instance is not None  # Basic sanity check
+            except (TypeError, ValueError) as e:
+                # Expected for classes that require arguments
+                pytest.skip(f"Skipping {name}: {e}")
+            except Exception as e:
+                pytest.fail(f"Failed to instantiate {name}: {e}")
+
+        elif inspect.isfunction(obj):
             try:
-                obj()
-            except Exception:
-                continue
+                _ = obj()  # Call the function but ignore the result
+                # Optional: If you need to validate the return type, use:
+                # result = obj()
+                # assert isinstance(result, expected_type)
+            except (TypeError, ValueError) as e:
+                # Expected for functions that require arguments
+                pytest.skip(f"Skipping {name}: {e}")
+            except Exception as e:
+                pytest.fail(f"Failed to call {name}: {e}")

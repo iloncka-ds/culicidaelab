@@ -208,12 +208,12 @@ class CustomSettings(BaseSettings):
     def __init__(self, config_dir=None):
         super().__init__(config_dir)
         self.model_config = self._load_model_config()
-    
+
     def _load_model_config(self) -> ModelConfig:
         """Load and validate model configuration."""
         model_config = self.config.get('model', {})
         return ModelConfig(**model_config)
-    
+
     def get_training_params(self) -> dict:
         """Get training parameters with validation."""
         return self.model_config.dict()

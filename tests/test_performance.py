@@ -11,16 +11,18 @@ from typing import Any
 
 from collections.abc import Callable
 
-from culicidaelab.modules.classifier import MosquitoClassifier
-from culicidaelab.modules.detector import MosquitoDetector
-
-from culicidaelab.core.config_manager import ConfigManager
-from culicidaelab.core.model_weights_manager import ModelWeightsManager
+from culicidaelab.core.base_predictor import BasePredictor
+from culicidaelab.core.settings import Settings
+from culicidaelab.predictors.classifier import MosquitoClassifier
+from culicidaelab.predictors.detector import MosquitoDetector
 
 
 def measure_performance(func: Callable[..., Any], *args, **kwargs) -> dict[str, Any]:
     gpus = GPUtil.getGPUs()
-    gpu_start = {gpu.id: gpu.memoryUsed for gpu in gpus}
+    if gpus:
+        gpu_start = {gpu.id: gpu.memoryUsed for gpu in gpus}
+    else:
+        gpu_start = None
 
     process = psutil.Process(os.getpid())
     cpu_start = process.cpu_percent(interval=None)
@@ -35,15 +37,19 @@ def measure_performance(func: Callable[..., Any], *args, **kwargs) -> dict[str, 
     mem_end = process.memory_info().rss
     current, peak = tracemalloc.get_traced_memory()
     tracemalloc.stop()
-    gpu_end = {gpu.id: gpu.memoryUsed for gpu in GPUtil.getGPUs()}
 
+    gpu_end = {gpu.id: gpu.memoryUsed for gpu in GPUtil.getGPUs()} if gpus else None
+    if gpu_start and gpu_end:
+        gpu_memory_diff_mb = {gpu_id: gpu_end[gpu_id] - gpu_start.get(gpu_id, 0) for gpu_id in gpu_end}
+    else:
+        gpu_memory_diff_mb = None
     return {
         "result": result,
         "time_seconds": end_time - start_time,
         "cpu_percent": cpu_end - cpu_start,
         "memory_rss_bytes": mem_end - mem_start,
         "tracemalloc_peak_bytes": peak,
-        "gpu_memory_diff_mb": {gpu_id: gpu_end[gpu_id] - gpu_start.get(gpu_id, 0) for gpu_id in gpu_end},
+        "gpu_memory_diff_mb": gpu_memory_diff_mb,
     }
 
 
@@ -61,11 +67,10 @@ def save_results(results: dict[str, Any], path: Path, fmt: str = "json"):
 
 def run_batch_test(
     model_name: str,
-    model: Any,
+    model: BasePredictor,
     inputs: list[np.ndarray],
     ground_truths: list[Any],
     output_path: Path,
-    config: ConfigManager,
 ):
     results = measure_performance(model.evaluate_batch, inputs, ground_truths)
     metrics = results.pop("result")
@@ -76,18 +81,14 @@ def run_batch_test(
 
 
 if __name__ == "__main__":
-    config_manager = ConfigManager(config_path="config.yaml")
-    weights_manager = ModelWeightsManager(config_manager)
+    settings = Settings()
 
-    cls_weights = weights_manager.get_weights("classification")
-    det_weights = weights_manager.get_weights("detection")
-
-    classifier = MosquitoClassifier(cls_weights, config_manager, load_model=True)
-    detector = MosquitoDetector(det_weights, config_manager)
+    classifier = MosquitoClassifier(settings, load_model=True)
+    detector = MosquitoDetector(settings, load_model=True)
 
     inputs = [np.random.randint(0, 255, (512, 512, 3), dtype=np.uint8) for _ in range(8)]
     cls_truths = ["species_a"] * len(inputs)
     det_truths = [[(256.0, 256.0, 100.0, 100.0)]] * len(inputs)
 
-    run_batch_test("classification", classifier, inputs, cls_truths, Path("logs/classification"), config_manager)
-    run_batch_test("detection", detector, inputs, det_truths, Path("logs/detection"), config_manager)
+    run_batch_test("classification", classifier, inputs, cls_truths, Path("logs/classification"))
+    run_batch_test("detection", detector, inputs, det_truths, Path("logs/detection"))

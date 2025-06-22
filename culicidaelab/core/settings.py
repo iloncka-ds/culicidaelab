@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Optional, Dict
+from typing import Any, Optional
 from contextlib import contextmanager
 import threading
 
@@ -177,7 +177,7 @@ class Settings:
 
 
 # Global access function
-_SETTINGS_INSTANCE: Optional[Settings] = None
+_SETTINGS_INSTANCE: Settings | None = None
 _SETTINGS_LOCK = threading.Lock()
 
 
