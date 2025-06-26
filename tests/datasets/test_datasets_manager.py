@@ -1,98 +1,132 @@
 import pytest
 from unittest.mock import Mock
+from pathlib import Path
+
 from culicidaelab.datasets.datasets_manager import DatasetsManager
-from culicidaelab.datasets.huggingface import HuggingFaceDatasetLoader
-from culicidaelab.core.config_manager import ConfigManager
+from culicidaelab.core.settings import Settings
+from culicidaelab.core.provider_service import ProviderService
+from culicidaelab.core.config_models import DatasetConfig
 
 
 @pytest.fixture
-def mock_config_manager():
-    return Mock(spec=ConfigManager)
+def mock_settings():
+    """Fixture for a mocked Settings object."""
+    settings = Mock(spec=Settings)
+    # Mock config data
+    mock_dataset_config = Mock(spec=DatasetConfig)
+    mock_dataset_config.provider_name = "mock_provider"
+    mock_dataset_config.name = "classification"
+    mock_dataset_config.path = "some/path/to/classification"
+
+    # Configure get_config to return the mock config for a specific dataset
+    settings.get_config.side_effect = lambda path: (mock_dataset_config if path == "datasets.classification" else None)
+    settings.list_datasets.return_value = ["classification"]
+    return settings
 
 
 @pytest.fixture
-def mock_dataset_loader():
-    loader = Mock(spec=HuggingFaceDatasetLoader)
-    loader.load_dataset.return_value = {"data": "mock_dataset"}
-    return loader
+def mock_provider():
+    """Fixture for a mocked BaseProvider object."""
+    provider = Mock()
+    provider.download_dataset.return_value = Path("/fake/path/classification_dataset")
+    provider.load_dataset.return_value = {"data": "mock_dataset_content"}
+    return provider
 
 
 @pytest.fixture
-def temp_config_file(tmp_path):
-    config_content = """
-    datasets:
-      test_dataset:
-        path: "test/dataset/path"
-        description: "Test dataset"
-    """
-    config_file = tmp_path / "datasets_config.yaml"
-    config_file.write_text(config_content)
-    return config_file
+def mock_provider_service(mock_provider):
+    """Fixture for a mocked ProviderService."""
+    provider_service = Mock(spec=ProviderService)
+    provider_service.get_provider.return_value = mock_provider
+    return provider_service
 
 
 @pytest.fixture
-def datasets_manager(mock_config_manager, mock_dataset_loader, temp_config_file):
-    return DatasetsManager(
-        config_manager=mock_config_manager,
-        dataset_loader=mock_dataset_loader,
-        config_path=temp_config_file,
-    )
+def datasets_manager(mock_settings, mock_provider_service):
+    """Fixture to create a DatasetsManager instance with mocked dependencies."""
+    return DatasetsManager(settings=mock_settings, provider_service=mock_provider_service)
 
 
-def test_load_config(datasets_manager):
-    config = datasets_manager.load_config()
-    assert "test_dataset" in config
-    assert config["test_dataset"]["path"] == "test/dataset/path"
+def test_get_dataset_info(datasets_manager, mock_settings):
+    """Test that getting dataset info retrieves the correct config."""
+    dataset_name = "classification"
+    config = datasets_manager.get_dataset_info(dataset_name)
+    mock_settings.get_config.assert_called_once_with(f"datasets.{dataset_name}")
+    assert config is not None
+    assert config.name == dataset_name
 
 
-def test_add_dataset(datasets_manager):
-    dataset_info = {"path": "new/dataset/path", "description": "New dataset"}
-    datasets_manager.add_dataset("new_dataset", dataset_info)
-    assert "new_dataset" in datasets_manager.datasets_config
-    assert datasets_manager.datasets_config["new_dataset"] == dataset_info
-
-
-def test_remove_dataset(datasets_manager):
-    datasets_manager.remove_dataset("test_dataset")
-    assert "test_dataset" not in datasets_manager.datasets_config
-
-
-def test_update_dataset(datasets_manager):
-    update_info = {"description": "Updated description"}
-    datasets_manager.update_dataset("test_dataset", update_info)
-    assert datasets_manager.datasets_config["test_dataset"]["description"] == "Updated description"
-
-
-def test_load_dataset(datasets_manager, mock_dataset_loader):
-    dataset = datasets_manager.load_dataset("test_dataset")
-    mock_dataset_loader.load_dataset.assert_called_once_with(
-        "test/dataset/path",
-        split=None,
-    )
-    assert dataset == {"data": "mock_dataset"}
-
-
-def test_get_loaded_dataset(datasets_manager):
-    datasets_manager.load_dataset("test_dataset")
-    dataset = datasets_manager.get_loaded_dataset("test_dataset")
-    assert dataset == {"data": "mock_dataset"}
-
-
-def test_load_dataset_missing_path(datasets_manager):
-    datasets_manager.datasets_config["invalid_dataset"] = {}
-    with pytest.raises(ValueError, match="Dataset path not specified"):
-        datasets_manager.load_dataset("invalid_dataset")
-
-
-def test_get_nonexistent_dataset(datasets_manager):
-    with pytest.raises(KeyError, match="Dataset nonexistent not found"):
+def test_get_dataset_info_not_found(datasets_manager, mock_settings):
+    """Test that getting info for a non-existent dataset raises KeyError."""
+    mock_settings.get_config.return_value = None
+    with pytest.raises(KeyError, match="Dataset 'nonexistent' not found in configuration."):
         datasets_manager.get_dataset_info("nonexistent")
 
 
-def test_get_unloaded_dataset(datasets_manager):
-    with pytest.raises(ValueError, match="Dataset test_dataset has not been loaded"):
-        datasets_manager.get_loaded_dataset("test_dataset")
+def test_list_datasets(datasets_manager, mock_settings):
+    """Test that list_datasets returns the list from settings."""
+    datasets_list = datasets_manager.list_datasets()
+    mock_settings.list_datasets.assert_called_once()
+    assert datasets_list == ["classification"]
 
 
-def test_list_datasets(datasets_manager):
-    assert datasets_manager.list_datasets() == ["test_dataset"]
+def test_load_dataset_first_time(datasets_manager, mock_provider_service, mock_provider):
+    """Test loading a dataset that is not yet cached."""
+    dataset_name = "classification"
+    # Call the method to test
+    dataset = datasets_manager.load_dataset(dataset_name, split="train")
+
+    # Assert that the provider was retrieved
+    mock_provider_service.get_provider.assert_called_once_with("mock_provider")
+
+    # Assert that the dataset was downloaded and loaded
+    mock_provider.download_dataset.assert_called_once_with(dataset_name, split="train")
+    mock_provider.load_dataset.assert_called_once_with(Path("/fake/path/classification_dataset"), split="train")
+
+    # Assert that the dataset content is correct and it's now cached
+    assert dataset == {"data": "mock_dataset_content"}
+    assert dataset_name in datasets_manager.loaded_datasets
+    assert datasets_manager.loaded_datasets[dataset_name] == Path("/fake/path/classification_dataset")
+
+
+def test_load_dataset_cached(datasets_manager, mock_provider):
+    """Test that loading a cached dataset does not trigger a new download."""
+    dataset_name = "classification"
+    cached_path = Path("/cached/path/to/dataset")
+
+    # Pre-populate the cache
+    datasets_manager.loaded_datasets[dataset_name] = cached_path
+
+    # Reset mocks to check for new calls
+    mock_provider.download_dataset.reset_mock()
+    mock_provider.load_dataset.reset_mock()
+
+    # Call the method to test
+    datasets_manager.load_dataset(dataset_name, split="test")
+
+    # Assert that download was NOT called
+    mock_provider.download_dataset.assert_not_called()
+
+    # Assert that load_dataset was called with the cached path
+    mock_provider.load_dataset.assert_called_once_with(cached_path, split="test")
+
+
+def test_load_dataset_not_configured(datasets_manager, mock_settings):
+    """Test that loading a non-configured dataset raises KeyError."""
+    dataset_name = "nonexistent"
+    mock_settings.get_config.return_value = None
+    with pytest.raises(KeyError, match=f"Dataset '{dataset_name}' not found in configuration."):
+        datasets_manager.load_dataset(dataset_name)
+
+
+def test_list_loaded_datasets_empty(datasets_manager):
+    """Test that listing loaded datasets is empty initially."""
+    assert datasets_manager.list_loaded_datasets() == []
+
+
+def test_list_loaded_datasets_after_loading(datasets_manager):
+    """Test that listing loaded datasets works after loading a dataset."""
+    dataset_name = "classification"
+    # Pre-populate the cache as if a dataset was loaded
+    datasets_manager.loaded_datasets[dataset_name] = Path("/fake/path")
+    assert datasets_manager.list_loaded_datasets() == [dataset_name]

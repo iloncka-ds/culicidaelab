@@ -1,6 +1,7 @@
 # src/culicidaelab/core/base_provider.py
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any
 
 
 class BaseProvider(ABC):
@@ -22,6 +23,23 @@ class BaseProvider(ABC):
 
         Returns:
             Path: Path to the downloaded dataset
+        """
+        raise NotImplementedError("Subclasses must implement this method")
+
+    @abstractmethod
+    def load_dataset(
+        self,
+        dataset_path: str | Path,
+        **kwargs,
+    ) -> Any:
+        """Load a dataset from a local path.
+
+        Args:
+            dataset_path (str | Path): The local path to the dataset, typically returned by download_dataset.
+            kwargs: Additional keyword arguments for loading.
+
+        Returns:
+            Any: The loaded dataset object (e.g., a Hugging Face Dataset, a PyTorch Dataset, a Pandas DataFrame).
         """
         raise NotImplementedError("Subclasses must implement this method")
 

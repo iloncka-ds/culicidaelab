@@ -15,10 +15,9 @@ from .core.base_predictor import BasePredictor
 from .predictors.classifier import MosquitoClassifier
 from .predictors.detector import MosquitoDetector
 from .predictors.segmenter import MosquitoSegmenter
-from .core.model_weights_manager import ModelWeightsManager
+from .predictors.model_weights_manager import ModelWeightsManager
 
 from .datasets.datasets_manager import DatasetsManager
-from .datasets.huggingface import HuggingFaceDatasetLoader
 
 from .core.base_provider import BaseProvider
 from .providers.huggingface_provider import HuggingFaceProvider

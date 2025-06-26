@@ -103,15 +103,29 @@ def default_progress_callback(downloaded: int, total: int) -> None:
 
 def str_to_bgr(str_color: str) -> tuple[int, int, int]:
     """
-    Convert a hexadecimal color string to a BGR tuple.
+    Convert a hexadecimal color string to a BGR tuple with input validation.
 
     Args:
         str_color (str): Hexadecimal color string in the format '#RRGGBB' or 'RRGGBB'.
 
     Returns:
         tuple[int, int, int]: BGR tuple of integers.
+
+    Raises:
+        TypeError: If the input is not a string.
+        ValueError: If the input string is not a valid 6-digit hex color.
     """
 
     hex_color = str_color.lstrip("#")
-    (r, g, b) = tuple(int(hex_color[i : i + 2], 16) for i in (4, 2, 0))
-    return (b, g, r)  # Return in BGR order
+
+    if len(hex_color) != 6:
+        raise ValueError(f"Invalid hex color string format: '{str_color}'. Must be 6 hex characters.")
+
+    try:
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
+
+        return (b, g, r)
+    except ValueError:
+        raise ValueError(f"Invalid characters in hex string: '{str_color}'.")

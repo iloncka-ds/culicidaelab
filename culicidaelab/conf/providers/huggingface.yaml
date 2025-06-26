@@ -1,4 +1,4 @@
 # provider_url: "https://datasets-server.huggingface.co/croissant-crumbs?dataset={dataset_name}"
 # api_key: "{api_key}"
-_target_: "culicidaelab.providers.HuggingFaceProvider"
-provider_url: "https://datasets-server.huggingface.co/croissant-crumbs?dataset={dataset_name}"
+_target_: "culicidaelab.providers.huggingface_provider.HuggingFaceProvider"
+dataset_url: "https://datasets-server.huggingface.co/croissant-crumbs?dataset={dataset_name}"
