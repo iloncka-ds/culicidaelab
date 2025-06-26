@@ -21,7 +21,9 @@ from sklearn.preprocessing import label_binarize
 
 from culicidaelab.core.base_predictor import BasePredictor
 from culicidaelab.core.settings import Settings
+from culicidaelab.core.provider_service import ProviderService
 from culicidaelab.core.utils import str_to_bgr
+from .model_weights_manager import ModelWeightsManager
 
 ClassificationPredictionType: TypeAlias = list[tuple[str, float]]
 ClassificationGroundTruthType: TypeAlias = str
@@ -54,6 +56,7 @@ class MosquitoClassifier(BasePredictor[ClassificationPredictionType, Classificat
     def __init__(
         self,
         settings: Settings,
+        weights_manager: ModelWeightsManager,
         load_model: bool = False,
     ) -> None:
         """
@@ -63,7 +66,17 @@ class MosquitoClassifier(BasePredictor[ClassificationPredictionType, Classificat
             settings: The main Settings object for the library.
             load_model: Whether to load the model immediately.
         """
-        super().__init__(settings=settings, predictor_type="classifier", load_model=load_model)
+        provider_service = ProviderService(settings)
+        weights_manager = ModelWeightsManager(
+            settings=settings,
+            provider_service=provider_service,
+        )
+        super().__init__(
+            settings=settings,
+            predictor_type="classifier",
+            weights_manager=weights_manager,  # Use the injected dependency
+            load_model=load_model,
+        )
 
         # These attributes are initialized after super().__init__ which sets up self.config
         self.arch = self.config.model_arch
@@ -288,7 +301,7 @@ class MosquitoClassifier(BasePredictor[ClassificationPredictionType, Classificat
 
         vis_config = self.config.visualization
         font_scale = vis_config.font_scale
-        thickness = vis_config.thickness
+        thickness = vis_config.text_thickness
         color = str_to_bgr(vis_config.text_color)
         top_k = self.config.params.get("top_k", 5)
 

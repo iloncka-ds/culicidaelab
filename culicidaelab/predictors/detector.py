@@ -16,7 +16,9 @@ from tqdm import tqdm
 
 from culicidaelab.core.base_predictor import BasePredictor
 from culicidaelab.core.settings import Settings
+from culicidaelab.core.provider_service import ProviderService
 from culicidaelab.core.utils import str_to_bgr
+from .model_weights_manager import ModelWeightsManager
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +35,7 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
     def __init__(
         self,
         settings: Settings,
+        weights_manager: ModelWeightsManager,
         load_model: bool = False,
     ) -> None:
         """
@@ -40,9 +43,23 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
         Args:
             settings: The main Settings object for the library.
             load_model: Whether to load the model immediately.
+
         """
-        super().__init__(settings=settings, predictor_type="detector", load_model=load_model)
+        provider_service = ProviderService(settings)
+        weights_manager = ModelWeightsManager(
+            settings=settings,
+            provider_service=provider_service,
+        )
+        super().__init__(
+            settings=settings,
+            predictor_type="detector",
+            weights_manager=weights_manager,  # Use the injected dependency
+            load_model=load_model,
+        )
         self.confidence_threshold = self.config.confidence or 0.5
+
+        self.iou_threshold = self.config.params.get("iou_threshold", 0.45)
+        self.max_detections = self.config.params.get("max_detections", 300)
 
     def _load_model(self) -> None:
         """Load the YOLO model."""

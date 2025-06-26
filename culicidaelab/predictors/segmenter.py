@@ -12,7 +12,10 @@ from sam2.sam2_image_predictor import SAM2ImagePredictor
 from pathlib import Path
 from culicidaelab.core.base_predictor import BasePredictor
 from culicidaelab.core.settings import Settings
+from culicidaelab.core.provider_service import ProviderService
 from culicidaelab.core.utils import str_to_bgr
+from .model_weights_manager import ModelWeightsManager
+
 
 SegmentationPredictionType: TypeAlias = np.ndarray
 SegmentationGroundTruthType: TypeAlias = np.ndarray
@@ -21,7 +24,11 @@ SegmentationGroundTruthType: TypeAlias = np.ndarray
 class MosquitoSegmenter(BasePredictor[SegmentationPredictionType, SegmentationGroundTruthType]):
     """Class for segmenting mosquitos in images using SAM."""
 
-    def __init__(self, settings: Settings, load_model: bool = False) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        load_model: bool = False,
+    ) -> None:
         """
         Initialize the mosquito segmenter.
 
@@ -29,7 +36,17 @@ class MosquitoSegmenter(BasePredictor[SegmentationPredictionType, SegmentationGr
             settings: The main Settings object for the library.
             load_model: If True, loads model immediately.
         """
-        super().__init__(settings=settings, predictor_type="segmenter", load_model=load_model)
+        provider_service = ProviderService(settings)
+        weights_manager = ModelWeightsManager(
+            settings=settings,
+            provider_service=provider_service,
+        )
+        super().__init__(
+            settings=settings,
+            predictor_type="segmenter",
+            weights_manager=weights_manager,
+            load_model=load_model,
+        )
 
     def _load_model(self) -> None:
         """Load the SAM model."""

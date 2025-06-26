@@ -14,7 +14,7 @@ from tqdm import tqdm as tqdm_console
 import logging
 from contextlib import contextmanager
 from .settings import Settings
-from .model_weights_manager import ModelWeightsManager
+from .weights_manager_protocol import WeightsManagerProtocol
 from .config_models import PredictorConfig
 
 try:
@@ -37,6 +37,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         self,
         settings: Settings,
         predictor_type: str,
+        weights_manager: WeightsManagerProtocol,
         load_model: bool = False,
     ):
         """
@@ -45,6 +46,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         Args:
             settings: The main Settings object for the library.
             predictor_type: The key for this predictor in the configuration (e.g., 'classifier').
+            weights_manager: The WeightsManagerProtocol
             load_model: If True, loads model immediately.
 
         Raises:
@@ -54,7 +56,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         self.predictor_type = predictor_type
 
         # Initialize weights manager and get model path
-        self._weights_manager = ModelWeightsManager(self.settings)
+        self._weights_manager = weights_manager
         self._model_path = self._weights_manager.ensure_weights(self.predictor_type)
 
         # Get predictor-specific configuration as a Pydantic model

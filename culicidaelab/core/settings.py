@@ -125,7 +125,7 @@ class Settings:
         return list(self.config.datasets.keys())
 
     # Model Management
-    def get_model_weights(self, model_type: str) -> Path:
+    def get_model_weights_path(self, model_type: str) -> Path:
         """Get path to model weights file."""
         if model_type not in self.config.predictors:
             raise ValueError(f"Model type '{model_type}' not configured in 'predictors'.")
@@ -141,7 +141,7 @@ class Settings:
         """Get list of available model types."""
         return list(self.config.predictors.keys())
 
-    def set_model_weights(self, model_type: str, weights_path: str | Path) -> None:
+    def set_model_weights_path(self, model_type: str, weights_path: str | Path) -> None:
         """Set custom weights path for model type."""
         if model_type not in self.config.predictors:
             raise ValueError(f"Cannot set weights for unconfigured model type: '{model_type}'.")

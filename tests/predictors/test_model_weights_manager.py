@@ -1,125 +1,124 @@
 import pytest
 from pathlib import Path
-from unittest.mock import Mock, patch
-from culicidaelab.core.model_weights_manager import ModelWeightsManager
+from unittest.mock import Mock
+
+from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
+
+
+# --- Mocks and Fixtures ---
 
 
 @pytest.fixture
-def mock_config():
-    config = Mock()
-    config.models.weights = {
-        "detection": Mock(
-            local_path="models/detection.pt",
-            remote_repo="iloncka/culico-net-det-v1",
-            remote_file="culico-net-det-v1-nano.pt",
-        ),
-    }
-    config.paths.root_dir = Path(__file__).parent.parent.parent.absolute()
-    return config
+def mock_settings() -> Mock:
+    """Fixture for a mocked Settings object."""
+    settings = Mock()
+    # Configure the get_config method to return a mock predictor config
+    mock_predictor_config = Mock()
+    mock_predictor_config.provider = "mock_huggingface_provider"
+    settings.get_config.return_value = mock_predictor_config
+    return settings
 
 
 @pytest.fixture
-def weights_manager(mock_config):
-    manager = ModelWeightsManager(Mock())
-    manager._config = mock_config
-    return manager
+def mock_provider_service() -> Mock:
+    """Fixture for a mocked ProviderService object."""
+    provider_service = Mock()
+    # Configure the get_provider method to return a mock provider
+    mock_provider = Mock()
+    # Let the mock provider's download method return a predictable path
+    mock_provider.download_model_weights.return_value = Path("/mock/path/to/model.pt")
+    provider_service.get_provider.return_value = mock_provider
+    return provider_service
 
 
-def test_init(weights_manager):
+@pytest.fixture
+def weights_manager(mock_settings: Mock, mock_provider_service: Mock) -> ModelWeightsManager:
+    """Fixture to create a ModelWeightsManager with mocked dependencies."""
+    return ModelWeightsManager(settings=mock_settings, provider_service=mock_provider_service)
+
+
+# --- Test Cases ---
+
+
+def test_init(weights_manager: ModelWeightsManager, mock_settings: Mock, mock_provider_service: Mock):
+    """Test the initialization of the ModelWeightsManager."""
     assert isinstance(weights_manager, ModelWeightsManager)
+    assert weights_manager.settings is mock_settings
+    assert weights_manager.provider_service is mock_provider_service
 
 
-def test_get_weights_local_exists(weights_manager):
-    project_root = weights_manager._config.paths.root_dir
-    expected_path = project_root / "models/detection.pt"
-
-    with patch("os.path.exists") as mock_exists:
-        mock_exists.return_value = True
-        path = weights_manager.get_weights("detection")
-        assert Path(path).resolve() == expected_path.resolve()
-
-
-def test_get_weights_invalid_type(weights_manager):
-    with pytest.raises(ValueError, match="Unknown model type"):
-        weights_manager.get_weights("invalid_type")
-
-
-@patch("builtins.input", return_value="y")
-@patch("culicidaelab.predictors.model_weights_manager.hf_hub_download")
-@patch("urllib3.connectionpool.HTTPSConnectionPool")
-def test_get_weights_download(
-    mock_pool,
-    mock_download,
-    mock_input,
-    weights_manager,
-    tmp_path,
+def test_ensure_weights_successful_download(
+    weights_manager: ModelWeightsManager,
+    mock_settings: Mock,
+    mock_provider_service: Mock,
 ):
-    project_root = weights_manager._config.paths.root_dir
-    models_dir = project_root / "models"
+    """
+    Test that ensure_weights correctly orchestrates the process
+    of getting model weights when everything is successful.
+    """
+    model_type = "classifier"
+    expected_path = Path("/mock/path/to/model.pt")
 
-    download_file = (
-        tmp_path / "culico-net-det-v1-nano.pt.5e55930b01a0b014201b579ed00b198e941d09716d9be1437e64e062fbd29494"
-    )
-    download_file.touch()
-    mock_download.return_value = str(download_file)
+    # Get the mock objects to check their calls later
+    mock_provider = mock_provider_service.get_provider.return_value
 
-    mock_pool.return_value.request.return_value.status = 200
-    mock_pool.return_value.request.return_value.data = b"mock_data"
+    # Call the method under test
+    result_path = weights_manager.ensure_weights(model_type)
 
-    download_called = False
+    # Assert that the correct methods were called on the dependencies
+    mock_settings.get_config.assert_called_once_with(f"predictors.{model_type}")
 
-    def exists_side_effect(p):
-        nonlocal download_called
-        p = str(Path(p).resolve())
+    predictor_config = mock_settings.get_config.return_value
+    mock_provider_service.get_provider.assert_called_once_with(predictor_config.provider)
 
-        if ".netrc" in p:
-            return False
+    mock_provider.download_model_weights.assert_called_once_with(model_type)
 
-        if p == str((models_dir / "detection.pt").resolve()):
-            return download_called
-
-        return False
-
-    def mock_download_side_effect(*args, **kwargs):
-        nonlocal download_called
-        download_called = True
-        return str(download_file)
-
-    mock_download.side_effect = mock_download_side_effect
-
-    with (
-        patch("os.path.exists", side_effect=exists_side_effect),
-        patch("shutil.move") as mock_move,
-    ):
-        path = weights_manager.get_weights("detection")
-        expected_path = models_dir / "detection.pt"
-
-        assert Path(path).resolve() == expected_path.resolve()
-        mock_download.assert_called_once()
-
-        mock_download.assert_called_with(
-            repo_id=weights_manager._config.models.weights["detection"].remote_repo,
-            filename=weights_manager._config.models.weights["detection"].remote_file,
-            local_dir=str(models_dir),
-        )
-
-        mock_move.assert_called_once_with(str(download_file), expected_path)
+    # Assert that the final result is what the provider returned
+    assert result_path == expected_path
 
 
-@patch("builtins.input", return_value="n")
-def test_get_weights_download_declined(mock_input, weights_manager):
-    with patch("os.path.exists") as mock_exists:
-        mock_exists.return_value = False
-        with pytest.raises(FileNotFoundError):
-            weights_manager.get_weights("detection")
+def test_ensure_weights_raises_runtime_error_on_provider_failure(
+    weights_manager: ModelWeightsManager,
+    mock_provider_service: Mock,
+):
+    """
+    Test that ensure_weights catches exceptions from its provider
+    and raises a single, informative RuntimeError.
+    """
+    model_type = "detector"
+    original_exception = ConnectionError("Could not connect to Hugging Face Hub")
+
+    # Configure the mocked provider to raise an error
+    mock_provider = mock_provider_service.get_provider.return_value
+    mock_provider.download_model_weights.side_effect = original_exception
+
+    # Use pytest.raises to assert that the correct exception is raised
+    with pytest.raises(RuntimeError) as excinfo:
+        weights_manager.ensure_weights(model_type)
+
+    # Assert that the new exception message is informative and chains the original
+    assert f"Failed to download weights for '{model_type}'" in str(excinfo.value)
+    assert str(original_exception) in str(excinfo.value)
+    assert excinfo.value.__cause__ is original_exception
 
 
-def test_get_abs_path(weights_manager):
-    relative_path = "models/weights.pt"
-    abs_path = weights_manager._get_abs_path(relative_path)
-    expected_path = weights_manager._config.paths.root_dir / "models/weights.pt"
-    assert abs_path == expected_path.resolve()
+def test_ensure_weights_raises_runtime_error_on_config_failure(
+    weights_manager: ModelWeightsManager,
+    mock_settings: Mock,
+):
+    """
+    Test that ensure_weights raises a RuntimeError if the config lookup fails.
+    """
+    model_type = "invalid_type"
+    original_exception = KeyError(f"Config not found for predictors.{model_type}")
 
-    absolute_path = Path("/weights.pt")
-    abs_path = weights_manager._get_abs_path(absolute_path)
-    assert abs_path == absolute_path.resolve()
+    # Configure settings mock to raise an error on get_config
+    mock_settings.get_config.side_effect = original_exception
+
+    with pytest.raises(RuntimeError) as excinfo:
+        weights_manager.ensure_weights(model_type)
+
+    # Assert that the new exception message is informative and chains the original
+    assert f"Failed to download weights for '{model_type}'" in str(excinfo.value)
+    assert str(original_exception) in str(excinfo.value)
+    assert excinfo.value.__cause__ is original_exception
