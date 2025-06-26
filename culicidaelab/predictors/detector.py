@@ -197,7 +197,7 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
         box_color = str_to_bgr(vis_config.box_color)
         text_color = str_to_bgr(vis_config.text_color)
         font_scale = vis_config.font_scale
-        thickness = vis_config.thickness
+        thickness = vis_config.box_thickness
 
         for x, y, w, h, conf in predictions:
             x1, y1 = int(x - w / 2), int(y - h / 2)
