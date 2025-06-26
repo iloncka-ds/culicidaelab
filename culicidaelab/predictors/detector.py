@@ -35,7 +35,6 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
     def __init__(
         self,
         settings: Settings,
-        weights_manager: ModelWeightsManager,
         load_model: bool = False,
     ) -> None:
         """

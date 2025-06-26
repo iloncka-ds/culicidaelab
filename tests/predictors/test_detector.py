@@ -56,11 +56,11 @@ def mock_weights_manager(tmp_path):
 
 
 @pytest.fixture
-def detector(mock_settings, mock_weights_manager):
+def detector(mock_settings):
     """Provides a MosquitoDetector instance with mocked dependencies."""
     with patch("culicidaelab.predictors.detector.YOLO") as _:
         # Instantiate detector without loading the real model
-        det = MosquitoDetector(settings=mock_settings, weights_manager=mock_weights_manager, load_model=False)
+        det = MosquitoDetector(settings=mock_settings, load_model=False)
         # Attach a mock model instance for testing predict methods
         det._model = Mock()
         # Mock the __call__ method of the model instance
