@@ -43,6 +43,7 @@ dependencies = [
     "toml>=0.10.2",
     "dotenv>=0.9.9",
     "pydantic-settings>=2.9.1",
+    "ipywidgets>=8.1.7",
 ]
 
 [project.urls]
