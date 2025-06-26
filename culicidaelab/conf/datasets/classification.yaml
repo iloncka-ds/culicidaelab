@@ -1,20 +1,26 @@
-# defaults:
-#   repository: "iloncka/mosquito-species-classification-dataset"
-#   dataset_name: "classification"
-#   dataset_metadata: None
-#   dataset_dir: "datasets"
-#   trained_models_repositories:
-#     - "iloncka/culico-net-cls-v1"
 name: "mosquito-species-classification"
-path: "datasets/classification"
+path: "mosquito_species_classification"
 format: "imagefolder"
-classes: [
-  "aedes_aegypti",
-  "aedes_albopictus",
-  "anopheles_arabiensis",
-  "culex_pipiens"
-]
-
+classes:
+  - "aedes_aegypti"
+  - "aedes_albopictus"
+  - "aedes_canadensis"
+  - "aedes_dorsalis"
+  - "aedes_geniculatus"
+  - "aedes_koreicus"
+  - "aedes_triseriatus"
+  - "aedes_vexans"
+  - "anopheles_arabiensis"
+  - "anopheles_freeborni"
+  - "anopheles_sinensis"
+  - "class_background"
+  - "culex_inatomii"
+  - "culex_pipiens"
+  - "culex_quinquefasciatus"
+  - "culex_tritaeniorhynchus"
+  - "culiseta_annulata"
+  - "culiseta_longiareolata"
 repository: "iloncka/mosquito-species-classification-dataset"
+provider_name: "huggingface"
 trained_models_repositories:
   - "iloncka/culico-net-cls-v1"

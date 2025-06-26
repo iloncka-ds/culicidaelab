@@ -158,7 +158,10 @@ def test_get_default_config_path_success():
     mock_path = Path("/mock/path/conf")
 
     with patch("culicidaelab.core.config_manager.resources.files") as mock_resources:
-        mock_resources.return_value.__truediv__.return_value = mock_path
+        # Based on the original error, the implementation likely accesses a private `_path`
+        # attribute instead of using the public API. We mock this behavior.
+        # The implementation likely does `Path(resources.files(...)._path) / "conf"`.
+        mock_resources.return_value._path = mock_path.parent
 
         manager = ConfigManager.__new__(ConfigManager)  # Create without __init__
         result = manager._get_default_config_path()

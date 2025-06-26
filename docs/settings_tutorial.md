@@ -20,9 +20,9 @@ settings = get_settings(config_dir="path/to/config")
 
 ```python
 # Get path to model weights for different model types
-detection_weights = settings.get_model_weights("detection")
-segmentation_weights = settings.get_model_weights("segmentation")
-classification_weights = settings.get_model_weights("classification")
+detection_weights = settings.get_model_weights_path("detection")
+segmentation_weights = settings.get_model_weights_path("segmentation")
+classification_weights = settings.get_model_weights_path("classification")
 ```
 
 ### 2. Dataset Management

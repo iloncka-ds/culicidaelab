@@ -16,7 +16,7 @@ except ImportError:
 
 from culicidaelab.core.base_predictor import BasePredictor
 from culicidaelab.core.settings import Settings
-from culicidaelab.core.model_weights_manager import ModelWeightsManager
+from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
 
 class DummyPredictor(BasePredictor):
@@ -65,17 +65,19 @@ class FailingPredictor(BasePredictor):
 
 
 @pytest.fixture
-def dummy_settings(tmp_path):
+def mock_weights_manager(tmp_path):
+    """Creates a mock weights manager that returns a path to a dummy file."""
+    dummy_weights_path = tmp_path / "dummy.pth"
+    dummy_weights_path.touch()
+    manager = Mock(spec=ModelWeightsManager)
+    manager.ensure_weights.return_value = dummy_weights_path
+    return manager
+
+
+@pytest.fixture
+def dummy_settings():
     """Create mock settings with a Pydantic-like config object."""
     settings = Mock(spec=Settings)
-
-    # Create a dummy model file
-    dummy_weights = tmp_path / "dummy.pth"
-    dummy_weights.touch()
-
-    # Create a mock ModelWeightsManager
-    mock_weights_manager = Mock(spec=ModelWeightsManager)
-    mock_weights_manager.ensure_weights.return_value = dummy_weights
 
     # Create a mock Pydantic PredictorConfig object
     predictor_config_dict = {
@@ -83,7 +85,7 @@ def dummy_settings(tmp_path):
         "filename": "model.pth",
         "target_": "dummy.module.DummyModel",
         "params": {"param1": "value1"},
-        "model_path": str(dummy_weights),
+        "model_path": "/fake/path/dummy.pth",  # This path is ignored by BasePredictor
         "device": "cpu",
         "confidence": 0.5,
     }
@@ -100,25 +102,28 @@ def dummy_settings(tmp_path):
         return default
 
     settings.get_config.side_effect = get_config
-
-    # Mock the ModelWeightsManager
-    with patch("culicidaelab.core.base_predictor.ModelWeightsManager", return_value=mock_weights_manager):
-        yield settings
+    return settings
 
 
 @pytest.fixture
-def dummy_predictor(dummy_settings):
+def dummy_predictor(dummy_settings, mock_weights_manager):
     """Create a dummy predictor instance"""
     return DummyPredictor(
         settings=dummy_settings,
         predictor_type="dummy",
+        weights_manager=mock_weights_manager,
     )
 
 
 @pytest.fixture
-def loaded_predictor(dummy_settings):
+def loaded_predictor(dummy_settings, mock_weights_manager):
     """Create a dummy predictor with model pre-loaded"""
-    return DummyPredictor(settings=dummy_settings, predictor_type="dummy", load_model=True)
+    return DummyPredictor(
+        settings=dummy_settings,
+        predictor_type="dummy",
+        weights_manager=mock_weights_manager,
+        load_model=True,
+    )
 
 
 def test_init_basic(dummy_predictor):
@@ -129,20 +134,29 @@ def test_init_basic(dummy_predictor):
     assert dummy_predictor.model_path.name == "dummy.pth"
 
 
-def test_init_with_load_model(dummy_settings):
+def test_init_with_load_model(dummy_settings, mock_weights_manager):
     """Test initialization with immediate model loading"""
-    predictor = DummyPredictor(settings=dummy_settings, predictor_type="dummy", load_model=True)
+    predictor = DummyPredictor(
+        settings=dummy_settings,
+        predictor_type="dummy",
+        weights_manager=mock_weights_manager,
+        load_model=True,
+    )
     assert predictor.model_loaded
     assert predictor.dummy_loaded
 
 
-def test_init_missing_config(dummy_settings):
+def test_init_missing_config(dummy_settings, mock_weights_manager):
     """Test initialization with missing predictor config"""
     # Configure mock to return None, which BasePredictor should handle
     dummy_settings.get_config.side_effect = lambda path=None, default=None: None
 
     with pytest.raises(ValueError, match="Configuration for predictor 'missing' not found or is invalid"):
-        DummyPredictor(settings=dummy_settings, predictor_type="missing")
+        DummyPredictor(
+            settings=dummy_settings,
+            predictor_type="missing",
+            weights_manager=mock_weights_manager,
+        )
 
 
 def test_properties(dummy_predictor):
@@ -176,11 +190,15 @@ def test_load_model_already_loaded(loaded_predictor, caplog):
     assert "already loaded" in caplog.text
 
 
-def test_load_model_failure(dummy_settings):
+def test_load_model_failure(dummy_settings, mock_weights_manager):
     """Test model loading failure"""
-    predictor = FailingPredictor(settings=dummy_settings, predictor_type="failing")
+    predictor = FailingPredictor(
+        settings=dummy_settings,
+        predictor_type="failing",
+        weights_manager=mock_weights_manager,
+    )
 
-    with pytest.raises(RuntimeError, match="Failed to load model"):
+    with pytest.raises(RuntimeError, match="Failed to load model for failing"):
         predictor.load_model()
 
 

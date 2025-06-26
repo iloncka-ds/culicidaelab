@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..core.settings import Settings
-from ..core.config_models import DatasetConfig
-from ..core.loader_protocol import DatasetLoader
+from pathlib import Path
+
+from culicidaelab.core.settings import Settings
+from culicidaelab.core.config_models import DatasetConfig
+from culicidaelab.core.provider_service import ProviderService
 
 
 class DatasetsManager:
@@ -16,7 +18,7 @@ class DatasetsManager:
     decoupling the logic of what datasets are available from how they are loaded.
     """
 
-    def __init__(self, settings: Settings, dataset_loader: DatasetLoader):
+    def __init__(self, settings: Settings, provider_service: ProviderService):
         """
         Initialize the DatasetsManager with its dependencies.
 
@@ -25,8 +27,8 @@ class DatasetsManager:
             dataset_loader: An object that conforms to the DatasetLoader protocol.
         """
         self.settings = settings
-        self.dataset_loader = dataset_loader
-        self.loaded_datasets: dict[str, Any] = {}
+        self.provider_service = provider_service
+        self.loaded_datasets: dict[str, str | Path] = {}
 
     def get_dataset_info(self, dataset_name: str) -> DatasetConfig:
         """
@@ -53,7 +55,7 @@ class DatasetsManager:
         Returns:
             A list of configured dataset names.
         """
-        # Delegate directly to the Settings object's helper method
+
         return self.settings.list_datasets()
 
     def load_dataset(self, dataset_name: str, split: str | None = None, **kwargs) -> Any:
@@ -74,38 +76,34 @@ class DatasetsManager:
         Raises:
             KeyError: If the dataset configuration doesn't exist.
         """
-        # First, check if the dataset is already loaded and cached
+        dataset_config = self.settings.get_config(f"datasets.{dataset_name}")
+        if not dataset_config:
+            raise KeyError(f"Dataset '{dataset_name}' not found in configuration.")
+
+        provider = self.provider_service.get_provider(dataset_config.provider_name)
+
+        # Determine the path to the dataset first
         if dataset_name in self.loaded_datasets:
-            # Note: This simple cache doesn't handle different splits/kwargs.
-            # A more complex key would be needed for that, e.g., f"{dataset_name}_{split}"
-            return self.get_loaded_dataset(dataset_name)
+            dataset_path = self.loaded_datasets[dataset_name]
+        else:
+            # Download if not found in our cache
+            print(f"Dataset '{dataset_name}' not in cache. Downloading...")
+            dataset_path = provider.download_dataset(dataset_name, split=split, **kwargs)
+            self.loaded_datasets[dataset_name] = dataset_path
+            print(f"Dataset '{dataset_name}' downloaded and path cached.")
 
-        # Get the absolute path from the settings object, which handles resolution.
-        dataset_path = self.settings.get_dataset_path(dataset_name)
+        # Load the dataset from the determined path
+        print(f"Loading '{dataset_name}' from path: {dataset_path}")
+        dataset = provider.load_dataset(dataset_path, split=split, **kwargs)
+        print(f"Dataset '{dataset_name}' loaded successfully.")
 
-        print(f"Loading dataset '{dataset_name}' from: {dataset_path}...")
-        dataset = self.dataset_loader.load_dataset(str(dataset_path), split=split, **kwargs)
-
-        # Cache the loaded dataset
-        self.loaded_datasets[dataset_name] = dataset
-        print(f"Dataset '{dataset_name}' loaded and cached.")
         return dataset
 
-    def get_loaded_dataset(self, dataset_name: str) -> Any:
+    def list_loaded_datasets(self) -> list[str]:
         """
-        Get a dataset from the cache if it has been previously loaded.
-
-        Args:
-            dataset_name: The name of the loaded dataset.
+        List all loaded datasets.
 
         Returns:
-            The cached dataset object.
-
-        Raises:
-            KeyError: If the dataset has not been loaded yet.
+            List of loaded dataset names.
         """
-        if dataset_name not in self.loaded_datasets:
-            raise KeyError(
-                f"Dataset '{dataset_name}' has not been loaded. " f"Call `load_dataset('{dataset_name}')` first.",
-            )
-        return self.loaded_datasets[dataset_name]
+        return list(self.loaded_datasets.keys())

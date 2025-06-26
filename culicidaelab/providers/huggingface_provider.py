@@ -6,74 +6,58 @@ from typing import Any, cast
 from pathlib import Path
 import requests
 from huggingface_hub import hf_hub_download
-from datasets import load_dataset  # type: ignore[import-untyped]
+from datasets import load_dataset, load_from_disk  # type: ignore[import-untyped]
 
 from ..core.base_provider import BaseProvider
-from ..core.config_manager import ConfigManager
-from ..core.config_models import ProviderConfig
+from ..core.settings import Settings
 
 
 class HuggingFaceProvider(BaseProvider):
     """Provider for downloading and managing HuggingFace datasets."""
 
-    def __init__(self, config_manager: ConfigManager) -> None:
+    def __init__(self, settings: Settings, dataset_url: str, **kwargs: Any) -> None:
         """
-        Initialize HuggingFace provider with configuration.
+        Initialize HuggingFace provider.
+
+        This constructor is called by the `ProviderService` which injects the
+        global `settings` object and unpacks the specific provider's configuration
+        (e.g., `dataset_url`) as keyword arguments.
 
         Args:
-            config_manager: Configuration manager instance
+            settings: The main Settings object for the library.
+            dataset_url: The base URL for fetching Hugging Face dataset metadata.
+            **kwargs: Catches other config parameters (e.g., `api_key`).
         """
         super().__init__()
         self.provider_name = "huggingface"
-        self.config_manager = config_manager
-        self.api_key: str | None = None
-        self.provider_url: str = "https://huggingface.co/api/datasets/{dataset_name}"
+        self.settings = settings
+        self.dataset_url = dataset_url
 
-        # Get provider config with type hint
-        provider_config: ProviderConfig | dict[str, Any] = getattr(
-            self.config_manager.config,
-            "providers",
-            {},
-        ).get("huggingface", {})
-
-        # Handle both dict and ProviderConfig types
-        if isinstance(provider_config, ProviderConfig):
-            self.api_key = provider_config.api_key
-            if provider_config.api_key:
-                self.api_key = provider_config.api_key
-            if hasattr(provider_config, "provider_url"):
-                self.provider_url = provider_config.provider_url
-        else:  # dict case
-            self.api_key = provider_config.get("api_key")
-            if "provider_url" in provider_config:
-                self.provider_url = provider_config["provider_url"]
-
-        if not self.api_key:
-            raise ValueError(
-                "HuggingFace API key not found. " "Please set it in the configuration or environment variables.",
-            )
+        # The API key can be defined in the config file (passed in kwargs)
+        # or loaded from environment variables as a fallback.
+        self.api_key: str | None = kwargs.get("api_key") or self.settings.get_api_key(self.provider_name)
 
     def get_dataset_metadata(self, dataset_name: str) -> dict[str, Any]:
         """Get metadata for a specific dataset from HuggingFace.
 
         Args:
             dataset_name: Name of the dataset to get metadata for
-
+            split: Optional split to get metadata for
         Returns:
             Dataset metadata as a dictionary
 
         Raises:
-            ValueError: If API key is not set
             requests.RequestException: If the request fails
         """
-        if not self.api_key:
-            raise ValueError("HuggingFace API key is not set")
 
-        url = self.provider_url.format(dataset_name=dataset_name)
-        headers = {"Authorization": f"Bearer {self.api_key}"}
+        url = self.dataset_url.format(dataset_name=dataset_name)
+        if self.api_key:
+            headers = {"Authorization": f"Bearer {self.api_key}"}
+        else:
+            headers = {}
 
         try:
-            response = requests.get(url, headers=headers, timeout=30.0)
+            response = requests.get(url, headers=headers, timeout=10.0)
             response.raise_for_status()
             return cast(dict[str, Any], response.json())
         except requests.RequestException as e:
@@ -85,15 +69,15 @@ class HuggingFaceProvider(BaseProvider):
         self,
         dataset_name: str,
         save_dir: str | None = None,
-        *args: Any,
+        split: str | None = None,
         **kwargs: Any,
     ) -> Path:
         """Download a dataset from HuggingFace.
 
         Args:
-            dataset_name: Name of the dataset to download
-            save_dir: Directory to save the dataset. Defaults to ./data/{dataset_name}
-            **kwargs: Additional arguments to pass to the download method
+            dataset_name: Type of the dataset to download ("segmentation", "classification", "detection")
+            save_dir (Optional[str], optional): Directory to save the dataset. Defaults to None.
+             **kwargs: Additional arguments to pass to the download method
 
         Returns:
             Path to the downloaded dataset
@@ -101,30 +85,50 @@ class HuggingFaceProvider(BaseProvider):
         Raises:
             RuntimeError: If download fails
         """
-        if not self.api_key:
-            raise ValueError("HuggingFace API key is not set")
 
-        save_path = Path(save_dir) if save_dir else Path.cwd() / "data" / dataset_name
-        save_path = save_path.resolve()
-        save_path.mkdir(parents=True, exist_ok=True)
+        save_path = self.settings.get_dataset_path(dataset_name)
+        if save_dir:
+            save_path = Path(save_dir)
+        dataset_config = self.settings.get_config(f"datasets.{dataset_name}")
+
+        # The config model uses 'path' for the repository ID.
+        repo_id = dataset_config.repository
+        if not repo_id:
+            raise ValueError(f"Configuration for dataset '{dataset_name}' is missing the 'path' (repository ID).")
 
         try:
-            dataset = load_dataset(
-                dataset_name,
-                token=self.api_key,  # Updated parameter name for newer versions
-                **kwargs,
-            )
+            if self.api_key:
+                dataset = load_dataset(
+                    repo_id,
+                    split=split,
+                    token=self.api_key,
+                    **kwargs,
+                )
+            else:
+                dataset = load_dataset(
+                    repo_id,
+                    split=split,
+                    **kwargs,
+                )
+            if split:
+                save_path = save_path / split
             dataset.save_to_disk(str(save_path))  # type: ignore[union-attr]
+            dataset.cleanup_cache_files()
             return save_path
         except Exception as e:
-            raise RuntimeError(f"Failed to download dataset {dataset_name}: {str(e)}") from e
+            raise RuntimeError(f"Failed to download dataset {repo_id}: {str(e)}") from e
+
+    def load_dataset(self, dataset_path: str | Path, split: str | None = None, **kwargs) -> Any:
+        # if split:
+        #     path = Path(path) / split
+        return load_from_disk(str(dataset_path), **kwargs)
 
     def download_model_weights(self, model_type: str, *args: Any, **kwargs: Any) -> Path:
         """
         Get model weights path.
 
         Args:
-            model_type: Type of model ('detection', 'segmentation', or 'classification')
+            model_type: Type of model ('detector', 'segmenter', or 'classifier')
 
         Returns:
             Path: Path to the model weights file
@@ -133,41 +137,78 @@ class HuggingFaceProvider(BaseProvider):
             ValueError: If model type is not found in config
             RuntimeError: If download fails
         """
+
+        local_path = self.settings.get_model_weights_path(model_type).resolve()
+
+        if local_path.exists():
+            if local_path.is_symlink():
+                try:
+                    real_path = local_path.resolve(strict=True)
+                    print(f"Symlink found at {local_path}, resolved to real file: {real_path}")
+                    return real_path
+                except FileNotFoundError:
+                    print(f"Warning: Broken symlink found at {local_path}. It will be removed.")
+                    local_path.unlink()
+            else:
+                print(f"Weights file found at: {local_path}")
+                return local_path
+
+        # If we get here, the path either does not exist or was a broken symlink.
+        # We must now download the file.
+        print(f"Model weights for '{model_type}' not found. Attempting to download...")
+
+        predictor_config = self.settings.get_config(f"predictors.{model_type}")
+        repo_id = predictor_config.repository_id
+        filename = predictor_config.filename
+
+        if not repo_id or not filename:
+            raise ValueError(
+                f"Cannot download weights for '{model_type}'. "
+                f"Configuration is missing 'repository_id' or 'filename'. "
+                f"Please place the file manually at: {local_path}",
+            )
+
         try:
-            config = self.config_manager.config
-            if not hasattr(config, "models") or model_type not in config.models:
-                raise ValueError(f"Unknown model type: {model_type}")
+            dest_dir = local_path.parent.resolve()
+            print(f"Ensuring destination directory exists: {dest_dir}")
 
-            # Use getattr with type ignore since we've checked models exists
-            model_config = config.models[model_type]  # type: ignore[attr-defined]
-            local_path = Path(str(model_config.local_path)).resolve()
+            # Robust directory creation with validation
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            if not dest_dir.is_dir():
+                raise NotADirectoryError(f"Failed to create directory: {dest_dir}")
 
-            if local_path.exists():
-                return local_path
-
-            # If file doesn't exist, download it
-            print(f"Model weights not found at {local_path}. Would you like to download them? (y/n)")
-            if input().lower() != "y":
-                raise FileNotFoundError(
-                    f"Model weights not found and download was declined. "
-                    f"Please place the weights file at: {local_path}",
-                )
-
-            local_path.parent.mkdir(parents=True, exist_ok=True)
-
-            try:
-                hf_hub_download(
-                    repo_id=model_config.remote_repo,  # type: ignore[attr-defined]
-                    filename=model_config.remote_file,  # type: ignore[attr-defined]
+            # Download the file to the Hugging Face cache
+            downloaded_path_str = hf_hub_download(
+                repo_id=repo_id,
+                filename=filename,
+                cache_dir=self.settings.cache_dir / "huggingface",
+                local_dir=str(local_path.parent),
+            )
+            print(f"Downloaded weights to: {downloaded_path_str}")
+            if model_type == "segmenter":
+                # For segmenter, we need to ensure the file is not a symlink
+                downloaded_yaml = hf_hub_download(
+                    repo_id=repo_id,
+                    filename=predictor_config.sam_config_filename,
+                    cache_dir=self.settings.cache_dir / "huggingface",
                     local_dir=str(local_path.parent),
-                    local_dir_use_symlinks=False,
-                    token=self.api_key,
                 )
-                return local_path
-            except Exception as e:
-                raise RuntimeError(f"Failed to download model weights: {str(e)}") from e
+                print(f"Downloaded SAM config to: {downloaded_yaml}")
+
+            print(f"Successfully downloaded weights to: {local_path}")
+            return local_path
+
         except Exception as e:
-            raise RuntimeError(f"Error in download_model_weights: {str(e)}") from e
+            # Clean up a potentially partial file on failure
+            if local_path.exists():
+                local_path.unlink()
+            # Include directory info in error message
+            dir_status = "exists" if dest_dir.exists() else "missing"
+            dir_type = "directory" if dest_dir.is_dir() else "not-a-directory"
+            raise RuntimeError(
+                f"Failed to download weights for '{model_type}' to {local_path}. "
+                f"Directory status: {dir_status} ({dir_type}). Error: {e}",
+            ) from e
 
     def get_provider_name(self) -> str:
         """Get the provider name."""

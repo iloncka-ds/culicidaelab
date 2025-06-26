@@ -92,12 +92,15 @@ class VisualizationConfig(BaseModel):
 
     model_config = ConfigDict(extra="allow")
 
-    overlay_color: str = "blue"
+    overlay_color: str = "#000000"
     alpha: float = 0.5
-    box_color: str = "green"
-    text_color: str = "white"
+    box_color: str = "#000000"
+    text_color: str = "#000000"
     font_scale: float = 0.5
-    thickness: int = 2
+    box_thickness: int = 2
+    text_thickness: int | None = 2
+    format: str | None = "png"
+    dpi: int | None = 300
 
 
 class PredictorConfig(BaseModel):
@@ -112,6 +115,7 @@ class PredictorConfig(BaseModel):
     params: dict[str, Any] = {}
     repository_id: str | None = None
     filename: str | None = None
+    provider_name: str | None = None
     model_arch: str | None = None
     visualization: VisualizationConfig = Field(default_factory=VisualizationConfig)
 
@@ -125,6 +129,7 @@ class DatasetConfig(BaseModel):
     path: str
     format: str
     classes: list[str]
+    provider_name: str
 
 
 class ProviderConfig(BaseModel):
@@ -133,6 +138,7 @@ class ProviderConfig(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     target_: str = Field(..., alias="_target_")
+    dataset_url: str
     api_key: str | None = None
 
 

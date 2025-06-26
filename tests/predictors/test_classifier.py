@@ -11,22 +11,35 @@ from culicidaelab.core.base_predictor import BasePredictor
 # --- Fixtures ---
 
 
+def get_mock_provider(settings, *args, **kwargs):
+    """
+    A factory function for hydra to instantiate a mock provider.
+    This allows us to return a pre-configured mock that returns a valid Path.
+    """
+    provider = Mock()
+    dummy_path = settings.model_dir / "dummy.pkl"
+    if not dummy_path.exists():
+        dummy_path.parent.mkdir(parents=True, exist_ok=True)
+        dummy_path.touch()
+    provider.download_model_weights.return_value = dummy_path
+    return provider
+
+
 @pytest.fixture
 def mock_predictor_config():
     """
     Provides a real, valid instance of the PredictorConfig Pydantic model.
-    This is the key fix to satisfy the `isinstance` check.
+    FIX: Added the `provider` field to satisfy the model's validation rules.
     """
-    # Instantiate the real Pydantic model with data for the test
     return PredictorConfig(
-        _target_="some.dummy.class.path",  # Fulfill required field
-        model_path="dummy/path/model.pkl",  # Fulfill required field
+        _target_="some.dummy.class.path",
+        model_path="dummy/path/model.pkl",
+        provider="mock_provider",  # Fulfill required field
         params={"top_k": 3},
-        # Add 'visualization' as an extra field, allowed by `extra="allow"` in the model
         visualization={
             "font_scale": 0.7,
             "text_thickness": 2,
-            "text_color": (0, 255, 0),
+            "text_color": "#000000",
         },
         model_arch="efficientnet_b0",
     )
@@ -43,23 +56,25 @@ def mock_settings(tmp_path, mock_predictor_config, mock_species_map):
     """Mocks the main Settings object passed to the classifier."""
     settings = Mock()
 
-    # This side_effect logic is still correct. It will now return our
-    # real PredictorConfig instance when called with the correct path.
+    # Define a mock provider config that points to a factory function.
+    # This allows hydra to instantiate a pre-configured mock.
+    mock_provider_config = {
+        "_target_": "tests.predictors.test_classifier.get_mock_provider",
+    }
+
     def get_config_side_effect(path: str, default=None):
         if path == "predictors.classifier":
             return mock_predictor_config
+        if path == "providers.mock_provider":
+            return mock_provider_config
         return default
 
     settings.get_config.side_effect = get_config_side_effect
-
-    # Mock the species_config attribute
     species_config_mock = Mock()
     species_config_mock.species_map = mock_species_map
     inverse_map = {v: k for k, v in mock_species_map.items()}
     species_config_mock.get_index_by_species.side_effect = lambda name: inverse_map.get(name)
     settings.species_config = species_config_mock
-
-    # Mock resource directory properties
     settings.dataset_dir = tmp_path
     settings.model_dir = tmp_path
 
@@ -67,14 +82,27 @@ def mock_settings(tmp_path, mock_predictor_config, mock_species_map):
 
 
 @pytest.fixture
-def classifier(mock_settings, tmp_path):
-    """Provides an instance of MosquitoClassifier with mocked dependencies."""
-    with patch("culicidaelab.core.base_predictor.ModelWeightsManager") as mock_manager:
-        mock_manager.return_value.ensure_weights.return_value = tmp_path / "dummy.pkl"
-        # This instantiation will now succeed
-        clf = MosquitoClassifier(settings=mock_settings, load_model=False)
-        clf.learner = Mock()
-        yield clf
+def mock_weights_manager(tmp_path):
+    """Provides a mocked ModelWeightsManager for dependency injection."""
+    manager = Mock()
+    manager.ensure_weights.return_value = tmp_path / "dummy.pkl"
+    return manager
+
+
+@pytest.fixture
+def classifier(mock_settings, mock_weights_manager):
+    """
+    Provides an instance of MosquitoClassifier with mocked dependencies.
+    FIX: Instantiates the classifier with the correct signature, injecting
+    the mock_weights_manager.
+    """
+    clf = MosquitoClassifier(
+        settings=mock_settings,
+        weights_manager=mock_weights_manager,
+        load_model=False,
+    )
+    clf.learner = Mock()
+    return clf
 
 
 # --- Test Cases (No changes needed in the test logic itself) ---
