@@ -4,7 +4,7 @@ from pathlib import Path
 import requests
 
 from culicidaelab.providers.huggingface_provider import HuggingFaceProvider
-from culicidaelab.core.config_models import DatasetConfig
+from culicidaelab.core.config_models import DatasetConfig, PredictorConfig
 
 
 @pytest.fixture
@@ -15,15 +15,26 @@ def mock_settings():
     settings.get_model_weights_path.return_value = Path("/fake/models/classifier.pt")
     settings.get_api_key.return_value = "fake_api_key_from_env"
 
-    dataset_config = DatasetConfig(
-        name="my_dataset",
-        path="culicidae/my_dataset",
-        repository="culicidae/my_dataset_repo",
-        format="hf",
-        classes=[],
-        provider_name="huggingface",
-    )
-    settings.get_config.return_value = dataset_config
+    def get_config_side_effect(path):
+        if "datasets" in path:
+            return DatasetConfig(
+                name="my_dataset",
+                path="culicidae/my_dataset",
+                repository="culicidae/my_dataset_repo",
+                format="hf",
+                classes=[],
+                provider_name="huggingface",
+            )
+        if "predictors" in path:
+            return PredictorConfig(
+                _target_="a.b",
+                model_path="/fake/models/classifier.pt",
+                repository_id="org/model_repo",
+                filename="weights.pt",
+            )
+        return None
+
+    settings.get_config.side_effect = get_config_side_effect
 
     return settings
 
@@ -45,7 +56,7 @@ def test_initialization(mock_settings):
     # Test with api_key from settings (env var)
     provider_from_env = HuggingFaceProvider(settings=mock_settings, dataset_url="url")
     assert provider_from_env.api_key == "fake_api_key_from_env"
-    mock_settings.get_api_key.assert_called_once_with("huggingface")
+    mock_settings.get_api_key.assert_called_with("huggingface")
 
 
 @patch("requests.get")
@@ -99,27 +110,25 @@ def test_load_dataset(mock_load_from_disk, hf_provider):
 @patch("pathlib.Path.exists")
 def test_download_model_weights_not_found(mock_exists, mock_hf_download, hf_provider, mock_settings):
     mock_exists.return_value = False  # File does not exist
-
-    # Mock predictor config
-    predictor_config = Mock()
-    predictor_config.repository_id = "org/model_repo"
-    predictor_config.filename = "weights.pt"
-    mock_settings.get_config.return_value = predictor_config
     mock_settings.cache_dir = Path("/fake/cache")
 
-    local_path = Path("/fake/models/classifier.pt")
-    mock_hf_download.return_value = str(local_path)
+    # The SUT returns a resolved path. We must compare against a resolved path.
+    expected_path = Path("/fake/models/classifier.pt").resolve()
+    mock_hf_download.return_value = str(expected_path)
 
     result_path = hf_provider.download_model_weights("classifier")
 
     mock_hf_download.assert_called_once()
-    assert result_path == local_path
+    assert result_path == expected_path
 
 
+@patch("pathlib.Path.is_symlink", return_value=False)
 @patch("pathlib.Path.exists")
-def test_download_model_weights_already_exists(mock_exists, hf_provider):
+def test_download_model_weights_already_exists(mock_exists, mock_is_symlink, hf_provider):
     mock_exists.return_value = True  # File exists
 
     result_path = hf_provider.download_model_weights("classifier")
 
-    assert result_path == Path("/fake/models/classifier.pt")
+    # The SUT returns a resolved path. The assertion must compare against a resolved path.
+    expected_path = Path("/fake/models/classifier.pt").resolve()
+    assert result_path == expected_path
