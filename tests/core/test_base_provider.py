@@ -43,4 +43,4 @@ def test_subclass_must_implement_methods():
     provider = CompleteProvider()
     assert provider is not None
     assert provider.get_provider_name() == "complete"
-    assert provider.load_dataset(path="/fake/path") == "fake_loaded_dataset"
+    assert provider.load_dataset(dataset_path="/fake/path") == "fake_loaded_dataset"

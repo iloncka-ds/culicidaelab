@@ -90,7 +90,7 @@ def mock_weights_manager(tmp_path):
 
 
 @pytest.fixture
-def classifier(mock_settings, mock_weights_manager):
+def classifier(mock_settings):
     """
     Provides an instance of MosquitoClassifier with mocked dependencies.
     FIX: Instantiates the classifier with the correct signature, injecting
@@ -98,7 +98,6 @@ def classifier(mock_settings, mock_weights_manager):
     """
     clf = MosquitoClassifier(
         settings=mock_settings,
-        weights_manager=mock_weights_manager,
         load_model=False,
     )
     clf.learner = Mock()

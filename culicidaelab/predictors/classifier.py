@@ -56,7 +56,6 @@ class MosquitoClassifier(BasePredictor[ClassificationPredictionType, Classificat
     def __init__(
         self,
         settings: Settings,
-        weights_manager: ModelWeightsManager,
         load_model: bool = False,
     ) -> None:
         """
