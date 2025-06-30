@@ -34,7 +34,7 @@ class ModelWeightsManager(WeightsManagerProtocol):
         predictor_config = None
         try:
             predictor_config = self.settings.get_config(f"predictors.{model_type}")
-            provider = self.provider_service.get_provider(predictor_config.provider)
+            provider = self.provider_service.get_provider(predictor_config.provider_name)
             return provider.download_model_weights(model_type)
         except Exception as e:
             # Construct a detailed error message without causing a new error

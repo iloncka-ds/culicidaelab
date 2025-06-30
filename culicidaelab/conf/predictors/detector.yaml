@@ -13,7 +13,7 @@ _target_: "culicidaelab.predictors.Detector"
 model_path: "weights/detection/culico-net-det-v1-nano.pt"
 repository_id: "iloncka/culico-net-det-v1"
 filename: "culico-net-det-v1-nano.pt"
-provider: "huggingface"
+provider_name: "huggingface"
 confidence: 0.25
 predict_batch_size: 4
 device: "cpu"

@@ -10,7 +10,7 @@ species_info_mapping:
   anopheles_arabiensis: "Anopheles arabiensis"
   anopheles_freeborni: "Anopheles freeborni"
   anopheles_sinensis: "Anopheles sinensis"
-  class_background: "Background"
+  class_background: "Not defined"
   culex_inatomii: "Culex inatomii"
   culex_pipiens: "Culex pipiens"
   culex_quinquefasciatus: "Culex quinquefasciatus"

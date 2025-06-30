@@ -21,22 +21,3 @@
 15: culex_tritaeniorhynchus
 16: culiseta_annulata
 17: culiseta_longiareolata
-# classes:
-#   - "aedes_aegypti"
-#   - "aedes_albopictus"
-#   - "aedes_canadensis"
-#   - "aedes_dorsalis"
-#   - "aedes_geniculatus"
-#   - "aedes_koreicus"
-#   - "aedes_triseriatus"
-#   - "aedes_vexans"
-#   - "anopheles_arabiensis"
-#   - "anopheles_freeborni"
-#   - "anopheles_sinensis"
-#   - "class_background"
-#   - "culex_inatomii"
-#   - "culex_pipiens"
-#   - "culex_quinquefasciatus"
-#   - "culex_tritaeniorhynchus"
-#   - "culiseta_annulata"
-#   - "culiseta_longiareolata"
