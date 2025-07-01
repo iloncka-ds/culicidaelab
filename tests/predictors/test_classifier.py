@@ -29,12 +29,13 @@ def get_mock_provider(settings, *args, **kwargs):
 def mock_predictor_config():
     """
     Provides a real, valid instance of the PredictorConfig Pydantic model.
-    FIX: Added the `provider` field to satisfy the model's validation rules.
+    FIX: Added the `provider` and `provider_name` fields to satisfy the model's validation rules.
     """
     return PredictorConfig(
         _target_="some.dummy.class.path",
         model_path="dummy/path/model.pkl",
         provider="mock_provider",  # Fulfill required field
+        provider_name="mock_provider",  # Ensure provider_name is set
         params={"top_k": 3},
         visualization={
             "font_scale": 0.7,

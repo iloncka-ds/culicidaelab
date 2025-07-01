@@ -90,8 +90,8 @@ if __name__ == "__main__":
     provider_service = ProviderService(settings=settings)
     weights_manager = ModelWeightsManager(settings=settings, provider_service=provider_service)
 
-    classifier = MosquitoClassifier(settings, weights_manager=weights_manager, load_model=True)
-    detector = MosquitoDetector(settings, weights_manager=weights_manager, load_model=True)
+    classifier = MosquitoClassifier(settings, load_model=True)
+    detector = MosquitoDetector(settings, load_model=True)
 
     inputs = [np.random.randint(0, 255, (512, 512, 3), dtype=np.uint8) for _ in range(8)]
     cls_truths = ["species_a"] * len(inputs)

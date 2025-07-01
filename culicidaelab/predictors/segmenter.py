@@ -50,14 +50,24 @@ class MosquitoSegmenter(BasePredictor[SegmentationPredictionType, SegmentationGr
 
     def _load_model(self) -> None:
         """Load the SAM model."""
-        if not hasattr(self.config, "sam_config_path") or not hasattr(self.config, "device"):
+        sam2_model = None
+        if (
+            not hasattr(self.config, "model_config_path")
+            or self.config.model_config_path is None
+            or not hasattr(self.config, "device")
+        ):
             raise ValueError("Missing required configuration: 'sam_config_path' and 'device' must be set")
 
-        sam_config_path = str(self.settings.model_dir / self.config.sam_config_path)
+        sam_config_path = str(self.settings.model_dir / self.config.model_config_path)
         sam2_model = build_sam2(sam_config_path, str(self.model_path), device=self.config.device)
-        if sam2_model is None:
-            raise RuntimeError("Failed to initialize SAM2 model")
-        self._model = SAM2ImagePredictor(sam2_model)
+        try:
+            self._model = SAM2ImagePredictor(sam2_model)
+            self._model_loaded = True
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to load SAM model from {self.model_path}. "
+                f"Please check the model path and configuration. Error: {str(e)}",
+            )
 
     def predict(
         self,

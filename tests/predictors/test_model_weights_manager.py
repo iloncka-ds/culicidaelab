@@ -14,7 +14,7 @@ def mock_settings() -> Mock:
     settings = Mock()
     # Configure the get_config method to return a mock predictor config
     mock_predictor_config = Mock()
-    mock_predictor_config.provider = "mock_huggingface_provider"
+    mock_predictor_config.provider_name = "mock_huggingface_provider"
     settings.get_config.return_value = mock_predictor_config
     return settings
 
@@ -32,48 +32,65 @@ def mock_provider_service() -> Mock:
 
 
 @pytest.fixture
-def weights_manager(mock_settings: Mock, mock_provider_service: Mock) -> ModelWeightsManager:
+def weights_manager(
+    mock_settings: Mock,
+    mock_provider_service: Mock,
+) -> ModelWeightsManager:
     """Fixture to create a ModelWeightsManager with mocked dependencies."""
-    return ModelWeightsManager(settings=mock_settings, provider_service=mock_provider_service)
+    return ModelWeightsManager(
+        settings=mock_settings,
+        provider_service=mock_provider_service,
+    )
 
 
 # --- Test Cases ---
 
 
-def test_init(weights_manager: ModelWeightsManager, mock_settings: Mock, mock_provider_service: Mock):
+def test_init(
+    weights_manager: ModelWeightsManager,
+    mock_settings: Mock,
+    mock_provider_service: Mock,
+):
     """Test the initialization of the ModelWeightsManager."""
     assert isinstance(weights_manager, ModelWeightsManager)
     assert weights_manager.settings is mock_settings
     assert weights_manager.provider_service is mock_provider_service
 
 
-def test_ensure_weights_successful_download(
-    weights_manager: ModelWeightsManager,
-    mock_settings: Mock,
-    mock_provider_service: Mock,
-):
+def test_ensure_weights_successful_download():
     """
     Test that ensure_weights correctly orchestrates the process
     of getting model weights when everything is successful.
     """
+    # Arrange
     model_type = "classifier"
     expected_path = Path("/mock/path/to/model.pt")
 
-    # Get the mock objects to check their calls later
-    mock_provider = mock_provider_service.get_provider.return_value
+    mock_settings = Mock()
+    mock_predictor_config = Mock()
+    mock_predictor_config.provider_name = "mock_huggingface_provider"
+    mock_settings.get_config.return_value = mock_predictor_config
 
-    # Call the method under test
+    mock_provider = Mock()
+    mock_provider.download_model_weights.return_value = expected_path
+
+    mock_provider_service = Mock()
+    mock_provider_service.get_provider.return_value = mock_provider
+
+    weights_manager = ModelWeightsManager(
+        settings=mock_settings,
+        provider_service=mock_provider_service,
+    )
+
+    # Act
     result_path = weights_manager.ensure_weights(model_type)
 
-    # Assert that the correct methods were called on the dependencies
+    # Assert
     mock_settings.get_config.assert_called_once_with(f"predictors.{model_type}")
-
-    predictor_config = mock_settings.get_config.return_value
-    mock_provider_service.get_provider.assert_called_once_with(predictor_config.provider)
-
+    mock_provider_service.get_provider.assert_called_once_with(
+        mock_predictor_config.provider_name,
+    )
     mock_provider.download_model_weights.assert_called_once_with(model_type)
-
-    # Assert that the final result is what the provider returned
     assert result_path == expected_path
 
 
@@ -97,7 +114,7 @@ def test_ensure_weights_raises_runtime_error_on_provider_failure(
         weights_manager.ensure_weights(model_type)
 
     # Assert that the new exception message is informative and chains the original
-    assert f"Failed to download weights for '{model_type}'" in str(excinfo.value)
+    assert f"Failed to download weights for= '{model_type}'" in str(excinfo.value)
     assert str(original_exception) in str(excinfo.value)
     assert excinfo.value.__cause__ is original_exception
 
@@ -119,6 +136,6 @@ def test_ensure_weights_raises_runtime_error_on_config_failure(
         weights_manager.ensure_weights(model_type)
 
     # Assert that the new exception message is informative and chains the original
-    assert f"Failed to download weights for '{model_type}'" in str(excinfo.value)
+    assert f"Failed to download weights for= '{model_type}'" in str(excinfo.value)
     assert str(original_exception) in str(excinfo.value)
     assert excinfo.value.__cause__ is original_exception

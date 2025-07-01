@@ -38,7 +38,7 @@ class ModelWeightsManager(WeightsManagerProtocol):
             return provider.download_model_weights(model_type)
         except Exception as e:
             # Construct a detailed error message without causing a new error
-            error_msg = f"Failed to download weights for '{model_type}': {str(e)}"
+            error_msg = f"Failed to download weights for= '{model_type}': {str(e)}"
             if predictor_config:
                 error_msg += f" with predictor config {predictor_config}"
             raise RuntimeError(error_msg) from e
