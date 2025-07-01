@@ -14,6 +14,8 @@ model_path: "weights/detection/culico-net-det-v1-nano.pt"
 repository_id: "iloncka/culico-net-det-v1"
 filename: "culico-net-det-v1-nano.pt"
 provider_name: "huggingface"
+model_config_path: ""
+model_config_filename: ""
 confidence: 0.25
 predict_batch_size: 4
 device: "cpu"
