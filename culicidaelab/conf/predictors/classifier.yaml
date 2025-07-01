@@ -15,6 +15,8 @@ model_path: "weights/classification/culico-net-cls-v1-17.pkl"
 repository_id: "iloncka/culico-net-cls-v1"
 filename: "culico-net-cls-v1-17.pkl"
 provider_name: "huggingface"
+model_config_path: ""
+model_config_filename: ""
 confidence: 0.5
 device: "cpu"
 predict_batch_size: 4

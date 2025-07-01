@@ -189,7 +189,7 @@ class HuggingFaceProvider(BaseProvider):
                 # For segmenter, we need to ensure the file is not a symlink
                 downloaded_yaml = hf_hub_download(
                     repo_id=repo_id,
-                    filename=predictor_config.sam_config_filename,
+                    filename=predictor_config.model_config_filename,
                     cache_dir=self.settings.cache_dir / "huggingface",
                     local_dir=str(local_path.parent),
                 )
