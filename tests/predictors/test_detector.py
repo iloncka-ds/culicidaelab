@@ -59,14 +59,18 @@ def mock_weights_manager(tmp_path):
 def detector(mock_settings):
     """Provides a MosquitoDetector instance with mocked dependencies."""
     with patch("culicidaelab.predictors.detector.YOLO") as _:
-        # Instantiate detector without loading the real model
-        det = MosquitoDetector(settings=mock_settings, load_model=False)
-        # Attach a mock model instance for testing predict methods
-        det._model = Mock()
-        # Mock the __call__ method of the model instance
-        det._model.return_value = []
-        det._model_loaded = True
-        return det
+        with patch("culicidaelab.predictors.detector.ModelWeightsManager") as MockWeightsManager:
+            # Patch ensure_weights to avoid provider lookup
+            instance = MockWeightsManager.return_value
+            instance.ensure_weights.return_value = "dummy/path/yolo.pt"
+            # Instantiate detector without loading the real model
+            det = MosquitoDetector(settings=mock_settings, load_model=False)
+            # Attach a mock model instance for testing predict methods
+            det._model = Mock()
+            # Mock the __call__ method of the model instance
+            det._model.return_value = []
+            det._model_loaded = True
+            return det
 
 
 # --- Tests ---

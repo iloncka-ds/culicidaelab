@@ -15,6 +15,9 @@ class MockProvider(BaseProvider):
     def get_provider_name(self) -> str:
         return "mock_provider"
 
+    def load_dataset(self, *args, **kwargs):
+        pass
+
 
 @pytest.fixture
 def mock_settings():

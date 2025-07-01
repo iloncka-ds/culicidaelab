@@ -117,6 +117,8 @@ class PredictorConfig(BaseModel):
     filename: str | None = None
     provider_name: str | None = None
     model_arch: str | None = None
+    model_config_path: str | None
+    model_config_filename: str | None
     visualization: VisualizationConfig = Field(default_factory=VisualizationConfig)
 
 

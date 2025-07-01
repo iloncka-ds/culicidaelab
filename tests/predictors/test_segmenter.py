@@ -51,7 +51,7 @@ def mock_settings():
 
     # This mock simulates the PredictorConfig Pydantic model
     mock_predictor_config = MagicMock(spec=PredictorConfig)
-    mock_predictor_config.sam_config_path = "sam/sam_config.json"
+    mock_predictor_config.model_config_path = "sam/sam_config.yaml"
     mock_predictor_config.device = "cpu"
 
     # Create a mock for the nested visualization config that supports attribute access
@@ -114,7 +114,7 @@ def test_load_model(segmenter, mocker):
     mock_predictor = MagicMock()
     mocker.patch("culicidaelab.predictors.segmenter.SAM2ImagePredictor", return_value=mock_predictor)
     segmenter._load_model()
-    expected_config_path = str(segmenter.settings.model_dir / segmenter.config.sam_config_path)
+    expected_config_path = str(segmenter.settings.model_dir / segmenter.config.model_config_path)
     mock_build_sam2.assert_called_once()
     args, kwargs = mock_build_sam2.call_args
     assert args[0] == expected_config_path
