@@ -58,8 +58,7 @@ class MosquitoSegmenter(BasePredictor[SegmentationPredictionType, SegmentationGr
         ):
             raise ValueError("Missing required configuration: 'sam_config_path' and 'device' must be set")
 
-        sam_config_path = str(self.settings.model_dir / self.config.model_config_path)
-        sam2_model = build_sam2(sam_config_path, str(self.model_path), device=self.config.device)
+        sam2_model = build_sam2(self.config.model_config_path, str(self.model_path), device=self.config.device)
         try:
             self._model = SAM2ImagePredictor(sam2_model)
             self._model_loaded = True
