@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "culicidaelab"
-version = "0.1.11"
+version = "0.1.12"
 description = "A Python library for mosquito detection, segmentation, and classification in images"
 readme = "README.md"
 authors = [
