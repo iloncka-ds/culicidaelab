@@ -185,17 +185,7 @@ class HuggingFaceProvider(BaseProvider):
                 local_dir=str(local_path.parent),
             )
             print(f"Downloaded weights to: {downloaded_path_str}")
-            if model_type == "segmenter":
-                # For segmenter, we need to ensure the file is not a symlink
-                downloaded_yaml = hf_hub_download(
-                    repo_id=repo_id,
-                    filename=predictor_config.model_config_filename,
-                    cache_dir=self.settings.cache_dir / "huggingface",
-                    local_dir=str(local_path.parent),
-                )
-                print(f"Downloaded SAM config to: {downloaded_yaml}")
 
-            print(f"Successfully downloaded weights to: {local_path}")
             return local_path
 
         except Exception as e:

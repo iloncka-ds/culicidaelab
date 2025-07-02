@@ -3,7 +3,7 @@ model_path: "weights/segmentation/sam2.1_hiera_tiny.pt"
 repository_id: "iloncka/culico-net-segm-v1-nano"
 filename: "sam2.1_hiera_tiny.pt"
 provider_name: "huggingface"
-model_config_path: "weights/segmentation/sam2.1_hiera_t.yaml"
+model_config_path: "configs/sam2.1/sam2.1_hiera_t.yaml"
 model_config_filename: "sam2.1_hiera_t.yaml"
 model_arch: "sam2.1_hiera_tiny"
 visualization:
