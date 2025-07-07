@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from pathlib import Path
+from typing import Any
 from unittest.mock import Mock, patch, MagicMock
 from concurrent.futures import Future
 import logging
@@ -12,7 +13,9 @@ except ImportError:
     PredictorConfig = type("PredictorConfig", (object,), {})  # type: ignore[assignment, misc]
     import sys
 
-    sys.modules["culicidaelab.core.config_models"] = MagicMock(PredictorConfig=PredictorConfig)
+    sys.modules["culicidaelab.core.config_models"] = MagicMock(
+        PredictorConfig=PredictorConfig,
+    )
 
 from culicidaelab.core.base_predictor import BasePredictor
 from culicidaelab.core.settings import Settings
@@ -22,7 +25,7 @@ from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 class DummyPredictor(BasePredictor):
     """Test implementation of BasePredictor"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         self.dummy_loaded = False
         self._model = None
         super().__init__(*args, **kwargs)
@@ -86,6 +89,8 @@ def dummy_settings():
         "target_": "dummy.module.DummyModel",
         "params": {"param1": "value1"},
         "model_path": "/fake/path/dummy.pth",  # This path is ignored by BasePredictor
+        "model_config_path": "some/path/to/config.yaml",
+        "model_config_filename": "config.yaml",
         "device": "cpu",
         "confidence": 0.5,
     }
@@ -151,7 +156,10 @@ def test_init_missing_config(dummy_settings, mock_weights_manager):
     # Configure mock to return None, which BasePredictor should handle
     dummy_settings.get_config.side_effect = lambda path=None, default=None: None
 
-    with pytest.raises(ValueError, match="Configuration for predictor 'missing' not found or is invalid"):
+    with pytest.raises(
+        ValueError,
+        match="Configuration for predictor 'missing' not found or is invalid",
+    ):
         DummyPredictor(
             settings=dummy_settings,
             predictor_type="missing",
@@ -269,7 +277,10 @@ def test_evaluate_with_input_data(loaded_predictor):
 
 def test_evaluate_no_prediction_no_input(dummy_predictor):
     """Test evaluation fails when neither prediction nor input data provided"""
-    with pytest.raises(ValueError, match="Either 'prediction' or 'input_data' must be provided"):
+    with pytest.raises(
+        ValueError,
+        match="Either 'prediction' or 'input_data' must be provided",
+    ):
         dummy_predictor.evaluate(ground_truth=4.0)
 
 
@@ -325,14 +336,24 @@ def test_evaluate_batch_with_input_data(loaded_predictor):
 
 def test_evaluate_batch_no_predictions_no_input(dummy_predictor):
     """Test batch evaluation fails when neither predictions nor input data provided"""
-    with pytest.raises(ValueError, match="Either 'predictions_batch' or 'input_data_batch' must be provided"):
+    with pytest.raises(
+        ValueError,
+        match="Either 'predictions_batch' or 'input_data_batch' must be provided",
+    ):
         dummy_predictor.evaluate_batch(ground_truth_batch=[4.0])
 
 
 def test_evaluate_batch_mismatched_lengths(dummy_predictor):
     """Test batch evaluation fails with mismatched batch lengths"""
-    with pytest.raises(ValueError, match="Number of predictions .* must match number of ground truths"):
-        dummy_predictor.evaluate_batch(ground_truth_batch=[4.0, 0.0], predictions_batch=[4.0], show_progress=False)
+    with pytest.raises(
+        ValueError,
+        match="Number of predictions .* must match number of ground truths",
+    ):
+        dummy_predictor.evaluate_batch(
+            ground_truth_batch=[4.0, 0.0],
+            predictions_batch=[4.0],
+            show_progress=False,
+        )
 
 
 def test_aggregate_metrics_empty_list(dummy_predictor):
@@ -364,7 +385,10 @@ def test_aggregate_metrics_all_empty(dummy_predictor, caplog):
 
 def test_aggregate_metrics_multiple_keys(dummy_predictor):
     """Test aggregating metrics with multiple keys"""
-    metrics_list = [{"accuracy": 1.0, "precision": 0.8}, {"accuracy": 0.0, "precision": 0.6}]
+    metrics_list = [
+        {"accuracy": 1.0, "precision": 0.8},
+        {"accuracy": 0.0, "precision": 0.6},
+    ]
 
     result = dummy_predictor._aggregate_metrics(metrics_list)
 
@@ -380,7 +404,11 @@ def test_finalize_evaluation_report(dummy_predictor):
     predictions = [4.0, 0.0]
     ground_truths = [4.0, 0.0]
 
-    result = dummy_predictor._finalize_evaluation_report(aggregated, predictions, ground_truths)
+    result = dummy_predictor._finalize_evaluation_report(
+        aggregated,
+        predictions,
+        ground_truths,
+    )
 
     assert result == aggregated  # Default implementation returns unchanged
 
@@ -458,7 +486,7 @@ def test_calculate_metrics_parallel_success(dummy_predictor):
         def __exit__(self, exc_type, exc_val, exc_tb):
             pass
 
-        def submit(self, func, *args, **kwargs):
+        def submit(self, func, *args: Any, **kwargs: Any):
             submit_calls.append(args)
             return futures[len(submit_calls) - 1]
 
@@ -495,7 +523,7 @@ def test_calculate_metrics_parallel_with_exception(dummy_predictor, caplog):
         def __exit__(self, exc_type, exc_val, exc_tb):
             pass
 
-        def submit(self, func, *args, **kwargs):
+        def submit(self, func, *args: Any, **kwargs: Any):
             submit_calls.append(args)
             return futures[len(submit_calls) - 1]
 

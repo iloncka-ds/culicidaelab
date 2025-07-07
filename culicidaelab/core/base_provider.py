@@ -5,13 +5,15 @@ from typing import Any
 
 
 class BaseProvider(ABC):
+    """Abstract base class for all data and model providers."""
+
     @abstractmethod
     def download_dataset(
         self,
         dataset_name: str,
         save_dir: str | None = None,
         *args,
-        **kwargs,
+        **kwargs: Any,
     ) -> Path:
         """Download a dataset from HuggingFace.
 
@@ -30,7 +32,7 @@ class BaseProvider(ABC):
     def load_dataset(
         self,
         dataset_path: str | Path,
-        **kwargs,
+        **kwargs: Any,
     ) -> Any:
         """Load a dataset from a local path.
 
@@ -44,7 +46,12 @@ class BaseProvider(ABC):
         raise NotImplementedError("Subclasses must implement this method")
 
     @abstractmethod
-    def download_model_weights(self, model_type: str, *args, **kwargs) -> Path:
+    def download_model_weights(
+        self,
+        model_type: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Path:
         """
         Download model and get weights path.
 
@@ -59,5 +66,9 @@ class BaseProvider(ABC):
 
     @abstractmethod
     def get_provider_name(self) -> str:
-        """Abstract method for getting provider name"""
+        """Gets the unique name of the provider.
+
+        Returns:
+            A string representing the provider's name (e.g., 'huggingface').
+        """
         pass

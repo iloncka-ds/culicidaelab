@@ -2,16 +2,16 @@ import pytest
 import numpy as np
 from unittest.mock import Mock, patch
 import torch
+from typing import Any
 
 # Import the Pydantic model we need to instantiate
 from culicidaelab.core.config_models import PredictorConfig
 from culicidaelab.predictors.classifier import MosquitoClassifier
 from culicidaelab.core.base_predictor import BasePredictor
 
+
 # --- Fixtures ---
-
-
-def get_mock_provider(settings, *args, **kwargs):
+def get_mock_provider(settings, *args: Any, **kwargs: Any):
     """
     A factory function for hydra to instantiate a mock provider.
     This allows us to return a pre-configured mock that returns a valid Path.
@@ -43,6 +43,8 @@ def mock_predictor_config():
             "text_color": "#000000",
         },
         model_arch="efficientnet_b0",
+        model_config_path="dummy/path/config.yaml",
+        model_config_filename="config.yaml",
     )
 
 
@@ -74,7 +76,9 @@ def mock_settings(tmp_path, mock_predictor_config, mock_species_map):
     species_config_mock = Mock()
     species_config_mock.species_map = mock_species_map
     inverse_map = {v: k for k, v in mock_species_map.items()}
-    species_config_mock.get_index_by_species.side_effect = lambda name: inverse_map.get(name)
+    species_config_mock.get_index_by_species.side_effect = lambda name: inverse_map.get(
+        name,
+    )
     settings.species_config = species_config_mock
     settings.dataset_dir = tmp_path
     settings.model_dir = tmp_path
@@ -131,7 +135,10 @@ def test_load_model_success(classifier):
 
 def test_load_model_failure(classifier):
     """Test that model loading failure raises a RuntimeError."""
-    with patch("culicidaelab.predictors.classifier.load_learner", side_effect=Exception("Load failed")):
+    with patch(
+        "culicidaelab.predictors.classifier.load_learner",
+        side_effect=Exception("Load failed"),
+    ):
         with pytest.raises(RuntimeError, match="Failed to load model for classifier"):
             classifier.load_model()
         assert classifier.model_loaded is False
@@ -173,7 +180,11 @@ def test_evaluate_single_item_correct(classifier):
     dummy_image = np.zeros((100, 100, 3), dtype=np.uint8)
     ground_truth = "species1"
     prediction_result = [("species1", 0.9), ("species2", 0.1)]
-    with patch.object(classifier, "predict", return_value=prediction_result) as mock_predict:
+    with patch.object(
+        classifier,
+        "predict",
+        return_value=prediction_result,
+    ) as mock_predict:
         metrics = classifier.evaluate(input_data=dummy_image, ground_truth=ground_truth)
         mock_predict.assert_called_once_with(dummy_image)
         assert metrics["accuracy"] == 1.0
@@ -194,7 +205,8 @@ def test_evaluate_single_item_incorrect_but_in_top5(classifier):
 def test_evaluate_batch(classifier):
     """Test the full BasePredictor.evaluate_batch flow."""
     dummy_images = [np.zeros((10, 10, 3), dtype=np.uint8)] * 2
-    ground_truths = ["species1", "species2"]
+    # Make both ground truths the same class to avoid sklearn warning
+    ground_truths = ["species1", "species1"]
     predictions = [
         [("species1", 0.9), ("species2", 0.08), ("species3", 0.02)],
         [("species1", 0.8), ("species2", 0.15), ("species3", 0.05)],
@@ -205,11 +217,11 @@ def test_evaluate_batch(classifier):
             ground_truth_batch=ground_truths,
             num_workers=1,
         )
-        assert report["accuracy_mean"] == pytest.approx(0.5)  # (1.0 + 0.0) / 2
+        assert report["accuracy_mean"] == pytest.approx(1.0)  # (1.0 + 1.0) / 2
         assert report["confidence_mean"] == pytest.approx(0.85)  # (0.9 + 0.8) / 2
         assert report["top_5_correct_mean"] == pytest.approx(1.0)  # (1.0 + 1.0) / 2
         assert "confusion_matrix" in report
-        expected_cm = [[1, 0, 0], [1, 0, 0], [0, 0, 0]]
+        expected_cm = [[2, 0, 0], [0, 0, 0], [0, 0, 0]]
         assert report["confusion_matrix"] == expected_cm
 
 

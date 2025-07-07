@@ -21,6 +21,8 @@ def test_predictor_config_validation():
         "device": "cuda",
         "repository_id": "org/repo",
         "filename": "model.pt",
+        "model_config_path": "dummy/path/config.yaml",
+        "model_config_filename": "config.yaml",
     }
     predictor = PredictorConfig(**valid_data)
     assert predictor.target_ == valid_data["_target_"]
@@ -45,7 +47,12 @@ def test_dataset_config_validation():
 
     # Missing required field 'name'
     with pytest.raises(ValidationError):
-        DatasetConfig(path="path", format="huggingface", classes=[], provider_name="huggingface")
+        DatasetConfig(
+            path="path",
+            format="huggingface",
+            classes=[],
+            provider_name="huggingface",
+        )
 
 
 def test_provider_config_validation():
@@ -123,6 +130,8 @@ def test_root_config_model():
             "classifier": {
                 "_target_": "some.Classifier",
                 "model_path": "path/to/model.pt",
+                "model_config_path": "dummy/path/config.yaml",
+                "model_config_filename": "config.yaml",
             },
         },
         "providers": {

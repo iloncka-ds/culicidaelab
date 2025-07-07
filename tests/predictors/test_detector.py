@@ -27,6 +27,8 @@ def mock_predictor_config():
             "font_scale": 0.5,
             "thickness": 2,
         },
+        model_config_path="dummy/path/config.yaml",
+        model_config_filename="config.yaml",
     )
 
 
@@ -59,7 +61,9 @@ def mock_weights_manager(tmp_path):
 def detector(mock_settings):
     """Provides a MosquitoDetector instance with mocked dependencies."""
     with patch("culicidaelab.predictors.detector.YOLO") as _:
-        with patch("culicidaelab.predictors.detector.ModelWeightsManager") as MockWeightsManager:
+        with patch(
+            "culicidaelab.predictors.detector.ModelWeightsManager",
+        ) as MockWeightsManager:
             # Patch ensure_weights to avoid provider lookup
             instance = MockWeightsManager.return_value
             instance.ensure_weights.return_value = "dummy/path/yolo.pt"
