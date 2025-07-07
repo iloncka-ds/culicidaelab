@@ -65,13 +65,31 @@ class SpeciesConfig:
         return None
 
     def get_species_by_index(self, index: int) -> str | None:
-        """Get the full species name by its class index."""
+        """Gets the full species name by its class index.
+
+        Args:
+            index: The integer class index.
+
+        Returns:
+            The full species name as a string, or None if not found.
+        """
         return self._species_map.get(index)
 
     def get_index_by_species(self, species_name: str) -> int | None:
-        """Get the class index by its full species name."""
+        """Gets the class index by its full species name.
+
+        Args:
+            species_name: The full name of the species.
+
+        Returns:
+            The integer class index, or None if not found.
+        """
         return self._reverse_species_map.get(species_name)
 
     def list_species_names(self) -> list[str]:
-        """Returns a list of all configured full species names."""
+        """Returns a list of all configured full species names.
+
+        Returns:
+            A list of strings, where each string is a species name.
+        """
         return list(self._reverse_species_map.keys())

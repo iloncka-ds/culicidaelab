@@ -3,7 +3,14 @@ from .base_provider import BaseProvider
 
 
 class ProviderService:
+    """Manages the instantiation and lifecycle of data providers."""
+
     def __init__(self, settings: Settings):
+        """Initializes the ProviderService.
+
+        Args:
+            settings: The main Settings object for the library.
+        """
         self._settings = settings
         self._providers: dict[str, BaseProvider] = {}  # Cache instantiated providers
 
@@ -33,7 +40,7 @@ class ProviderService:
 
             self._providers[provider_name] = self._settings.instantiate_from_config(
                 provider_path,
-                settings=self._settings,
+                settings=self._settings.get_config(provider_path).model_dump(),
             )
 
         return self._providers[provider_name]

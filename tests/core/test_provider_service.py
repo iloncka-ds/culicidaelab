@@ -1,21 +1,22 @@
 import pytest
 from unittest.mock import Mock
+from typing import Any
 
 from culicidaelab.core.provider_service import ProviderService
 from culicidaelab.core.base_provider import BaseProvider
 
 
 class MockProvider(BaseProvider):
-    def download_dataset(self, *args, **kwargs):
+    def download_dataset(self, *args: Any, **kwargs: Any):
         pass
 
-    def download_model_weights(self, *args, **kwargs):
+    def download_model_weights(self, *args: Any, **kwargs: Any):
         pass
 
     def get_provider_name(self) -> str:
         return "mock_provider"
 
-    def load_dataset(self, *args, **kwargs):
+    def load_dataset(self, *args: Any, **kwargs: Any):
         pass
 
 
@@ -41,7 +42,10 @@ def test_get_provider_instantiates_on_first_call(mock_settings):
 
     # Assertions
     mock_settings.get_config.assert_called_once_with(f"providers.{provider_name}")
-    mock_settings.instantiate_from_config.assert_called_once_with(f"providers.{provider_name}", settings=mock_settings)
+    mock_settings.instantiate_from_config.assert_called_once_with(
+        f"providers.{provider_name}",
+        settings=mock_settings,
+    )
     assert provider == mock_provider_instance
 
 
@@ -74,7 +78,10 @@ def test_get_provider_raises_error_if_not_configured(mock_settings):
 
     service = ProviderService(mock_settings)
 
-    with pytest.raises(ValueError, match=f"Provider '{provider_name}' not found in configuration."):
+    with pytest.raises(
+        ValueError,
+        match=f"Provider '{provider_name}' not found in configuration.",
+    ):
         service.get_provider(provider_name)
 
     mock_settings.get_config.assert_called_once_with(f"providers.{provider_name}")

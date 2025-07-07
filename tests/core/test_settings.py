@@ -60,6 +60,8 @@ def mock_config() -> CulicidaeLabConfig:
                 model_path="models/default.pt",
                 provider_name="local",
                 confidence=0.5,
+                model_config_path="dummy/path/config.yaml",
+                model_config_filename="config.yaml",
             ),
         },
         species={},

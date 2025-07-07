@@ -63,6 +63,12 @@ exclude = [
 [tool.setuptools.package-data]
 "*" = ["**/*.yaml"]
 
+[dependency-groups]
+dev = [
+    "jupytext>=1.17.2",
+    "mkdocs-jupyter>=0.25.1",
+]
+
 [project.optional-dependencies]
 dev = [
     "black==23.3.0",

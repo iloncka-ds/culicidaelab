@@ -17,7 +17,11 @@ from culicidaelab.predictors.classifier import MosquitoClassifier
 from culicidaelab.predictors.detector import MosquitoDetector
 
 
-def measure_performance(func: Callable[..., Any], *args, **kwargs) -> dict[str, Any]:
+def measure_performance(
+    func: Callable[..., Any],
+    *args: Any,
+    **kwargs: Any,
+) -> dict[str, Any]:
     gpus = GPUtil.getGPUs()
     if gpus:
         gpu_start = {gpu.id: gpu.memoryUsed for gpu in gpus}
@@ -88,7 +92,10 @@ if __name__ == "__main__":
     from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
     provider_service = ProviderService(settings=settings)
-    weights_manager = ModelWeightsManager(settings=settings, provider_service=provider_service)
+    weights_manager = ModelWeightsManager(
+        settings=settings,
+        provider_service=provider_service,
+    )
 
     classifier = MosquitoClassifier(settings, load_model=True)
     detector = MosquitoDetector(settings, load_model=True)
@@ -97,5 +104,11 @@ if __name__ == "__main__":
     cls_truths = ["species_a"] * len(inputs)
     det_truths = [[(256.0, 256.0, 100.0, 100.0)]] * len(inputs)
 
-    run_batch_test("classification", classifier, inputs, cls_truths, Path("logs/classification"))
+    run_batch_test(
+        "classification",
+        classifier,
+        inputs,
+        cls_truths,
+        Path("logs/classification"),
+    )
     run_batch_test("detection", detector, inputs, det_truths, Path("logs/detection"))

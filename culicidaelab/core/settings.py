@@ -24,7 +24,14 @@ class Settings:
     _initialized = False
 
     def __init__(self, config_dir: str | Path | None = None) -> None:
-        """Initialize Settings facade with ConfigManager and ResourceManager."""
+        """Initializes the Settings facade.
+
+        This loads the configuration using a ConfigManager and sets up a
+        ResourceManager for file paths.
+
+        Args:
+            config_dir: Optional path to a user-provided configuration directory.
+        """
         if self._initialized:
             return
 
@@ -42,7 +49,19 @@ class Settings:
 
     # Configuration Access
     def get_config(self, path: str | None = None, default: Any = None) -> Any:
-        """Get configuration value at specified path."""
+        """Gets a configuration value using a dot-separated path.
+
+        Example:
+            >>> settings.get_config("predictors.classifier.confidence")
+
+        Args:
+            path: A dot-separated string path to the configuration value.
+                If None, returns the entire configuration object.
+            default: A default value to return if the path is not found.
+
+        Returns:
+            The configuration value, or the default value if not found.
+        """
         if not path:
             return self.config
 
@@ -58,7 +77,15 @@ class Settings:
             return default
 
     def set_config(self, path: str, value: Any) -> None:
-        """Set configuration value at specified path."""
+        """Sets a configuration value at a specified dot-separated path.
+
+        Note: This modifies the configuration in memory. To make it persistent,
+        call `save_config()`.
+
+        Args:
+            path: A dot-separated string path to the configuration value.
+            value: The new value to set.
+        """
         keys = path.split(".")
         obj = self.config
         for key in keys[:-1]:
@@ -66,7 +93,11 @@ class Settings:
         setattr(obj, keys[-1], value)
 
     def save_config(self, file_path: str | Path | None = None) -> None:
-        """Save current configuration to a user config file."""
+        """Save current configuration to a user config file.
+        Args:
+            file_path: Optional path to save the configuration file.
+                If None, defaults to "culicidaelab_saved.yaml" in the user config directory.
+        """
         if file_path is None:
             if not self._config_manager.user_config_dir:
                 raise ValueError("Cannot save config without a specified user config directory.")
@@ -108,7 +139,14 @@ class Settings:
 
     # Dataset Management
     def get_dataset_path(self, dataset_type: str) -> Path:
-        """Get path to dataset directory for specified type."""
+        """Gets the standardized path for a specific dataset directory.
+
+        Args:
+            dataset_type: The name of the dataset type (e.g., 'classification').
+
+        Returns:
+            An absolute path to the dataset directory.
+        """
         if dataset_type not in self.config.datasets:
             raise ValueError(f"Dataset type '{dataset_type}' not configured.")
 
@@ -126,7 +164,14 @@ class Settings:
 
     # Model Management
     def get_model_weights_path(self, model_type: str) -> Path:
-        """Get path to model weights file."""
+        """Gets the configured path to a model's weights file.
+
+        Args:
+            model_type: The name of the model type (e.g., 'classifier').
+
+        Returns:
+            The path to the model weights file.
+        """
         if model_type not in self.config.predictors:
             raise ValueError(f"Model type '{model_type}' not configured in 'predictors'.")
 
@@ -142,14 +187,21 @@ class Settings:
         return list(self.config.predictors.keys())
 
     def set_model_weights_path(self, model_type: str, weights_path: str | Path) -> None:
-        """Set custom weights path for model type."""
+        """Set custom weights path for model type.
+        Args:
+            model_type: The name of the model type (e.g., 'classifier').
+            weights_path: The new path to the model weights file.
+        """
         if model_type not in self.config.predictors:
             raise ValueError(f"Cannot set weights for unconfigured model type: '{model_type}'.")
         self.config.predictors[model_type].model_path = str(weights_path)
 
     # API Key Management
     def get_api_key(self, provider: str) -> str | None:
-        """Get API key for external provider from environment variables."""
+        """Get API key for external provider from environment variables.
+        Args:
+            provider: The name of the provider (e.g., 'kaggle', 'huggingface', 'roboflow').
+        """
         api_keys = {
             "kaggle": "KAGGLE_API_KEY",
             "huggingface": "HUGGINGFACE_API_KEY",
@@ -168,8 +220,21 @@ class Settings:
             yield workspace
 
     # Instantiation
-    def instantiate_from_config(self, config_path: str, **kwargs) -> Any:
-        """Instantiate object from configuration."""
+    def instantiate_from_config(self, config_path: str, **kwargs: dict) -> Any:
+        """Instantiates an object from a configuration path.
+
+        This is a convenience method that finds a config object by its path
+        and uses the underlying ConfigManager to instantiate it.
+
+        Args:
+            config_path: A dot-separated path to the configuration object
+                (e.g., "predictors.classifier").
+            **kwargs: Additional keyword arguments to pass to the constructor.
+
+        Returns:
+            The instantiated object.
+        """
+
         config_obj = self.get_config(config_path)
         if not config_obj:
             raise ValueError(f"No configuration object found at path: {config_path}")

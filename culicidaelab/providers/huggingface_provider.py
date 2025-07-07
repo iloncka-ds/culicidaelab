@@ -5,8 +5,12 @@ from __future__ import annotations
 from typing import Any, cast
 from pathlib import Path
 import requests
-from huggingface_hub import hf_hub_download
-from datasets import load_dataset, load_from_disk  # type: ignore[import-untyped]
+from huggingface_hub import hf_hub_download  # type: ignore[import-untyped]
+from datasets import (
+    load_dataset,
+    load_from_disk,
+    Dataset,
+)  # type: ignore[import-untyped]
 
 from ..core.base_provider import BaseProvider
 from ..core.settings import Settings
@@ -41,8 +45,8 @@ class HuggingFaceProvider(BaseProvider):
         """Get metadata for a specific dataset from HuggingFace.
 
         Args:
-            dataset_name: Name of the dataset to get metadata for
-            split: Optional split to get metadata for
+            dataset_name: Name of the dataset to get metadata for.
+
         Returns:
             Dataset metadata as a dictionary
 
@@ -70,6 +74,7 @@ class HuggingFaceProvider(BaseProvider):
         dataset_name: str,
         save_dir: str | None = None,
         split: str | None = None,
+        *args: Any,
         **kwargs: Any,
     ) -> Path:
         """Download a dataset from HuggingFace.
@@ -77,7 +82,9 @@ class HuggingFaceProvider(BaseProvider):
         Args:
             dataset_name: Type of the dataset to download ("segmentation", "classification", "detection")
             save_dir (Optional[str], optional): Directory to save the dataset. Defaults to None.
-             **kwargs: Additional arguments to pass to the download method
+            split (Optional[str], optional): Dataset split to download (e.g., "train",
+            *args: Additional positional arguments to pass to the download method
+            **kwargs: Additional arguments to pass to the download method
 
         Returns:
             Path to the downloaded dataset
@@ -113,14 +120,23 @@ class HuggingFaceProvider(BaseProvider):
             if split:
                 save_path = save_path / split
             dataset.save_to_disk(str(save_path))  # type: ignore[union-attr]
-            dataset.cleanup_cache_files()
+            if isinstance(dataset, Dataset):
+                dataset.cleanup_cache_files()
+
             return save_path
         except Exception as e:
             raise RuntimeError(f"Failed to download dataset {repo_id}: {str(e)}") from e
 
     def load_dataset(self, dataset_path: str | Path, split: str | None = None, **kwargs) -> Any:
-        # if split:
-        #     path = Path(path) / split
+        """Load a dataset from disk.
+        Args:
+            dataset_path: The local path to the dataset, typically returned by download_dataset.
+            split: Optional split to load (e.g., "train", "validation", "test").
+            **kwargs: Additional keyword arguments to pass to the load_dataset function.
+        Returns:
+            The loaded dataset.
+        """
+
         return load_from_disk(str(dataset_path), **kwargs)
 
     def download_model_weights(self, model_type: str, *args: Any, **kwargs: Any) -> Path:

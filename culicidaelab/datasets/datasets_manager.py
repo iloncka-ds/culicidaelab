@@ -24,7 +24,7 @@ class DatasetsManager:
 
         Args:
             settings: The main Settings object for the library.
-            dataset_loader: An object that conforms to the DatasetLoader protocol.
+            provider_service: The ProviderService for resolving dataset paths.
         """
         self.settings = settings
         self.provider_service = provider_service
@@ -58,7 +58,7 @@ class DatasetsManager:
 
         return self.settings.list_datasets()
 
-    def load_dataset(self, dataset_name: str, split: str | None = None, **kwargs) -> Any:
+    def load_dataset(self, dataset_name: str, split: str | None = None, **kwargs: Any) -> Any:
         """
         Load a specific dataset using the injected loader.
 

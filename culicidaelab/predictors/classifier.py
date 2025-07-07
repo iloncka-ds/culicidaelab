@@ -300,7 +300,7 @@ class MosquitoClassifier(BasePredictor[ClassificationPredictionType, Classificat
 
         vis_config = self.config.visualization
         font_scale = vis_config.font_scale
-        thickness = vis_config.text_thickness
+        thickness = vis_config.text_thickness if vis_config.text_thickness is not None else 1
         color = str_to_bgr(vis_config.text_color)
         top_k = self.config.params.get("top_k", 5)
 

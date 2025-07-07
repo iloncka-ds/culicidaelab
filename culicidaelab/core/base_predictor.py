@@ -28,9 +28,16 @@ GroundTruthType = TypeVar("GroundTruthType")
 
 
 class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
-    """
-    Abstract base class for all predictors (detector, segmenter, classifier).
-    It depends on the main Settings object for configuration.
+    """Abstract base class for all predictors.
+
+    This class defines the common interface for all predictors (e.g., detector,
+    segmenter, classifier). It relies on the main Settings object for
+    configuration and a WeightsManager for model file management.
+
+    Attributes:
+        settings: The main Settings object for the library.
+        predictor_type: The key for this predictor in the configuration.
+        weights_manager: The manager responsible for providing model weights.
     """
 
     def __init__(
@@ -40,17 +47,18 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         weights_manager: WeightsManagerProtocol,
         load_model: bool = False,
     ):
-        """
-        Initialize the predictor using the global Settings object.
+        """Initializes the predictor.
 
         Args:
             settings: The main Settings object for the library.
-            predictor_type: The key for this predictor in the configuration (e.g., 'classifier').
-            weights_manager: The WeightsManagerProtocol
-            load_model: If True, loads model immediately.
+            predictor_type: The key for this predictor in the configuration
+                (e.g., 'classifier').
+            weights_manager: An object conforming to the WeightsManagerProtocol.
+            load_model: If True, loads the model immediately upon initialization.
 
         Raises:
-            ValueError: If configuration for predictor type is not found.
+            ValueError: If the configuration for the specified predictor_type
+                is not found in the settings.
         """
         self.settings = settings
         self.predictor_type = predictor_type
@@ -65,21 +73,33 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         self._model_loaded = False
         self._model = None
 
-        self._logger = logging.getLogger(f"culicidaelab.predictor.{self.predictor_type}")
+        self._logger = logging.getLogger(
+            f"culicidaelab.predictor.{self.predictor_type}",
+        )
 
         if load_model:
             self.load_model()
 
     def _get_predictor_config(self) -> PredictorConfig:
-        """Get configuration for this predictor type as a Pydantic model."""
+        """Gets the configuration for this predictor.
+
+        Returns:
+            A Pydantic PredictorConfig model for this predictor instance.
+        """
         config = self.settings.get_config(f"predictors.{self.predictor_type}")
         if not isinstance(config, PredictorConfig):
-            raise ValueError(f"Configuration for predictor '{self.predictor_type}' not found or is invalid.")
+            raise ValueError(
+                f"Configuration for predictor '{self.predictor_type}' not found or is invalid.",
+            )
         return config
 
     @property
     def model_path(self) -> Path:
-        """Get the path to the model weights."""
+        """Gets the path to the model weights file.
+
+        Returns:
+            The file path to the model weights.
+        """
         return self._model_path
 
     @property
@@ -94,28 +114,31 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
 
     @abstractmethod
     def _load_model(self) -> None:
-        """
-        Load the model from the specified path.
-        Must be implemented by child classes.
+        """Loads the model from the path specified in the configuration.
 
-        This method should set self._model and handle any loading errors.
+        This method must be implemented by child classes. It should handle
+        the specifics of loading a model file (e.g., PyTorch, TensorFlow, etc.)
+        and assign it to an internal attribute like `self._model`.
+
+        Raises:
+            RuntimeError: If the model file cannot be found or loaded.
         """
         pass
 
     @abstractmethod
-    def predict(self, input_data: np.ndarray, **kwargs) -> PredictionType:
-        """
-        Make predictions on the input data.
+    def predict(self, input_data: np.ndarray, **kwargs: Any) -> PredictionType:
+        """Makes a prediction on a single input data sample.
 
         Args:
-            input_data: Input data to make predictions on
+            input_data: The input data (e.g., an image as a NumPy array) to
+                make a prediction on.
             **kwargs: Additional predictor-specific arguments.
 
         Returns:
-            Predictions in format specific to each predictor type
+            The prediction result, with a format specific to the predictor type.
 
         Raises:
-            RuntimeError: If model is not loaded.
+            RuntimeError: If the model is not loaded before calling this method.
         """
         pass
 
@@ -126,16 +149,15 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         predictions: PredictionType,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
-        """
-        Visualize predictions on the input data.
+        """Visualizes the predictions on the input data.
 
         Args:
-            input_data: Original input data
-            predictions: Predictions made by the model
-            save_path: Optional path to save the visualization
+            input_data: The original input data (e.g., an image).
+            predictions: The prediction result obtained from the `predict` method.
+            save_path: An optional path to save the visualization to a file.
 
         Returns:
-            Visualization as a numpy array
+            A NumPy array representing the visualized image.
         """
         pass
 
@@ -169,12 +191,21 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
             if input_data is not None:
                 prediction = self.predict(input_data, **predict_kwargs)
             else:
-                raise ValueError("Either 'prediction' or 'input_data' must be provided.")
+                raise ValueError(
+                    "Either 'prediction' or 'input_data' must be provided.",
+                )
 
-        return self._evaluate_from_prediction(prediction=prediction, ground_truth=ground_truth)
+        return self._evaluate_from_prediction(
+            prediction=prediction,
+            ground_truth=ground_truth,
+        )
 
     @abstractmethod
-    def _evaluate_from_prediction(self, prediction: PredictionType, ground_truth: GroundTruthType) -> dict[str, float]:
+    def _evaluate_from_prediction(
+        self,
+        prediction: PredictionType,
+        ground_truth: GroundTruthType,
+    ) -> dict[str, float]:
         """
         The core metric calculation logic for metrics for a single item.
 
@@ -188,8 +219,10 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         pass
 
     def load_model(self) -> None:
-        """
-        Load model if not already loaded.
+        """Loads the model if it is not already loaded.
+
+        This is a convenience wrapper around `_load_model` that prevents
+        reloading.
 
         Raises:
             RuntimeError: If model loading fails.
@@ -199,13 +232,17 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
             return
 
         try:
-            logger.info(f"Loading model for {self.predictor_type} from {self._model_path}")
+            logger.info(
+                f"Loading model for {self.predictor_type} from {self._model_path}",
+            )
             self._load_model()
             self._model_loaded = True
             logger.info(f"Successfully loaded model for {self.predictor_type}")
         except Exception as e:
             logger.error(f"Failed to load model for {self.predictor_type}: {e}")
-            raise RuntimeError(f"Failed to load model for {self.predictor_type}: {e}") from e
+            raise RuntimeError(
+                f"Failed to load model for {self.predictor_type}: {e}",
+            ) from e
 
     def unload_model(self) -> None:
         """
@@ -218,12 +255,17 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
 
     @contextmanager
     def model_context(self):
-        """
-        Context manager for temporary model loading.
+        """A context manager for temporary model loading.
 
-        Usage:
-            with predictor.model_context():
-                predictions = predictor.predict(data)
+        Ensures the model is loaded upon entering the context and unloaded
+        upon exiting. This is useful for managing memory in pipelines.
+
+        Example:
+            >>> with predictor.model_context():
+            ...     predictions = predictor.predict(data)
+
+        Yields:
+            The predictor instance itself.
         """
         was_loaded = self._model_loaded
         try:
@@ -268,7 +310,9 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
                     **predict_kwargs,
                 )
             else:
-                raise ValueError("Either 'predictions_batch' or 'input_data_batch' must be provided.")
+                raise ValueError(
+                    "Either 'predictions_batch' or 'input_data_batch' must be provided.",
+                )
 
         if len(predictions_batch) != len(ground_truth_batch):
             raise ValueError(
@@ -359,24 +403,37 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
 
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             future_to_idx = {
-                executor.submit(self._evaluate_from_prediction, predictions[i], ground_truths[i]): i
+                executor.submit(
+                    self._evaluate_from_prediction,
+                    predictions[i],
+                    ground_truths[i],
+                ): i
                 for i in range(len(predictions))
             }
 
             iterator = as_completed(future_to_idx)
             if show_progress:
-                iterator = tqdm_iterator(iterator, total=len(future_to_idx), desc="Calculating metrics")
+                iterator = tqdm_iterator(
+                    iterator,
+                    total=len(future_to_idx),
+                    desc="Calculating metrics",
+                )
 
             for future in iterator:
                 try:
                     per_item_metrics.append(future.result())
                 except Exception as e:
-                    logger.error(f"Error calculating metrics for item {future_to_idx[future]}: {e}")
+                    logger.error(
+                        f"Error calculating metrics for item {future_to_idx[future]}: {e}",
+                    )
                     per_item_metrics.append({})
 
         return per_item_metrics
 
-    def _aggregate_metrics(self, metrics_list: list[dict[str, float]]) -> dict[str, float]:
+    def _aggregate_metrics(
+        self,
+        metrics_list: list[dict[str, float]],
+    ) -> dict[str, float]:
         """Aggregate metrics from multiple evaluations."""
         if not metrics_list:
             return {}
@@ -406,7 +463,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         """Optional hook to post-process the final evaluation report."""
         return aggregated_metrics
 
-    def __call__(self, input_data: np.ndarray, **kwargs) -> Any:
+    def __call__(self, input_data: np.ndarray, **kwargs: Any) -> Any:
         """Convenience method that calls predict()."""
         if not self._model_loaded:
             self.load_model()
@@ -423,7 +480,12 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         pass
 
     def get_model_info(self) -> dict[str, Any]:
-        """Get information about the loaded model."""
+        """Gets information about the loaded model.
+
+        Returns:
+            A dictionary containing details about the model, such as
+            architecture, path, etc.
+        """
         return {
             "predictor_type": self.predictor_type,
             "model_path": str(self._model_path),

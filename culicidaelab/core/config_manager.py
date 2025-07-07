@@ -14,7 +14,12 @@ from .config_models import CulicidaeLabConfig
 
 # Type aliases for better readability
 ConfigDict: TypeAlias = dict[str, Any]
-ConfigPath: TypeAlias = Union[Path, ModuleType, str, None]  # For resources.files() compatibility
+ConfigPath: TypeAlias = Union[
+    Path,
+    ModuleType,
+    str,
+    None,
+]  # For resources.files() compatibility
 
 T = TypeVar("T")
 
@@ -42,6 +47,12 @@ class ConfigManager:
     """
 
     def __init__(self, user_config_dir: str | Path | None = None):
+        """Initializes the ConfigManager.
+
+        Args:
+            user_config_dir: Path to a directory containing user-defined
+                YAML configuration files. These will override the defaults.
+        """
         self.user_config_dir = Path(user_config_dir) if user_config_dir else None
         self.default_config_path = self._get_default_config_path()
         self.config: CulicidaeLabConfig = self._load()
@@ -106,7 +117,10 @@ class ConfigManager:
         """Executes the full load, merge, and validation process."""
         # 1. Load default configs
         default_config_dict = self._load_config_from_dir(
-            cast(Path, self.default_config_path),  # We know this is not None from _get_default_config_path
+            cast(
+                Path,
+                self.default_config_path,
+            ),  # We know this is not None from _get_default_config_path
         )
 
         # 2. Load user configs if directory exists
@@ -122,20 +136,27 @@ class ConfigManager:
             validated_config = CulicidaeLabConfig(**merged_config)
             return validated_config
         except ValidationError as e:
-            print("FATAL: Configuration validation failed. Please check your YAML files or environment variables.")
+            print(
+                "FATAL: Configuration validation failed. Please check your YAML files or environment variables.",
+            )
             print(e)
             raise
 
     def get_config(self) -> CulicidaeLabConfig:
-        """Returns the fully validated Pydantic configuration object."""
+        """Returns the fully validated Pydantic configuration object.
+
+        Returns:
+            The `CulicidaeLabConfig` Pydantic model instance.
+        """
         return self.config
 
     def save_config(self, file_path: str | Path) -> None:
-        """
-        Save the current configuration state to a YAML file.
+        """Saves the current configuration state to a YAML file.
+
+        This is useful for exporting the fully merged and validated config.
 
         Args:
-            file_path: Path where to save the configuration.
+            file_path: The path where the YAML configuration will be saved.
         """
         path = Path(file_path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -146,16 +167,19 @@ class ConfigManager:
         # Use OmegaConf to save for compatibility if needed, or just yaml
         OmegaConf.save(config=config_dict, f=path)
 
-    def instantiate_from_config(self, config_obj: Any, **kwargs) -> Any:
-        """
-        Instantiate an object from a Pydantic config model.
+    def instantiate_from_config(self, config_obj: Any, **kwargs: Any) -> Any:
+        """Instantiates a Python object from its Pydantic config model.
+
+        The config model must have a `_target_` field specifying the
+        fully qualified class path (e.g., 'my_module.my_class.MyClass').
 
         Args:
             config_obj: A Pydantic model instance (e.g., a predictor config).
-            **kwargs: Additional keyword arguments to pass to the constructor.
+            **kwargs: Any: Additional keyword arguments to pass to the object's
+                constructor, overriding any existing parameters in the config.
 
         Returns:
-            Instantiated object.
+            An instantiated Python object.
         """
         if not hasattr(config_obj, "target_"):
             raise ValueError("Target key '_target_' not found in configuration object")
