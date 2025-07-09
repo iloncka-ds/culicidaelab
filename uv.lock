@@ -613,6 +613,9 @@ dependencies = [
     { name = "huggingface-hub" },
     { name = "hydra-core" },
     { name = "iopath" },
+    { name = "ipykernel" },
+    { name = "ipywidgets" },
+    { name = "jupytext" },
     { name = "numpy" },
     { name = "omegaconf" },
     { name = "pillow" },
@@ -635,9 +638,8 @@ dev = [
     { name = "bandit" },
     { name = "black" },
     { name = "gputil" },
-    { name = "ipykernel" },
-    { name = "ipywidgets" },
     { name = "mkdocs" },
+    { name = "mkdocs-jupyter" },
     { name = "mkdocs-material" },
     { name = "mkdocstrings", extra = ["python"] },
     { name = "mypy" },
@@ -654,8 +656,10 @@ dev = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "jupytext" },
-    { name = "mkdocs-jupyter" },
+    { name = "memory-profiler" },
+    { name = "mkdocs-custom-fences" },
+    { name = "mkdocs-gallery" },
+    { name = "mkdocs-ipynb" },
 ]
 
 [package.metadata]
@@ -672,9 +676,11 @@ requires-dist = [
     { name = "huggingface-hub", specifier = ">=0.16.0" },
     { name = "hydra-core", specifier = ">=1.3.2" },
     { name = "iopath", specifier = ">=0.1.10" },
-    { name = "ipykernel", marker = "extra == 'dev'", specifier = "==6.16.2" },
-    { name = "ipywidgets", marker = "extra == 'dev'", specifier = ">=8.1.7" },
+    { name = "ipykernel", specifier = "==6.16.2" },
+    { name = "ipywidgets", specifier = ">=8.1.7" },
+    { name = "jupytext", specifier = ">=1.17.2" },
     { name = "mkdocs", marker = "extra == 'dev'", specifier = "==1.6.1" },
+    { name = "mkdocs-jupyter", marker = "extra == 'dev'", specifier = ">=0.25.1" },
     { name = "mkdocs-material", marker = "extra == 'dev'", specifier = "==9.5.46" },
     { name = "mkdocstrings", extras = ["python"], marker = "extra == 'dev'", specifier = "==0.27.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "==1.4.1" },
@@ -706,8 +712,10 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "jupytext", specifier = ">=1.17.2" },
-    { name = "mkdocs-jupyter", specifier = ">=0.25.1" },
+    { name = "memory-profiler", specifier = ">=0.61.0" },
+    { name = "mkdocs-custom-fences", specifier = ">=0.1.2" },
+    { name = "mkdocs-gallery", specifier = ">=0.10.4" },
+    { name = "mkdocs-ipynb", specifier = ">=0.1.1" },
 ]
 
 [[package]]
@@ -1736,6 +1744,30 @@ wheels = [
 ]
 
 [[package]]
+name = "mdx-wikilink-plus"
+version = "1.4.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "markdown" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/93/ec/b0967db0ec70bfe249359804319a9854491e20bfc06ed4a5e2470095e76a/mdx_wikilink_plus-1.4.1.tar.gz", hash = "sha256:b82446c00a49a57a5ccab48e6053168397f6ed818d2183a8a0f7472aa0e8e3ca", size = 9896 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bb/9c/47120c866c56c6f0357428e07c057b2ad277a89f5e698d5110fd37688333/mdx_wikilink_plus-1.4.1-py3-none-any.whl", hash = "sha256:bf1a06cdf4e60484c64afb4d2069a07ca70263ebf56387a1da397d1ca182ab70", size = 8920 },
+]
+
+[[package]]
+name = "memory-profiler"
+version = "0.61.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "psutil" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b2/88/e1907e1ca3488f2d9507ca8b0ae1add7b1cd5d3ca2bc8e5b329382ea2c7b/memory_profiler-0.61.0.tar.gz", hash = "sha256:4e5b73d7864a1d1292fb76a03e82a3e78ef934d06828a698d9dada76da2067b0", size = 35935 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/49/26/aaca612a0634ceede20682e692a6c55e35a94c21ba36b807cc40fe910ae1/memory_profiler-0.61.0-py3-none-any.whl", hash = "sha256:400348e61031e3942ad4d4109d18753b2fb08c2f6fb8290671c5513a34182d84", size = 31803 },
+]
+
+[[package]]
 name = "mergedeep"
 version = "1.3.4"
 source = { registry = "https://pypi.org/simple" }
@@ -1792,6 +1824,36 @@ wheels = [
 ]
 
 [[package]]
+name = "mkdocs-custom-fences"
+version = "0.1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "markdown" },
+    { name = "mdx-wikilink-plus" },
+    { name = "pymdown-extensions" },
+    { name = "pyyaml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2a/25/ee1230d0b81a2c756de640d0b4d7a4d52422cbb00aa56ae8667ad2263cad/mkdocs_custom_fences-0.1.2.tar.gz", hash = "sha256:04172a8e1a8232979aa4972ce6fdaa976775e50faf1f741fbc347d7a39ac21c7", size = 8436 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/39/81/88f4dad947ff1b00832df90c9a9b18e3baba0dfef919a1199df025bb087f/mkdocs_custom_fences-0.1.2-py3-none-any.whl", hash = "sha256:8f4178b61e2edda468e9ece6dbfd8a0ac7f472d6464730e79f51577f5d1c9a1c", size = 3157 },
+]
+
+[[package]]
+name = "mkdocs-gallery"
+version = "0.10.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mkdocs" },
+    { name = "mkdocs-material" },
+    { name = "packaging" },
+    { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/49/de/ceec460a00f47fc06676c9c2cbc9c95e12c9f85bafa9edbf5b309d392b3c/mkdocs_gallery-0.10.4.tar.gz", hash = "sha256:469f84a0c842ea87aa59e8679bd6237607f2a578788b50a50132abd9937d14d4", size = 423267 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/00/b3/f6aa253503b3147238747672322503b2b529f390861f6184838d18abd51a/mkdocs_gallery-0.10.4-py2.py3-none-any.whl", hash = "sha256:8669d162b412714c52792f2959d4d211bf92bf5f820f5916c0686ff1ccd89806", size = 137833 },
+]
+
+[[package]]
 name = "mkdocs-get-deps"
 version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1803,6 +1865,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/98/f5/ed29cd50067784976f25ed0ed6fcd3c2ce9eb90650aa3b2796ddf7b6870b/mkdocs_get_deps-0.2.0.tar.gz", hash = "sha256:162b3d129c7fad9b19abfdcb9c1458a651628e4b1dea628ac68790fb3061c60c", size = 10239 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9f/d4/029f984e8d3f3b6b726bd33cafc473b75e9e44c0f7e80a5b29abc466bdea/mkdocs_get_deps-0.2.0-py3-none-any.whl", hash = "sha256:2bf11d0b133e77a0dd036abeeb06dec8775e46efa526dc70667d8863eefc6134", size = 9521 },
+]
+
+[[package]]
+name = "mkdocs-ipynb"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mkdocs" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/68/b6/091efeb0a58031e31e72fbedfedf7832e466e1275e191e875f05abfad68a/mkdocs_ipynb-0.1.1.tar.gz", hash = "sha256:0bc8791e98e0aec305d7e640b51f17794ddf20ead72f93f894e1951ec5524a16", size = 8152 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6c/01/76473cd0e3d06a30865a1aece673d9854381cc26e139cd38100ccca3e18f/mkdocs_ipynb-0.1.1-py3-none-any.whl", hash = "sha256:dae68bd4e9b6581a1d1a102c447c921cd0c43b23712137ca80a31e0f9f70e4c1", size = 11958 },
 ]
 
 [[package]]

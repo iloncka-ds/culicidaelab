@@ -40,7 +40,7 @@ class ProviderService:
 
             self._providers[provider_name] = self._settings.instantiate_from_config(
                 provider_path,
-                settings=self._settings.get_config(provider_path).model_dump(),
+                settings=self._settings,
             )
 
         return self._providers[provider_name]

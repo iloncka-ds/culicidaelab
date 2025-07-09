@@ -12,7 +12,7 @@ class BaseProvider(ABC):
         self,
         dataset_name: str,
         save_dir: str | None = None,
-        *args,
+        *args: Any,
         **kwargs: Any,
     ) -> Path:
         """Download a dataset from HuggingFace.

@@ -1,7 +1,0 @@
-app_settings: development
-datasets: datasets_config
-models: models_config
-providers: huggingface
-species:
-  - species_classes
-  - species_metadata
