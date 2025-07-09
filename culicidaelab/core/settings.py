@@ -220,7 +220,7 @@ class Settings:
             yield workspace
 
     # Instantiation
-    def instantiate_from_config(self, config_path: str, **kwargs: dict) -> Any:
+    def instantiate_from_config(self, config_path: str, **kwargs: Any) -> Any:
         """Instantiates an object from a configuration path.
 
         This is a convenience method that finds a config object by its path

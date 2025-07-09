@@ -1,0 +1,149 @@
+site_name: CulicidaeLab
+site_description: 'Библиотека для детекции, сегментации и классификации комаров.'
+site_author: Ilona Kovaleva
+repo_url: 'https://github.com/iloncka-ds/culicidaelab'
+copyright: Copyright &copy; 2025 Kovaleva Ilona
+site_url: 'https://iloncka-ds.github.io/culicidaelab/'
+strict: false
+
+theme:
+  name: material
+  font:
+    text: Merriweather Sans
+    code: Red Hat Mono
+  features:
+    - navigation.sections
+    - toc.integrate
+    - navigation.path
+    - navigation.indexes
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.annotate
+    - content.code.copy
+
+  icon:
+        repo: fontawesome/brands/github
+  language: ru # Используем русский язык для интерфейса
+  palette:
+    # Светлая тема
+    - scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Переключить на темную тему
+    # Темная тема
+    - scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Переключить на светлую тему
+
+
+
+# Расширения Markdown
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+            - name: mermaid
+              class: mermaid
+
+  - pymdownx.details  # Allowing hidden expandable regions denoted by ???
+  - pymdownx.inlinehilite # Inline highlighting with `==highlighted text==`
+  - pymdownx.snippets
+
+  - admonition # for Note, Warning, Tip, etc.
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          setup_commands:
+            - import sys
+            - sys.path.insert(0, '..')
+          options:
+            docstring_style: google
+            show_root_heading: yes
+            show_source: yes
+            force_inspection: true
+            heading_level: 4
+            inherited_members: true
+            members_order: source
+            show_bases: false
+            show_if_no_docstring: true
+            show_overloads: false
+            show_signature_annotations: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+
+  - gallery:
+      examples_dirs: examples
+      gallery_dirs: docs/generated/gallery
+      conf_script: docs/gallery_conf.py  # Base conf. Possibly modified by items below
+      backreferences_dir: docs/generated/backreferences  # where to generate the back references summary
+      doc_module: ['mkdocs_gallery', 'numpy']
+      # reference_url: {sphinx_gallery: None},
+      image_scrapers:
+        - matplotlib
+      # compress_images: ['images', 'thumbnails']
+      # specify the order of examples to be according to filename
+      within_subsection_order: FileNameSortKey
+
+#      min_reported_time: min_reported_time,  in conf file
+      binder:
+        org: iloncka-ds
+        repo: culicidaelab  # Use the same name as your GitHub repository
+
+        branch: gh-pages  # Use a branch that hosts your docs.
+#        binderhub_url: https://mybinder.org
+        dependencies: docs/binder_cfg/requirements.txt  # binder configuration files
+        # see https://mybinder.readthedocs.io/en/latest/using/config_files.html#config-files
+        # these will be copied to the .binder/ directory of the site.
+
+        notebooks_dir: examples # Notebooks for Binder will be copied to this dir (relative to built doc root).
+        use_jupyter_lab: True     # Binder links will start Jupyter Lab instead of the Jupyter Notebook interface.
+      show_memory: False
+#      junit: os.path.join('sphinx-gallery', 'junit-results.xml'),
+#      # capture raw HTML or, if not present, __repr__ of last expression in each code block
+#      capture_repr: ['_repr_html_', '__repr__']
+      matplotlib_animations: True
+      image_srcset: ['2x']
+# Структура навигации
+nav:
+  - ГЛАВНАЯ: index.md
+  - УСТАНОВКА: installation.md
+  - БЫСТРЫЙ СТАРТ: quickstart.md
+
+  - ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ:
+    - Галерея: generated/gallery
+
+    # - Часть 1 - Детекция комаров: generated/gallery/tutorial_part_1_mosquito_detection.md
+    # - Часть 2 - Сегментация комаров: examples/tutorial_part_2_mosquito_segmentation.ipynb
+    # - Часть 3 - Классификация видов: examples/tutorial_part_3_mosquito_classification.ipynb
+
+  # - ТЕМАТИЧЕСКИЕ ПРИМЕРЫ:
+  #   - Работа с настройками (Settings): generated\gallery\settings_example.ipynb
+  #   - Работа с наборами данных (Datasets): generated\gallery\datasets_example.md
+
+  - РУКОВОДСТВО ПОЛЬЗОВАТЕЛЯ:
+    # - Обзор: guides/index.md
+    - Конфигурация библиотеки: guides/configuration.md
+    - Использование Предикторов: guides/predictors.md
+    - Работа с наборами данных: guides/datasets.md
+    - Оценка моделей (Evaluation): guides/evaluation.md
+
+  - СПРАВОЧНИК API:
+    - Core: api_docs/core.md
+    - Predictors: api_docs/predictors.md
+    - Datasets: api_docs/datasets.md
+    - Providers: api_docs/providers.md
+
+  - РУКОВОДСТВО РАЗРАБОТЧИКА:
+    - Архитектура библиотеки: dev_docs/architecture.md
+    - Создание своего Предиктора: dev_docs/custom_predictor.md
+    - Создание своего Провайдера: dev_docs/custom_provider.md

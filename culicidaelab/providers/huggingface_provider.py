@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, cast
 from pathlib import Path
+import shutil
 import requests
 from huggingface_hub import hf_hub_download  # type: ignore[import-untyped]
 from datasets import (
@@ -119,6 +120,11 @@ class HuggingFaceProvider(BaseProvider):
                 )
             if split:
                 save_path = save_path / split
+
+            if save_path.exists() and save_path.is_dir():
+                print(f"Existing dataset found at '{save_path}'. Removing it for a clean download.")
+                shutil.rmtree(save_path)
+
             dataset.save_to_disk(str(save_path))  # type: ignore[union-attr]
             if isinstance(dataset, Dataset):
                 dataset.cleanup_cache_files()

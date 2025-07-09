@@ -1,85 +1,40 @@
-# CulicidaeLab Documentation
+**CulicidaeLab** — это мощная и гибкая Python-библиотека для анализа изображений комаров.
 
-Welcome to the CulicidaeLab documentation! This library provides tools for mosquito (Culicidae) image analysis and machine learning.
+Она предоставляет готовые решения для:
 
-## Core Modules
+- **Детекции**: обнаружение комаров на изображении.
+- **Сегментации**: выделение точных масок комаров.
+- **Классификации**: определение вида комара.
 
-### [Configuration Management](config_manager.md)
-Centralized configuration system using OmegaConf for managing application settings.
+### Ключевые возможности
 
-### [Resource Management](resource_manager.md)
-Handles resource directories and file management across different operating systems.
+- **Готовые модели**: Используйте предобученные модели для быстрого старта.
+- **Гибкая конфигурация**: Управляйте всеми аспектами через YAML-файлы.
+- **Оценка качества**: Встроенные инструменты для оценки точности моделей.
+- **Расширяемость**: Легко добавляйте свои модели и источники данных.
 
-### [Base Predictor](base_predictor.md)
-Abstract base class for all prediction models in the library.
+### Пример использования
 
-### [Loader Protocol](loader_protocol.md)
-Defines the interface for data loading components.
-
-### [Settings](settings.md)
-Application-wide settings and constants.
-
-### [Species Configuration](species_config.md)
-Configuration and utilities for mosquito species handling.
-
-### [Utilities](utils.md)
-Common utility functions used throughout the library.
-
-## Dataset Modules
-
-### [Datasets Manager](datasets/manager.md)
-Centralized management of mosquito datasets.
-
-### [HuggingFace Integration](datasets/huggingface.md)
-Integration with HuggingFace datasets for mosquito data.
-
-## Prediction Modules
-
-### [Classifier](predictors/classifier.md)
-Image classification models for mosquito species identification.
-
-### [Detector](predictors/detector.md)
-Object detection models for mosquito localization.
-
-### [Segmenter](predictors/segmenter.md)
-Image segmentation models for detailed mosquito analysis.
-
-### [Model Weights Manager](predictors/weights_manager.md)
-Handles downloading and managing model weights.
-
-## Provider Modules
-
-### [HuggingFace Provider](providers/huggingface.md)
-Integration with HuggingFace models and datasets.
-
-### [Kaggle Provider](providers/kaggle.md)
-Access to Kaggle datasets and competitions.
-
-### [Roboflow Provider](providers/roboflow.md)
-Integration with Roboflow for computer vision tasks.
-
-### [Remote URL Provider](providers/remote_url.md)
-Handles downloading resources from remote URLs.
-
-## Getting Started
-
-### Installation
-```bash
-pip install culicidaelab
-```
-
-### Basic Usage
 ```python
-from culicidaelab import ConfigManager
+import cv2
+from culicidaelab import get_settings
+from culicidaelab.predictors import MosquitoClassifier
 
-# Initialize configuration
-config = ConfigManager().load_config()
+# Получаем настройки по умолчанию
+settings = get_settings()
 
-# Use other modules...
+# Инициализируем классификатор (модель загрузится при первом вызове)
+classifier = MosquitoClassifier(settings=settings)
+
+# Загружаем ваше изображение (например, с помощью OpenCV)
+
+image = cv2.imread("path/to/your/mosquito_image.jpg")
+image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+# Получаем предсказание
+predictions = classifier.predict(image_rgb)
+
+# Выводим лучший результат
+top_prediction = predictions[0]
+print(f"Вид: {top_prediction[0]}, Точность: {top_prediction[1]:.2f}")
 ```
-
-## Contributing
-Contributions are welcome! Please see our [contributing guide](CONTRIBUTING.md) for more information.
-
-## License
-[Specify License]

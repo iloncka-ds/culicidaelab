@@ -1,0 +1,18 @@
+
+
+Examples using ``numpy.linspace``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+<div class="mkd-glr-thumbcontainer" tooltip="This notebook demonstrates how to use the datasets module in CulicidaeLab.">
+    <!--div class="figure align-default" id="id1"-->
+        <img alt="CulicidaeLab Datasets Module Example" src="images\thumb\mkd_glr_datasets_example_thumb.png" />
+        <p class="caption">
+            <span class="caption-text">
+                <a class="reference internal" href="datasets_example">
+                    <span class="std std-ref">CulicidaeLab Datasets Module Example</span>
+                </a>
+            </span>
+            <!--a class="headerlink" href="#id1" title="Permalink to this image"></a-->
+        </p>
+    <!--/div-->
+</div>

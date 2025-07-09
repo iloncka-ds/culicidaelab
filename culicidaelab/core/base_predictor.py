@@ -166,7 +166,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         ground_truth: GroundTruthType,
         prediction: PredictionType | None = None,
         input_data: np.ndarray | None = None,
-        **predict_kwargs,
+        **predict_kwargs: Any,
     ) -> dict[str, float]:
         """
         Evaluate a prediction against a ground truth.
