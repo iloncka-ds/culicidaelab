@@ -1,0 +1,64 @@
+site_name: CulicidaeLab
+
+repo_url: 'https://github.com/iloncka-ds/culicidaelab'
+
+strict: false
+
+theme:
+  name: material
+  # custom_dir: docs/api_docs
+  font:
+    text: Merriweather Sans
+    code: Red Hat Mono
+  features:
+    - search.suggest
+    - search.highlight
+    - navigation.path
+    - navigation.footer
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - toc.follow
+    - toc.integrate
+    - content.code.annotate
+    - content.code.copy
+
+  icon:
+    repo: fontawesome/brands/github
+
+  palette:
+    # Светлая тема
+    - scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+
+    - scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+            - name: mermaid
+              class: mermaid
+  - pymdownx.details  # Allowing hidden expandable regions denoted by ???
+  - pymdownx.inlinehilite # Inline highlighting with `==highlighted text==`
+  - pymdownx.snippets
+  - admonition # for Note, Warning, Tip, etc.
+
+extra:
+  alternate:
+    - name: English
+      link: https://iloncka-ds.github.io/culicidaelab/en
+      lang: en
+    - name: Русский
+      link: https://iloncka-ds.github.io/culicidaelab/ru
+      lang: ru
