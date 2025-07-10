@@ -1,0 +1,94 @@
+INHERIT: mkdocs.common.yml
+
+
+site_description: 'CulicidaeLab: A Python Library for Mosquito Analysis'
+site_author: Ilona Kovaleva
+site_url: 'https://iloncka-ds.github.io/culicidaelab/en'
+site_dir: 'site/en/'
+edit_uri: 'blob/main/docs/en'
+copyright: Copyright &copy; 2025 Kovaleva Ilona
+
+theme:
+  language: en
+
+docs_dir: 'docs/en'
+
+
+plugins:
+
+  - search:
+      lang: en
+  - mkdocstrings:
+      handlers:
+        python:
+          setup_commands:
+            - import sys
+            - sys.path.insert(0, '..')
+          options:
+            docstring_style: google
+            show_root_heading: yes
+            show_source: yes
+            force_inspection: true
+            heading_level: 4
+            inherited_members: true
+            members_order: source
+            show_bases: false
+            show_if_no_docstring: true
+            show_overloads: false
+            show_signature_annotations: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+
+  - gallery:
+      examples_dirs:
+        - docs/en/examples
+
+      gallery_dirs:
+        - docs/en/generated/gallery
+
+      conf_script: docs/en/gallery_conf.py
+      backreferences_dir: docs/en/generated/backreferences
+      filename_pattern: 'tutorial_*'
+      doc_module:
+        - mkdocs_gallery
+        - numpy
+      image_scrapers:
+        - matplotlib
+      within_subsection_order: FileNameSortKey
+      binder:
+        org: iloncka-ds
+        repo: culicidaelab
+        branch: gh-pages
+        dependencies: docs/en/binder_cfg/requirements.txt
+        notebooks_dir: docs/en/examples
+        use_jupyter_lab: true
+      show_memory: false
+      matplotlib_animations: true
+      image_srcset:
+        - 2x
+nav:
+  - HOME: index.md
+  - INSTALLATION: installation.md
+  - QUICK START: quickstart.md
+  - USAGE EXAMPLES:
+    - Gallery: generated/gallery/index.md
+    - Tutorials:
+      - generated/gallery/tutorial_part_0_settings_example.md
+      - generated/gallery/tutorial_part_1_mosquito_detection.md
+      - generated/gallery/examples/custom_predictors.md
+
+
+  # - USER GUIDE:
+  #   - Library Configuration: guides/configuration.md
+  #   - Using Predictors: guides/predictors.md
+  #   - Working with Datasets: guides/datasets.md
+  #   - Model Evaluation: guides/evaluation.md
+  - API REFERENCE:
+    - Core: api_docs/core.md
+    - Predictors: api_docs/predictors.md
+    - Datasets: api_docs/datasets.md
+    - Providers: api_docs/providers.md
+  - DEVELOPER GUIDE:
+    - Library Architecture: dev_docs/architecture.md
+    # - Creating a Custom Predictor: dev_docs/custom_predictor.md
+    # - Creating a Custom Provider: dev_docs/custom_provider.md

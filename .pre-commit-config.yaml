@@ -51,7 +51,7 @@ repos:
     -   id: mypy
         stages: [commit]
         pass_filenames: false
-        args: ['culicidaelab', 'examples']
+        args: ['culicidaelab']
         additional_dependencies:
         - types-requests
         - types-PyYAML
