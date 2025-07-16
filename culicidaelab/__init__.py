@@ -22,9 +22,6 @@ from .datasets.datasets_manager import DatasetsManager
 from .core.base_provider import BaseProvider
 from .providers.huggingface_provider import HuggingFaceProvider
 
-# from .providers.kaggle_provider import KaggleProvider
-# from .providers.remote_url_provider import RemoteURLProvider
-# from .providers.roboflow_provider import RoboflowProvider
 
 __all__ = [
     "ConfigManager",
@@ -40,12 +37,8 @@ __all__ = [
     "MosquitoSegmenter",
     "ModelWeightsManager",
     "DatasetsManager",
-    "HuggingFaceDatasetLoader",
     "BaseProvider",
     "HuggingFaceProvider",
-    # 'KaggleProvider',
-    # 'RemoteURLProvider',
-    # 'RoboflowProvider',
     "SpeciesConfig",
     "get_settings",
     "CulicidaeLabConfig",
