@@ -1,47 +1,67 @@
+"""Manages the loading and caching of datasets.
+
+This module provides the DatasetsManager class, which acts as a centralized
+system for handling datasets defined in the configuration files. It interacts
+with the settings and provider services to download, cache, and load data
+for use in the application.
+"""
+
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
-from pathlib import Path
-
-from culicidaelab.core.settings import Settings
 from culicidaelab.core.config_models import DatasetConfig
 from culicidaelab.core.provider_service import ProviderService
+from culicidaelab.core.settings import Settings
 
 
 class DatasetsManager:
-    """
-    Manages access, loading, and caching of datasets defined in the configuration.
+    """Manages access, loading, and caching of configured datasets.
 
-    This manager acts as a high-level interface that uses the global Settings
-    for configuration and a dedicated loader for the actual data loading,
-    decoupling the logic of what datasets are available from how they are loaded.
+    This manager provides a high-level interface that uses the global settings
+    for configuration and a dedicated provider service for the actual data
+    loading. This decouples the logic of what datasets are available from how
+    they are loaded and sourced.
+
+    Attributes:
+        settings: The main settings object for the library.
+        provider_service: The service for resolving and using data providers.
+        loaded_datasets: A cache for storing the paths of downloaded datasets.
     """
 
     def __init__(self, settings: Settings, provider_service: ProviderService):
-        """
-        Initialize the DatasetsManager with its dependencies.
+        """Initializes the DatasetsManager with its dependencies.
 
         Args:
-            settings: The main Settings object for the library.
-            provider_service: The ProviderService for resolving dataset paths.
+            settings (Settings): The main Settings object for the library.
+            provider_service (ProviderService): The ProviderService for resolving
+                dataset paths and loading data.
         """
         self.settings = settings
         self.provider_service = provider_service
         self.loaded_datasets: dict[str, str | Path] = {}
 
     def get_dataset_info(self, dataset_name: str) -> DatasetConfig:
-        """
-        Get the validated configuration object for a specific dataset.
+        """Retrieves the configuration for a specific dataset.
 
         Args:
-            dataset_name: The name of the dataset (e.g., 'classification').
+            dataset_name (str): The name of the dataset (e.g., 'classification').
 
         Returns:
-            A DatasetConfig Pydantic model instance.
+            DatasetConfig: A Pydantic model instance containing the dataset's
+                validated configuration.
 
         Raises:
-            KeyError: If the dataset is not found in the configuration.
+            KeyError: If the specified dataset is not found in the configuration.
+
+        Example:
+            >>> manager = DatasetsManager(settings, provider_service)
+            >>> try:
+            ...     info = manager.get_dataset_info('classification')
+            ...     print(info.provider_name)
+            ... except KeyError as e:
+            ...     print(e)
         """
         dataset_config = self.settings.get_config(f"datasets.{dataset_name}")
         if not dataset_config:
@@ -49,61 +69,67 @@ class DatasetsManager:
         return dataset_config
 
     def list_datasets(self) -> list[str]:
-        """
-        List all available dataset names from the configuration.
+        """Lists all available dataset names from the configuration.
 
         Returns:
-            A list of configured dataset names.
-        """
+            list[str]: A list of configured dataset names.
 
+        Example:
+            >>> manager = DatasetsManager(settings, provider_service)
+            >>> available_datasets = manager.list_datasets()
+            >>> print(available_datasets)
+        """
         return self.settings.list_datasets()
 
-    def load_dataset(self, dataset_name: str, split: str | None = None, **kwargs: Any) -> Any:
-        """
-        Load a specific dataset using the injected loader.
-
-        Checks a local cache first. If the dataset is not cached, it resolves
-        the dataset's path using the settings and instructs the loader to load it.
-
-        Args:
-            dataset_name: The name of the dataset to load.
-            split: Optional dataset split to load (e.g., 'train', 'test').
-            **kwargs: Additional keyword arguments to pass to the dataset loader.
+    def list_loaded_datasets(self) -> list[str]:
+        """Lists all datasets that have been loaded during the session.
 
         Returns:
-            The loaded dataset object.
+            list[str]: A list of names for datasets that are currently cached.
+
+        Example:
+            >>> manager = DatasetsManager(settings, provider_service)
+            >>> _ = manager.load_dataset('classification', split='train')
+            >>> loaded = manager.list_loaded_datasets()
+            >>> print(loaded)
+            ['classification']
+        """
+        return list(self.loaded_datasets.keys())
+
+    def load_dataset(self, dataset_name: str, split: str | None = None, **kwargs: Any) -> Any:
+        """Loads a specific dataset, downloading it if not already cached.
+
+        This method first checks a local cache for the dataset path. If the
+        dataset is not cached, it resolves the path using the settings,
+        instructs the appropriate provider to download it, and caches the path.
+        Finally, it uses the provider to load the dataset into memory.
+
+        Args:
+            dataset_name (str): The name of the dataset to load.
+            split (str, optional): The specific dataset split to load (e.g.,
+                'train', 'test'). Defaults to None.
+            **kwargs (Any): Additional keyword arguments to pass to the provider's
+                dataset loading function.
+
+        Returns:
+            Any: The loaded dataset object, with its type depending on the provider.
 
         Raises:
-            KeyError: If the dataset configuration doesn't exist.
+            KeyError: If the dataset configuration does not exist.
         """
-        dataset_config = self.settings.get_config(f"datasets.{dataset_name}")
-        if not dataset_config:
-            raise KeyError(f"Dataset '{dataset_name}' not found in configuration.")
-
+        dataset_config = self.get_dataset_info(dataset_name)
         provider = self.provider_service.get_provider(dataset_config.provider_name)
 
-        # Determine the path to the dataset first
         if dataset_name in self.loaded_datasets:
             dataset_path = self.loaded_datasets[dataset_name]
         else:
-            # Download if not found in our cache
             print(f"Dataset '{dataset_name}' not in cache. Downloading...")
             dataset_path = provider.download_dataset(dataset_name, split=split, **kwargs)
             self.loaded_datasets[dataset_name] = dataset_path
             print(f"Dataset '{dataset_name}' downloaded and path cached.")
 
-        # Load the dataset from the determined path
         print(f"Loading '{dataset_name}' from path: {dataset_path}")
         dataset = provider.load_dataset(dataset_path, split=split, **kwargs)
         print(f"Dataset '{dataset_name}' loaded successfully.")
 
         return dataset
-
-    def list_loaded_datasets(self) -> list[str]:
-        """
-        List all loaded datasets.
-
-        Returns:
-            List of loaded dataset names.
-        """
-        return list(self.loaded_datasets.keys())

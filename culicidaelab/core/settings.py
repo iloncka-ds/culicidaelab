@@ -1,3 +1,10 @@
+"""Facade for managing configurations and resources in CulicidaeLab.
+
+This module provides the `Settings` class and `get_settings` function, which
+serve as the main entry point for accessing application settings, resource
+paths, and other global parameters.
+"""
+
 from pathlib import Path
 from typing import Any, Optional
 from contextlib import contextmanager

@@ -1,6 +1,14 @@
-from pydantic import BaseModel, Field, ConfigDict
-from pydantic_settings import BaseSettings, SettingsConfigDict
+"""Pydantic models for configuration validation.
+
+This module defines all Pydantic models used to parse and validate the
+YAML configuration files. `CulicidaeLabConfig` serves as the root model
+that encompasses all others.
+"""
+
 from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class TaxonomyModel(BaseModel):
@@ -14,10 +22,7 @@ class TaxonomyModel(BaseModel):
 
 
 class SpeciesAttributesModel(BaseModel):
-    """
-    Defines the attributes found inside the nested 'metadata' key
-    for each species.
-    """
+    """Defines attributes found in the nested 'metadata' key for each species."""
 
     vector_status: bool
     diseases: list[str]
@@ -27,10 +32,7 @@ class SpeciesAttributesModel(BaseModel):
 
 
 class SingleSpeciesMetadataModel(BaseModel):
-    """
-    Represents the full metadata object for a single species.
-    This model corresponds to the value for a key like "Aedes aegypti".
-    """
+    """Represents the full metadata object for a single species."""
 
     common_name: str
     taxonomy: TaxonomyModel
@@ -38,35 +40,18 @@ class SingleSpeciesMetadataModel(BaseModel):
 
 
 class SpeciesFiles(BaseModel):
-    """
-    A helper model that represents the contents of a single YAML file in the species directory.
-    This is necessary because the `species_metadata.yaml` file contains two top-level keys.
-    """
+    """A helper model representing the contents of YAML files in the species dir."""
 
     model_config = ConfigDict(extra="allow")
-
-    # This field will capture the `species_info_mapping` block.
     species_info_mapping: dict[str, str] = {}
-
-    # This field will capture the `species_metadata` block.
     species_metadata: dict[str, SingleSpeciesMetadataModel] = {}
 
 
 class SpeciesModel(BaseModel):
-    """
-    Configuration for the entire 'species' section.
-    This model now correctly reflects that its direct children are named
-    after the YAML files that were loaded.
-    """
+    """Configuration for the entire 'species' section."""
 
     model_config = ConfigDict(extra="allow")
-
-    # This field captures the content of 'species_classes.yaml'
-    # It expects a dictionary mapping integers to strings.
     species_classes: dict[int, str] = Field(default_factory=dict)
-
-    # This field captures the content of 'species_metadata.yaml'
-    # Its value is validated by the SpeciesFiles helper model.
     species_metadata: SpeciesFiles = Field(default_factory=SpeciesFiles)
 
 
@@ -74,7 +59,6 @@ class AppSettings(BaseSettings):
     """Core application settings, loaded from env vars or a config file."""
 
     model_config = SettingsConfigDict(env_prefix="CULICIDAELAB_", extra="ignore")
-
     environment: str = "production"
     log_level: str = "INFO"
 
@@ -91,7 +75,6 @@ class VisualizationConfig(BaseModel):
     """Configuration for visualization settings."""
 
     model_config = ConfigDict(extra="allow")
-
     overlay_color: str = "#000000"
     alpha: float = 0.5
     box_color: str = "#000000"
@@ -107,7 +90,6 @@ class PredictorConfig(BaseModel):
     """Configuration for a single predictor."""
 
     model_config = ConfigDict(extra="allow", protected_namespaces=())
-
     target_: str = Field(..., alias="_target_")
     model_path: str
     confidence: float = 0.5
@@ -126,7 +108,6 @@ class DatasetConfig(BaseModel):
     """Configuration for a single dataset."""
 
     model_config = ConfigDict(extra="allow")
-
     name: str
     path: str
     format: str
@@ -138,23 +119,20 @@ class ProviderConfig(BaseModel):
     """Configuration for a data provider."""
 
     model_config = ConfigDict(extra="allow")
-
     target_: str = Field(..., alias="_target_")
     dataset_url: str
     api_key: str | None = None
 
 
 class CulicidaeLabConfig(BaseModel):
-    """
-    The root Pydantic model for all CulicidaeLab configurations.
+    """The root Pydantic model for all CulicidaeLab configurations.
+
     It validates the entire configuration structure after loading from YAML files.
     """
 
     model_config = ConfigDict(extra="allow")
-
     app_settings: AppSettings = Field(default_factory=AppSettings)
     processing: ProcessingConfig = Field(default_factory=ProcessingConfig)
-
     datasets: dict[str, DatasetConfig] = {}
     predictors: dict[str, PredictorConfig] = {}
     providers: dict[str, ProviderConfig] = {}

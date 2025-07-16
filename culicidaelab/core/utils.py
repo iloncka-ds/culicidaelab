@@ -1,9 +1,14 @@
-"""Utility functions for common operations."""
+"""Utility functions for common operations.
 
-from pathlib import Path
-import requests
-from collections.abc import Callable
+This module contains helper functions used across the library, such as
+downloading files and converting colors.
+"""
+
 import logging
+from pathlib import Path
+from collections.abc import Callable
+
+import requests
 import tqdm
 
 
@@ -16,116 +21,85 @@ def download_file(
     timeout: int = 30,
     desc: str | None = None,
 ) -> Path:
-    """
-    Download a file from a given URL with optional progress tracking using tqdm.
+    """Downloads a file from a URL with progress tracking.
 
     Args:
-        url (str): URL of the file to download
-        destination (Optional[Union[str, Path]]): Specific destination path for the file
-        downloads_dir (Optional[Union[str, Path]]): Default directory for downloads if no destination specified
-        progress_callback (Optional[Callable]): Optional custom progress callback
-        chunk_size (int): Size of chunks to download (default: 8192 bytes)
-        timeout (int): Timeout for the download request in seconds (default: 30)
-        desc (Optional[str]): Description for the progress bar
+        url (str): The URL of the file to download.
+        destination (str | Path, optional): The specific destination path for the file.
+        downloads_dir (str | Path, optional): Default directory for downloads.
+        progress_callback (Callable, optional): A custom progress callback.
+        chunk_size (int): The size of chunks to download in bytes.
+        timeout (int): The timeout for the download request in seconds.
+        desc (str, optional): A description for the progress bar.
 
     Returns:
-        Path: Path to the downloaded file
+        Path: The path to the downloaded file.
 
     Raises:
-        ValueError: If URL is invalid
-        RuntimeError: If download fails
+        ValueError: If the URL is invalid.
+        RuntimeError: If the download or file write fails.
     """
     if not url or not url.startswith(("http://", "https://")):
         raise ValueError(f"Invalid URL: {url}")
 
-    destination = Path(destination) if destination else None
-    downloads_dir = Path(downloads_dir) if downloads_dir else None
-
-    if destination is None:
-        base_dir = downloads_dir or Path.cwd()
-
+    dest_path = Path(destination) if destination else None
+    if dest_path is None:
+        base_dir = Path(downloads_dir) if downloads_dir else Path.cwd()
         base_dir.mkdir(parents=True, exist_ok=True)
-
         filename = url.split("/")[-1]
-        destination = base_dir / filename
+        dest_path = base_dir / filename
 
-    destination.parent.mkdir(parents=True, exist_ok=True)
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
 
     try:
         with requests.get(url, stream=True, timeout=timeout) as response:
             response.raise_for_status()
-
             total_size = int(response.headers.get("content-length", 0))
-
-            progress_desc = desc or f"Downloading {destination.name}"
+            progress_desc = desc or f"Downloading {dest_path.name}"
 
             with tqdm.tqdm(
                 total=total_size,
                 unit="iB",
                 unit_scale=True,
                 desc=progress_desc,
-                disable=total_size == 0,
-            ) as progress_bar:
-                with open(destination, "wb") as file:
+            ) as pbar:
+                with open(dest_path, "wb") as file:
                     for chunk in response.iter_content(chunk_size=chunk_size):
-                        chunk_size = file.write(chunk)
-
-                        progress_bar.update(chunk_size)
-
-                        if progress_callback and callable(progress_callback):
+                        written_size = file.write(chunk)
+                        pbar.update(written_size)
+                        if progress_callback:
                             try:
-                                progress_callback(chunk_size, total_size)
-                            except Exception as cb_error:
-                                logging.warning(f"Progress callback error: {cb_error}")
-
-        return destination
-
+                                progress_callback(pbar.n, total_size)
+                            except Exception as cb_err:
+                                logging.warning(f"Progress callback error: {cb_err}")
+        return dest_path
     except requests.RequestException as e:
         logging.error(f"Download failed for {url}: {e}")
         raise RuntimeError(f"Failed to download file from {url}: {e}") from e
     except OSError as e:
-        logging.error(f"File write error for {destination}: {e}")
-        raise RuntimeError(f"Failed to write file to {destination}: {e}") from e
-
-
-def default_progress_callback(downloaded: int, total: int) -> None:
-    """
-    Default progress callback that can be used with download_file.
-
-    Args:
-        downloaded (int): Number of bytes downloaded
-        total (int): Total number of bytes to download
-    """
-    if total > 0:
-        percentage = (downloaded / total) * 100
-        print(f"Download progress: {percentage:.2f}% ({downloaded}/{total} bytes)")
+        logging.error(f"File write error for {dest_path}: {e}")
+        raise RuntimeError(f"Failed to write file to {dest_path}: {e}") from e
 
 
 def str_to_bgr(str_color: str) -> tuple[int, int, int]:
-    """
-    Convert a hexadecimal color string to a BGR tuple with input validation.
+    """Converts a hexadecimal color string to a BGR tuple.
 
     Args:
-        str_color (str): Hexadecimal color string in the format '#RRGGBB' or 'RRGGBB'.
+        str_color (str): A hex color string in '#RRGGBB' or 'RRGGBB' format.
 
     Returns:
-        tuple[int, int, int]: BGR tuple of integers.
+        tuple[int, int, int]: A (B, G, R) tuple of integers.
 
     Raises:
-        TypeError: If the input is not a string.
-        ValueError: If the input string is not a valid 6-digit hex color.
+        ValueError: If the string has an invalid format or invalid characters.
     """
-
     hex_color = str_color.lstrip("#")
-
     if len(hex_color) != 6:
-        raise ValueError(f"Invalid hex color string format: '{str_color}'. Must be 6 hex characters.")
-
+        raise ValueError(f"Invalid hex color string format: '{str_color}'.")
     try:
         r = int(hex_color[0:2], 16)
         g = int(hex_color[2:4], 16)
         b = int(hex_color[4:6], 16)
-
         return (b, g, r)
     except ValueError:
         raise ValueError(f"Invalid characters in hex string: '{str_color}'.")
