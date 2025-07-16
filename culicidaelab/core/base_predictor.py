@@ -123,7 +123,6 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         Raises:
             RuntimeError: If the model file cannot be found or loaded.
         """
-        pass
 
     @abstractmethod
     def predict(self, input_data: np.ndarray, **kwargs: Any) -> PredictionType:
@@ -140,7 +139,6 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         Raises:
             RuntimeError: If the model is not loaded before calling this method.
         """
-        pass
 
     @abstractmethod
     def visualize(
@@ -159,7 +157,6 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         Returns:
             A NumPy array representing the visualized image.
         """
-        pass
 
     def evaluate(
         self,
@@ -216,7 +213,6 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         Returns:
             Dictionary containing evaluation metrics
         """
-        pass
 
     def load_model(self) -> None:
         """Loads the model if it is not already loaded.
