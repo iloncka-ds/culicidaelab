@@ -1,4 +1,10 @@
-# src/culicidaelab/core/base_provider.py
+"""Base provider class that all data providers inherit from.
+
+This module defines the `BaseProvider` abstract base class, which establishes an
+interface for classes responsible for downloading datasets and model weights
+from various sources (e.g., Hugging Face).
+"""
+
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
@@ -15,33 +21,17 @@ class BaseProvider(ABC):
         *args: Any,
         **kwargs: Any,
     ) -> Path:
-        """Download a dataset from HuggingFace.
+        """Downloads a dataset from a source.
 
         Args:
-            dataset_name (str): Name of the dataset to download
-            save_dir (Optional[str], optional): Directory to save the dataset. Defaults to None.
-            args: Additional arguments
-            kwargs: Additional keyword arguments to pass to the download method
+            dataset_name (str): The name of the dataset to download.
+            save_dir (str, optional): The directory to save the dataset.
+                Defaults to None.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments to pass to the download method.
 
         Returns:
-            Path: Path to the downloaded dataset
-        """
-        raise NotImplementedError("Subclasses must implement this method")
-
-    @abstractmethod
-    def load_dataset(
-        self,
-        dataset_path: str | Path,
-        **kwargs: Any,
-    ) -> Any:
-        """Load a dataset from a local path.
-
-        Args:
-            dataset_path (str | Path): The local path to the dataset, typically returned by download_dataset.
-            kwargs: Additional keyword arguments for loading.
-
-        Returns:
-            Any: The loaded dataset object (e.g., a Hugging Face Dataset, a PyTorch Dataset, a Pandas DataFrame).
+            Path: The path to the downloaded dataset.
         """
         raise NotImplementedError("Subclasses must implement this method")
 
@@ -52,15 +42,15 @@ class BaseProvider(ABC):
         *args: Any,
         **kwargs: Any,
     ) -> Path:
-        """
-        Download model and get weights path.
+        """Downloads model weights and returns the path to them.
 
         Args:
-            model_type: Type of model ('detection', 'segmentation', or 'classification')
-            args: Additional arguments
-            kwargs: Additional keyword arguments
+            model_type (str): The type of model (e.g., 'detection', 'classification').
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
         Returns:
-            Path: Path to the model weights file
+            Path: The path to the model weights file.
         """
         raise NotImplementedError("Subclasses must implement this method")
 
@@ -69,6 +59,25 @@ class BaseProvider(ABC):
         """Gets the unique name of the provider.
 
         Returns:
-            A string representing the provider's name (e.g., 'huggingface').
+            str: A string representing the provider's name (e.g., 'huggingface').
         """
         pass
+
+    @abstractmethod
+    def load_dataset(
+        self,
+        dataset_path: str | Path,
+        **kwargs: Any,
+    ) -> Any:
+        """Loads a dataset from a local path.
+
+        Args:
+            dataset_path (str | Path): The local path to the dataset, typically
+                returned by `download_dataset`.
+            **kwargs: Additional keyword arguments for loading.
+
+        Returns:
+            Any: The loaded dataset object (e.g., a Hugging Face Dataset, a
+            PyTorch Dataset, or a Pandas DataFrame).
+        """
+        raise NotImplementedError("Subclasses must implement this method")

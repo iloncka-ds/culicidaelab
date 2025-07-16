@@ -1,74 +1,61 @@
-"""HuggingFace Dataset Provider implementation."""
+"""HuggingFace Provider for managing datasets and models.
+
+This module provides the `HuggingFaceProvider` class, which is a concrete
+implementation of `BaseProvider`. It handles downloading datasets and
+model weights from the Hugging Face Hub, as well as loading them
+from a local disk cache.
+"""
 
 from __future__ import annotations
 
-from typing import Any, cast
-from pathlib import Path
+# Standard library
 import shutil
-import requests
-from huggingface_hub import hf_hub_download  # type: ignore[import-untyped]
-from datasets import (
-    load_dataset,
-    load_from_disk,
-    Dataset,
-)  # type: ignore[import-untyped]
+from pathlib import Path
+from typing import Any, cast
 
-from ..core.base_provider import BaseProvider
-from ..core.settings import Settings
+# Third-party libraries
+import requests
+from datasets import Dataset, load_dataset, load_from_disk
+from huggingface_hub import hf_hub_download
+
+# Internal imports
+from culicidaelab.core.base_provider import BaseProvider
+from culicidaelab.core.settings import Settings
 
 
 class HuggingFaceProvider(BaseProvider):
-    """Provider for downloading and managing HuggingFace datasets."""
+    """Provider for downloading and managing HuggingFace datasets and models.
+
+    This class interfaces with the Hugging Face Hub to fetch dataset metadata,
+    download full datasets or specific splits, and download model weights. It uses
+    the core settings object for path resolution and API key access.
+
+    Attributes:
+        provider_name (str): The name of the provider, "huggingface".
+        settings (Settings): The main Settings object for the library.
+        dataset_url (str): The base URL for fetching Hugging Face dataset metadata.
+        api_key (str | None): The Hugging Face API key, if provided.
+    """
 
     def __init__(self, settings: Settings, dataset_url: str, **kwargs: Any) -> None:
-        """
-        Initialize HuggingFace provider.
+        """Initializes the HuggingFace provider.
 
-        This constructor is called by the `ProviderService` which injects the
+        This constructor is called by the `ProviderService`, which injects the
         global `settings` object and unpacks the specific provider's configuration
         (e.g., `dataset_url`) as keyword arguments.
 
         Args:
-            settings: The main Settings object for the library.
-            dataset_url: The base URL for fetching Hugging Face dataset metadata.
-            **kwargs: Catches other config parameters (e.g., `api_key`).
+            settings (Settings): The main Settings object for the library.
+            dataset_url (str): The base URL for fetching Hugging Face dataset metadata.
+            **kwargs (Any): Catches other config parameters (e.g., `api_key`).
         """
         super().__init__()
         self.provider_name = "huggingface"
         self.settings = settings
         self.dataset_url = dataset_url
-
-        # The API key can be defined in the config file (passed in kwargs)
-        # or loaded from environment variables as a fallback.
-        self.api_key: str | None = kwargs.get("api_key") or self.settings.get_api_key(self.provider_name)
-
-    def get_dataset_metadata(self, dataset_name: str) -> dict[str, Any]:
-        """Get metadata for a specific dataset from HuggingFace.
-
-        Args:
-            dataset_name: Name of the dataset to get metadata for.
-
-        Returns:
-            Dataset metadata as a dictionary
-
-        Raises:
-            requests.RequestException: If the request fails
-        """
-
-        url = self.dataset_url.format(dataset_name=dataset_name)
-        if self.api_key:
-            headers = {"Authorization": f"Bearer {self.api_key}"}
-        else:
-            headers = {}
-
-        try:
-            response = requests.get(url, headers=headers, timeout=10.0)
-            response.raise_for_status()
-            return cast(dict[str, Any], response.json())
-        except requests.RequestException as e:
-            raise requests.RequestException(
-                f"Failed to fetch dataset metadata for {dataset_name}: {str(e)}",
-            ) from e
+        self.api_key: str | None = kwargs.get("api_key") or self.settings.get_api_key(
+            self.provider_name,
+        )
 
     def download_dataset(
         self,
@@ -78,46 +65,41 @@ class HuggingFaceProvider(BaseProvider):
         *args: Any,
         **kwargs: Any,
     ) -> Path:
-        """Download a dataset from HuggingFace.
+        """Downloads a dataset from HuggingFace.
 
         Args:
-            dataset_name: Type of the dataset to download ("segmentation", "classification", "detection")
-            save_dir (Optional[str], optional): Directory to save the dataset. Defaults to None.
-            split (Optional[str], optional): Dataset split to download (e.g., "train",
-            *args: Additional positional arguments to pass to the download method
-            **kwargs: Additional arguments to pass to the download method
+            dataset_name (str): Name of the dataset to download (e.g., "segmentation").
+            save_dir (str | None, optional): Directory to save the dataset.
+                Defaults to None, using the path from settings.
+            split (str | None, optional): Dataset split to download (e.g., "train").
+                Defaults to None.
+            *args (Any): Additional positional arguments to pass to `load_dataset`.
+            **kwargs (Any): Additional keyword arguments to pass to `load_dataset`.
 
         Returns:
-            Path to the downloaded dataset
+            Path: The path to the downloaded dataset.
 
         Raises:
-            RuntimeError: If download fails
+            ValueError: If the configuration is missing the `repository` ID.
+            RuntimeError: If the download fails.
         """
-
         save_path = self.settings.get_dataset_path(dataset_name)
         if save_dir:
             save_path = Path(save_dir)
         dataset_config = self.settings.get_config(f"datasets.{dataset_name}")
 
-        # The config model uses 'path' for the repository ID.
         repo_id = dataset_config.repository
         if not repo_id:
-            raise ValueError(f"Configuration for dataset '{dataset_name}' is missing the 'path' (repository ID).")
+            raise ValueError(
+                f"Configuration for dataset '{dataset_name}' is missing the 'repository' (repository ID).",
+            )
 
         try:
             if self.api_key:
-                dataset = load_dataset(
-                    repo_id,
-                    split=split,
-                    token=self.api_key,
-                    **kwargs,
-                )
+                dataset = load_dataset(repo_id, split=split, token=self.api_key, **kwargs)
             else:
-                dataset = load_dataset(
-                    repo_id,
-                    split=split,
-                    **kwargs,
-                )
+                dataset = load_dataset(repo_id, split=split, **kwargs)
+
             if split:
                 save_path = save_path / split
 
@@ -125,7 +107,7 @@ class HuggingFaceProvider(BaseProvider):
                 print(f"Existing dataset found at '{save_path}'. Removing it for a clean download.")
                 shutil.rmtree(save_path)
 
-            dataset.save_to_disk(str(save_path))  # type: ignore[union-attr]
+            dataset.save_to_disk(str(save_path))
             if isinstance(dataset, Dataset):
                 dataset.cleanup_cache_files()
 
@@ -133,33 +115,27 @@ class HuggingFaceProvider(BaseProvider):
         except Exception as e:
             raise RuntimeError(f"Failed to download dataset {repo_id}: {str(e)}") from e
 
-    def load_dataset(self, dataset_path: str | Path, split: str | None = None, **kwargs) -> Any:
-        """Load a dataset from disk.
-        Args:
-            dataset_path: The local path to the dataset, typically returned by download_dataset.
-            split: Optional split to load (e.g., "train", "validation", "test").
-            **kwargs: Additional keyword arguments to pass to the load_dataset function.
-        Returns:
-            The loaded dataset.
-        """
-
-        return load_from_disk(str(dataset_path), **kwargs)
-
     def download_model_weights(self, model_type: str, *args: Any, **kwargs: Any) -> Path:
-        """
-        Get model weights path.
+        """Downloads and caches model weights from the HuggingFace Hub.
+
+        Checks if the weights exist locally. If not, it downloads them
+        from the repository specified in the configuration and saves them
+        to the appropriate directory.
 
         Args:
-            model_type: Type of model ('detector', 'segmenter', or 'classifier')
+            model_type (str): The type of model ('detector', 'segmenter', or 'classifier').
+            *args (Any): Additional positional arguments (unused).
+            **kwargs (Any): Additional keyword arguments (unused).
 
         Returns:
-            Path: Path to the model weights file
+            Path: The path to the model weights file.
 
         Raises:
-            ValueError: If model type is not found in config
-            RuntimeError: If download fails
+            ValueError: If the model type is not found in config or if `repository_id`
+                or `filename` are missing.
+            RuntimeError: If the download fails for any reason.
+            NotADirectoryError: If the destination directory could not be created.
         """
-
         local_path = self.settings.get_model_weights_path(model_type).resolve()
 
         if local_path.exists():
@@ -175,8 +151,6 @@ class HuggingFaceProvider(BaseProvider):
                 print(f"Weights file found at: {local_path}")
                 return local_path
 
-        # If we get here, the path either does not exist or was a broken symlink.
-        # We must now download the file.
         print(f"Model weights for '{model_type}' not found. Attempting to download...")
 
         predictor_config = self.settings.get_config(f"predictors.{model_type}")
@@ -194,12 +168,10 @@ class HuggingFaceProvider(BaseProvider):
             dest_dir = local_path.parent.resolve()
             print(f"Ensuring destination directory exists: {dest_dir}")
 
-            # Robust directory creation with validation
             dest_dir.mkdir(parents=True, exist_ok=True)
             if not dest_dir.is_dir():
                 raise NotADirectoryError(f"Failed to create directory: {dest_dir}")
 
-            # Download the file to the Hugging Face cache
             downloaded_path_str = hf_hub_download(
                 repo_id=repo_id,
                 filename=filename,
@@ -211,10 +183,9 @@ class HuggingFaceProvider(BaseProvider):
             return local_path
 
         except Exception as e:
-            # Clean up a potentially partial file on failure
             if local_path.exists():
                 local_path.unlink()
-            # Include directory info in error message
+
             dir_status = "exists" if dest_dir.exists() else "missing"
             dir_type = "directory" if dest_dir.is_dir() else "not-a-directory"
             raise RuntimeError(
@@ -222,6 +193,60 @@ class HuggingFaceProvider(BaseProvider):
                 f"Directory status: {dir_status} ({dir_type}). Error: {e}",
             ) from e
 
+    def get_dataset_metadata(self, dataset_name: str) -> dict[str, Any]:
+        """Gets metadata for a specific dataset from HuggingFace.
+
+        Args:
+            dataset_name (str): The name of the dataset to get metadata for.
+
+        Returns:
+            dict[str, Any]: The dataset metadata as a dictionary.
+
+        Raises:
+            requests.RequestException: If the HTTP request fails.
+        """
+        url = self.dataset_url.format(dataset_name=dataset_name)
+        headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
+
+        try:
+            response = requests.get(url, headers=headers, timeout=10.0)
+            response.raise_for_status()
+            return cast(dict[str, Any], response.json())
+        except requests.RequestException as e:
+            raise requests.RequestException(
+                f"Failed to fetch dataset metadata for {dataset_name}: {str(e)}",
+            ) from e
+
     def get_provider_name(self) -> str:
-        """Get the provider name."""
+        """Returns the provider's name.
+
+        Returns:
+            str: The name of the provider, "huggingface".
+        """
         return self.provider_name
+
+    def load_dataset(self, dataset_path: str | Path, split: str | None = None, **kwargs) -> Any:
+        """Loads a dataset from disk.
+
+        This method attempts to load a dataset from the specified path. If a `split`
+        name is provided and a corresponding subdirectory exists, it will load
+        the split from that subdirectory. Otherwise, it loads the entire dataset
+        from the base path.
+
+        Args:
+            dataset_path (str | Path): The local path to the dataset,
+                typically returned by `download_dataset`.
+            split (str | None, optional): The specific split to load (e.g., "train",
+                "validation", "test"). If a subdirectory with this name
+                exists, it will be loaded. Defaults to None.
+            **kwargs: Additional keyword arguments to pass to the
+                `datasets.load_from_disk` function.
+
+        Returns:
+            Any: The loaded dataset, typically a `datasets.Dataset` or
+                `datasets.DatasetDict` object.
+        """
+        path_to_load = Path(dataset_path)
+        if split and (path_to_load / split).exists():
+            return load_from_disk(str(path_to_load / split), **kwargs)
+        return load_from_disk(str(dataset_path), **kwargs)

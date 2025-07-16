@@ -1,41 +1,69 @@
-"""
-Module for mosquito segmentation using SAM (Segment Anything Model).
+"""Module for mosquito segmentation using the Segment Anything Model (SAM).
+
+This module provides the MosquitoSegmenter class, which uses a pre-trained
+SAM model (specifically, SAM2) to generate precise segmentation masks for
+mosquitos in an image. It can be prompted with detection bounding boxes
+for targeted segmentation.
+
+Example:
+    from culicidaelab.core.settings import Settings
+    from culicidaelab.predictors import MosquitoSegmenter
+    import numpy as np
+
+    # Initialize settings and segmenter
+    settings = Settings()
+    segmenter = MosquitoSegmenter(settings, load_model=True)
+
+    # Create a dummy image and a detection box
+    image = np.random.randint(0, 256, (1024, 1024, 3), dtype=np.uint8)
+    # box = (center_x, center_y, width, height, confidence)
+    detection_box = [(512, 512, 100, 100, 0.9)]
+
+    # Get segmentation mask
+    mask = segmenter.predict(image, detection_boxes=detection_box)
+
+    print(f"Generated a mask of shape: {mask.shape}")
+    print(f"Number of segmented pixels: {np.sum(mask)}")
+
+    # Clean up
+    segmenter.unload_model()
 """
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, TypeAlias, cast
+
 import cv2
 import numpy as np
 from sam2.build_sam import build_sam2
 from sam2.sam2_image_predictor import SAM2ImagePredictor
-from pathlib import Path
-from culicidaelab.core.base_predictor import BasePredictor
-from culicidaelab.core.settings import Settings
-from culicidaelab.core.provider_service import ProviderService
-from culicidaelab.core.utils import str_to_bgr
-from .model_weights_manager import ModelWeightsManager
 
+from culicidaelab.core.base_predictor import BasePredictor
+from culicidaelab.core.provider_service import ProviderService
+from culicidaelab.core.settings import Settings
+from culicidaelab.core.utils import str_to_bgr
+from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
 SegmentationPredictionType: TypeAlias = np.ndarray
 SegmentationGroundTruthType: TypeAlias = np.ndarray
 
 
 class MosquitoSegmenter(BasePredictor[SegmentationPredictionType, SegmentationGroundTruthType]):
-    """Class for segmenting mosquitos in images using SAM."""
+    """Segments mosquitos in images using the SAM2 model.
 
-    def __init__(
-        self,
-        settings: Settings,
-        load_model: bool = False,
-    ) -> None:
-        """
-        Initialize the mosquito segmenter.
+    This class provides methods to load a SAM2 model, generate segmentation
+    masks for entire images or specific regions defined by bounding boxes,
+    and visualize the resulting masks.
 
-        Args:
-            settings: The main Settings object for the library.
-            load_model: If True, loads model immediately.
-        """
+    Args:
+        settings (Settings): The main settings object for the library.
+        load_model (bool, optional): If True, the model is loaded upon
+            initialization. Defaults to False.
+    """
+
+    def __init__(self, settings: Settings, load_model: bool = False) -> None:
+        """Initializes the MosquitoSegmenter."""
         provider_service = ProviderService(settings)
         weights_manager = ModelWeightsManager(
             settings=settings,
@@ -48,41 +76,25 @@ class MosquitoSegmenter(BasePredictor[SegmentationPredictionType, SegmentationGr
             load_model=load_model,
         )
 
-    def _load_model(self) -> None:
-        """Load the SAM model."""
-        sam2_model = None
-        if (
-            not hasattr(self.config, "model_config_path")
-            or self.config.model_config_path is None
-            or not hasattr(self.config, "device")
-        ):
-            raise ValueError("Missing required configuration: 'sam_config_path' and 'device' must be set")
+    def predict(self, input_data: np.ndarray, **kwargs: Any) -> np.ndarray:
+        """Generates a segmentation mask for mosquitos in an image.
 
-        sam2_model = build_sam2(self.config.model_config_path, str(self.model_path), device=self.config.device)
-        try:
-            self._model = SAM2ImagePredictor(sam2_model)
-            self._model_loaded = True
-        except Exception as e:
-            raise RuntimeError(
-                f"Failed to load SAM model from {self.model_path}. "
-                f"Please check the model path and configuration. Error: {str(e)}",
-            )
-
-    def predict(
-        self,
-        input_data: np.ndarray,
-        **kwargs: Any,
-    ) -> np.ndarray:
-        """
-        Segment mosquitos in an image.
+        If `detection_boxes` are provided in kwargs, the model will generate
+        masks only for those specific regions. Otherwise, it will attempt to
+        segment the most prominent object in the image.
 
         Args:
-            input_data: Input image as numpy array
-            **kwargs: Additional arguments including:
-                detection_boxes: Optional list of detection boxes (x, y, w, h, conf)
+            input_data (np.ndarray): The input image as a NumPy array (H, W, 3).
+            **kwargs (Any): Optional keyword arguments, including:
+                detection_boxes (list, optional): A list of bounding boxes
+                in (cx, cy, w, h, conf) format to guide segmentation.
 
         Returns:
-            np.ndarray: Binary mask of segmented mosquitos
+            np.ndarray: A binary segmentation mask of shape (H, W), where pixels
+            belonging to a mosquito are marked as 1 (or True) and 0 otherwise.
+
+        Raises:
+            RuntimeError: If the model is not loaded or fails to load.
         """
         if not self.model_loaded or self._model is None:
             self.load_model()
@@ -116,13 +128,7 @@ class MosquitoSegmenter(BasePredictor[SegmentationPredictionType, SegmentationGr
                 masks.append(mask[0].astype(np.uint8))
             return np.logical_or.reduce(masks) if masks else np.zeros(input_data.shape[:2], dtype=bool)
 
-        masks, scores, _ = model.predict(
-            point_coords=None,
-            point_labels=None,
-            box=None,
-            multimask_output=False,
-        )
-
+        masks, _, _ = model.predict(point_coords=None, point_labels=None, box=None, multimask_output=False)
         return masks[0].astype(np.uint8)
 
     def visualize(
@@ -131,16 +137,18 @@ class MosquitoSegmenter(BasePredictor[SegmentationPredictionType, SegmentationGr
         predictions: SegmentationPredictionType,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
-        """
-        Visualize segmentation mask on the image.
+        """Overlays a segmentation mask on the original image.
 
         Args:
-            input_data: Original image
-            predictions: Binary segmentation mask
-            save_path: Optional path to save visualization
+            input_data (np.ndarray): The original image.
+            predictions (SegmentationPredictionType): The binary segmentation mask
+                from the `predict` method.
+            save_path (str | Path | None, optional): If provided, the visualized
+                image is saved to this path. Defaults to None.
 
         Returns:
-            np.ndarray: Image with overlay visualization
+            np.ndarray: A new image array with the segmentation mask visualized
+            as a colored overlay.
         """
         if len(input_data.shape) == 2:
             input_data = cv2.cvtColor(input_data, cv2.COLOR_GRAY2BGR)
@@ -161,17 +169,17 @@ class MosquitoSegmenter(BasePredictor[SegmentationPredictionType, SegmentationGr
         prediction: SegmentationPredictionType,
         ground_truth: SegmentationGroundTruthType,
     ) -> dict[str, float]:
-        """
-        The core logic for calculating segmentation metrics for a single item.
+        """Calculates segmentation metrics for a single predicted mask.
+
+        Computes Intersection over Union (IoU), precision, recall, and F1-score.
 
         Args:
-            prediction: The predicted binary mask from the model.
-            ground_truth: The ground truth binary mask.
+            prediction (SegmentationPredictionType): The predicted binary mask.
+            ground_truth (SegmentationGroundTruthType): The ground truth binary mask.
 
         Returns:
-            Dictionary containing IoU, precision, recall, and F1-score.
+            dict[str, float]: A dictionary containing the segmentation metrics.
         """
-        # Ensure boolean arrays for logical operations, which is more robust
         prediction = prediction.astype(bool)
         ground_truth = ground_truth.astype(bool)
 
@@ -188,9 +196,29 @@ class MosquitoSegmenter(BasePredictor[SegmentationPredictionType, SegmentationGr
         recall = intersection_sum / ground_truth_sum if ground_truth_sum > 0 else 0.0
         f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
 
-        return {
-            "iou": float(iou),
-            "precision": float(precision),
-            "recall": float(recall),
-            "f1": float(f1),
-        }
+        return {"iou": float(iou), "precision": float(precision), "recall": float(recall), "f1": float(f1)}
+
+    def _load_model(self) -> None:
+        """Loads the SAM2 model and initializes the image predictor.
+
+        Raises:
+            ValueError: If the required configuration for the model path or
+                device is missing.
+            RuntimeError: If the model fails to load from the specified path.
+        """
+        if (
+            not hasattr(self.config, "model_config_path")
+            or self.config.model_config_path is None
+            or not hasattr(self.config, "device")
+        ):
+            raise ValueError("Missing required configuration: 'model_config_path' and 'device' must be set")
+
+        sam2_model = build_sam2(self.config.model_config_path, str(self.model_path), device=self.config.device)
+        try:
+            self._model = SAM2ImagePredictor(sam2_model)
+            self._model_loaded = True
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to load SAM model from {self.model_path}. "
+                f"Please check the model path and configuration. Error: {str(e)}",
+            )

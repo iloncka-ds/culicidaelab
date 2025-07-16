@@ -114,7 +114,7 @@ def test_ensure_weights_raises_runtime_error_on_provider_failure(
         weights_manager.ensure_weights(model_type)
 
     # Assert that the new exception message is informative and chains the original
-    assert f"Failed to download weights for= '{model_type}'" in str(excinfo.value)
+    assert f"Failed to download weights for '{model_type}'" in str(excinfo.value)
     assert str(original_exception) in str(excinfo.value)
     assert excinfo.value.__cause__ is original_exception
 
@@ -136,6 +136,6 @@ def test_ensure_weights_raises_runtime_error_on_config_failure(
         weights_manager.ensure_weights(model_type)
 
     # Assert that the new exception message is informative and chains the original
-    assert f"Failed to download weights for= '{model_type}'" in str(excinfo.value)
+    assert f"Failed to download weights for '{model_type}'" in str(excinfo.value)
     assert str(original_exception) in str(excinfo.value)
     assert excinfo.value.__cause__ is original_exception

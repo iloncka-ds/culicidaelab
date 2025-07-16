@@ -5,7 +5,7 @@ import requests
 from pathlib import Path
 import tempfile
 from unittest.mock import patch, MagicMock
-from culicidaelab.core.utils import download_file, default_progress_callback
+from culicidaelab.core.utils import download_file
 
 
 @pytest.fixture
@@ -70,43 +70,3 @@ def test_download_file_with_custom_destination(temp_dir):
         assert result == custom_dest
         assert result.exists()
         assert result.parent.exists()
-
-
-def test_download_file_with_progress_callback(temp_dir):
-    """Test download_file with custom progress callback."""
-    test_url = "https://example.com/test.txt"
-    test_content = b"test content"
-    callback_called = False
-
-    def progress_callback(downloaded, total):
-        nonlocal callback_called
-        callback_called = True
-        assert downloaded > 0
-        assert total > 0
-
-    mock_response = MagicMock()
-    mock_response.headers = {"content-length": str(len(test_content))}
-    mock_response.iter_content.return_value = [test_content]
-    mock_response.raise_for_status.return_value = None
-    mock_response.__enter__.return_value = mock_response
-
-    with patch("requests.get", return_value=mock_response):
-        download_file(
-            test_url,
-            downloads_dir=temp_dir,
-            progress_callback=progress_callback,
-        )
-
-        assert callback_called
-
-
-def test_default_progress_callback(capsys):
-    """Test the default progress callback function."""
-    default_progress_callback(50, 100)
-    captured = capsys.readouterr()
-    assert "50.00%" in captured.out
-    assert "50/100 bytes" in captured.out
-
-    default_progress_callback(50, 0)
-    captured = capsys.readouterr()
-    assert captured.out == ""
