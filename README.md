@@ -156,6 +156,11 @@ To get a development environment running:
     ```
     This will run linters and formatters automatically on each commit to ensure code quality and consistency.
 
+## Acknowledgments
+
+CulicidaeLab development is  supported by a grant from the **Foundation for Assistance to Small Innovative Enterprises (FASIE)**.
+[https://fasie.ru/](https://fasie.ru/)
+
 ## License
 
 This project is distributed under the MIT License. See the [LICENSE](https://github.com/iloncka-ds/culicidaelab/blob/main/LICENSE) file for more information.
