@@ -97,7 +97,8 @@ We use a suite of tools to maintain code quality. Your `pre-commit` setup handle
 To ensure your changes haven't introduced any regressions, please run the full test suite using `pytest`.
 ```bash
 pytest
-```All tests should pass before you submit a pull request.
+```
+All tests should pass before you submit a pull request.
 
 ### Writing Documentation
 
