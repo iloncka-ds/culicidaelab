@@ -7,6 +7,9 @@ wheels/
 *.egg-info
 .vscode
 .coverage
+.mypy_cache
+.pytest_cache
+.ruff_cache
 # Virtual environments
 .venv
 # Environment variables
