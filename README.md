@@ -158,7 +158,7 @@ To get a development environment running:
 
 ## License
 
-This project is distributed under the MIT License. See the `LICENSE` file for more information.
+This project is distributed under the MIT License. See the [LICENSE](https://github.com/iloncka-ds/culicidaelab/blob/main/LICENSE) file for more information.
 
 ## Citation
 
