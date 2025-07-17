@@ -17,7 +17,6 @@ def test_subclass_must_implement_methods():
     """Verify that a subclass must implement all abstract methods."""
 
     class IncompleteProvider(BaseProvider):
-        # Missing download_dataset
         def download_model_weights(
             self,
             model_type: str,
@@ -35,8 +34,6 @@ def test_subclass_must_implement_methods():
     ):
         IncompleteProvider()
 
-    # A complete provider must also implement the DatasetLoader protocol,
-    # as the system expects to call `load_dataset` on provider instances.
     class CompleteProvider(BaseProvider):
         def download_dataset(
             self,
@@ -58,7 +55,6 @@ def test_subclass_must_implement_methods():
         def get_provider_name(self) -> str:
             return "complete"
 
-        # This method was missing, causing the original failure.
         def load_dataset(
             self,
             dataset_path: str | Path,
@@ -67,7 +63,6 @@ def test_subclass_must_implement_methods():
         ) -> any:
             return "fake_loaded_dataset"
 
-    # This should not raise an error
     provider = CompleteProvider()
     assert provider is not None
     assert provider.get_provider_name() == "complete"

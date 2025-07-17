@@ -24,12 +24,11 @@ def test_weights_manager_successful_download(
     model_type = "detector"
     filename = "dummy_detector_model.pt"
 
-    # FIX: The model_path in the config now matches the provider's download logic.
     expected_relative_path = Path(model_type) / filename
 
     detector_config_value = {
         "_target_": "culicidaelab.predictors.detector.MosquitoDetector",
-        "model_path": str(expected_relative_path),  # Correct, realistic path
+        "model_path": str(expected_relative_path),
         "provider_name": "huggingface",
         "repository_id": "test/dummy-model",
         "filename": filename,
@@ -43,7 +42,6 @@ def test_weights_manager_successful_download(
     settings = settings_factory(user_config_dir)
 
     def mock_download(repo_id, filename, local_dir, **kwargs):
-        # The 'local_dir' passed by the provider will be '.../models/detector'
         dest_path = Path(local_dir) / filename
         shutil.copy(project_fixtures_dir / filename, dest_path)
         return str(dest_path)
@@ -52,10 +50,8 @@ def test_weights_manager_successful_download(
 
     weights_manager = ModelWeightsManager(settings, ProviderService(settings))
 
-    # ensure_weights is the public API that triggers the download
     final_path = weights_manager.ensure_weights(model_type)
 
-    # Assert that the file now exists at the correct absolute path
     expected_absolute_path = resource_manager.model_dir / expected_relative_path
 
     assert final_path.exists()

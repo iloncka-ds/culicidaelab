@@ -6,11 +6,10 @@ from unittest.mock import Mock, patch, MagicMock
 from concurrent.futures import Future
 import logging
 
-# Mock Pydantic config model if not available
 try:
     from culicidaelab.core.config_models import PredictorConfig
 except ImportError:
-    PredictorConfig = type("PredictorConfig", (object,), {})  # type: ignore[assignment, misc]
+    PredictorConfig = type("PredictorConfig", (object,), {})
     import sys
 
     sys.modules["culicidaelab.core.config_models"] = MagicMock(
@@ -82,25 +81,22 @@ def dummy_settings():
     """Create mock settings with a Pydantic-like config object."""
     settings = Mock(spec=Settings)
 
-    # Create a mock Pydantic PredictorConfig object
     predictor_config_dict = {
         "repository_id": "dummy/repo",
         "filename": "model.pth",
         "target_": "dummy.module.DummyModel",
         "params": {"param1": "value1"},
-        "model_path": "/fake/path/dummy.pth",  # This path is ignored by BasePredictor
+        "model_path": "/fake/path/dummy.pth",
         "model_config_path": "some/path/to/config.yaml",
         "model_config_filename": "config.yaml",
         "device": "cpu",
         "confidence": 0.5,
     }
-    # Use MagicMock to allow attribute setting
     mock_predictor_config = MagicMock(spec=PredictorConfig)
     for key, value in predictor_config_dict.items():
         setattr(mock_predictor_config, key, value)
     mock_predictor_config.model_dump.return_value = predictor_config_dict
 
-    # Mock get_config method to return the Pydantic-like object
     def get_config(path=None, default=None):
         if path in ["predictors.dummy", "predictors.failing"]:
             return mock_predictor_config
@@ -153,7 +149,6 @@ def test_init_with_load_model(dummy_settings, mock_weights_manager):
 
 def test_init_missing_config(dummy_settings, mock_weights_manager):
     """Test initialization with missing predictor config"""
-    # Configure mock to return None, which BasePredictor should handle
     dummy_settings.get_config.side_effect = lambda path=None, default=None: None
 
     with pytest.raises(
@@ -224,7 +219,7 @@ def test_unload_model(loaded_predictor, caplog):
 
 def test_unload_model_not_loaded(dummy_predictor):
     """Test unloading when model not loaded"""
-    dummy_predictor.unload_model()  # Should not raise any error
+    dummy_predictor.unload_model()
     assert not dummy_predictor.model_loaded
 
 
@@ -410,7 +405,7 @@ def test_finalize_evaluation_report(dummy_predictor):
         ground_truths,
     )
 
-    assert result == aggregated  # Default implementation returns unchanged
+    assert result == aggregated
 
 
 def test_model_context_manager_not_loaded(dummy_predictor):
@@ -422,7 +417,7 @@ def test_model_context_manager_not_loaded(dummy_predictor):
         pred = predictor.predict(np.ones((2, 2)))
         assert pred == 4.0
 
-    assert not dummy_predictor.model_loaded  # Should be unloaded after context
+    assert not dummy_predictor.model_loaded
 
 
 def test_model_context_manager_already_loaded(loaded_predictor):
@@ -434,7 +429,7 @@ def test_model_context_manager_already_loaded(loaded_predictor):
         pred = predictor.predict(np.ones((2, 2)))
         assert pred == 4.0
 
-    assert loaded_predictor.model_loaded  # Should remain loaded
+    assert loaded_predictor.model_loaded
 
 
 def test_context_manager_enter_exit(dummy_predictor):
@@ -446,7 +441,7 @@ def test_context_manager_enter_exit(dummy_predictor):
         pred = predictor.predict(np.ones((2, 2)))
         assert pred == 4.0
 
-    assert dummy_predictor.model_loaded  # Model remains loaded (no auto-unload in __exit__)
+    assert dummy_predictor.model_loaded
 
 
 def test_get_model_info(dummy_predictor):
@@ -469,7 +464,6 @@ def test_get_model_info_loaded(loaded_predictor):
 
 def test_calculate_metrics_parallel_success(dummy_predictor):
     """Test parallel metrics calculation success"""
-    # Create real Future objects
     future1, future2 = Future(), Future()
     future1.set_result({"accuracy": 1.0})
     future2.set_result({"accuracy": 0.0})

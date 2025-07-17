@@ -77,7 +77,6 @@ def test_get_cache_path_and_sanitize(resource_manager):
     cache_path = resource_manager.get_cache_path(cache_name)
     assert cache_path.exists()
     assert "_" in cache_path.name
-    # Test ValueError for empty name
     with pytest.raises(ValueError):
         resource_manager.get_cache_path("")
 
@@ -89,22 +88,18 @@ def test_temp_workspace_context(resource_manager):
 
 
 def test_is_safe_to_delete(resource_manager):
-    # Should be safe for temp_dir
     temp = resource_manager.create_temp_workspace()
     assert resource_manager._is_safe_to_delete(temp)
-    # Should not be safe for root
     assert not resource_manager._is_safe_to_delete(Path("/"))
 
 
 def test_clean_old_files(resource_manager):
-    # Create an old file in downloads
     old_file = resource_manager.downloads_dir / "old.txt"
     old_file.write_text("x")
     old_time = time.time() - 10 * 86400
     os.utime(old_file, (old_time, old_time))
     stats = resource_manager.clean_old_files(days=5)
     assert stats["downloads_cleaned"] >= 1
-    # Test ValueError for negative days
     with pytest.raises(ValueError):
         resource_manager.clean_old_files(days=-1)
 
@@ -112,7 +107,6 @@ def test_clean_old_files(resource_manager):
 def test_get_disk_usage_and_directory_size(resource_manager):
     usage = resource_manager.get_disk_usage()
     assert "user_data" in usage
-    # Should handle non-existent path
     assert resource_manager._get_directory_size(Path("not_a_dir"))["size_bytes"] == 0
 
 

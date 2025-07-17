@@ -3,34 +3,29 @@ import os
 import pytest
 import numpy as np
 from pathlib import Path
-from unittest.mock import MagicMock
 
-# --- Import the class to be tested ---
+from unittest.mock import MagicMock
+from importlib.util import find_spec
+
 from culicidaelab.predictors.segmenter import MosquitoSegmenter
 
-# --- Mocking external and project-internal dependencies ---
-
-# cv2 is used in the test file through mocks
-try:
-    import cv2  # noqa: F401
-except ImportError:
+if find_spec("cv2") is not None:
+    import cv2  # noqa
+else:
     cv2_mock = MagicMock(name="global_cv2_mock")
     sys.modules["cv2"] = cv2_mock
 
-# sam2 imports are used in the test file through mocks
-try:
-    from sam2.build_sam import build_sam2  # noqa: F401
-    from sam2.sam2_image_predictor import SAM2ImagePredictor  # noqa: F401
-except ImportError:
+if find_spec("sam2") is not None:
+    import sam2  # noqa
+else:
     sys.modules["sam2"] = MagicMock()
     sys.modules["sam2.build_sam"] = MagicMock()
     sys.modules["sam2.sam2_image_predictor"] = MagicMock()
 
-# Mock Pydantic config model if not available
 try:
     from culicidaelab.core.config_models import PredictorConfig
 except ImportError:
-    PredictorConfig = type("PredictorConfig", (object,), {})  # type: ignore[assignment, misc]
+    PredictorConfig = type("PredictorConfig", (object,), {})
     if "culicidaelab.core.config_models" not in sys.modules:
         sys.modules["culicidaelab.core.config_models"] = MagicMock(
             PredictorConfig=PredictorConfig,
@@ -38,27 +33,20 @@ except ImportError:
 
 sys.modules["culicidaelab.core.settings"] = MagicMock()
 sys.modules["culicidaelab.core.utils"] = MagicMock()
-# Mock the module that contains ModelWeightsManager
 sys.modules["culicidaelab.predictors.model_weights_manager"] = MagicMock()
 sys.modules["culicidaelab.core.provider_service"] = MagicMock()
-
-
-# --- Test Fixtures ---
 
 
 @pytest.fixture
 def mock_settings():
     """Provides a mock Settings object returning a Pydantic-like config object."""
     settings = MagicMock(name="MockSettings")
-    # Set model_dir to the project root to match the actual path used in the test
     settings.model_dir = Path(r"c:/Users/lenova/CascadeProjects/culicidaelab")
 
-    # This mock simulates the PredictorConfig Pydantic model
     mock_predictor_config = MagicMock(spec=PredictorConfig)
     mock_predictor_config.model_config_path = "sam/sam_config.yaml"
     mock_predictor_config.device = "cpu"
 
-    # Create a mock for the nested visualization config that supports attribute access
     mock_viz_config = MagicMock()
     mock_viz_config.overlay_color = "red"
     mock_viz_config.alpha = 0.4
@@ -88,7 +76,6 @@ def mock_dependencies(mocker):
     mock_mwm_instance.ensure_weights.return_value = Path(
         "/mock/models/segmenter_model.pth",
     )
-    # Patch ModelWeightsManager where it is used in segmenter.py
     mocker.patch(
         "culicidaelab.predictors.segmenter.ModelWeightsManager",
         return_value=mock_mwm_instance,
@@ -107,12 +94,8 @@ def loaded_segmenter(segmenter):
     mock_internal_predictor = MagicMock(spec_set=["set_image", "predict"])
     segmenter._model = mock_internal_predictor
     segmenter._model_loaded = True
-    # Attach mock to segmenter for easy access in tests
     segmenter.mocked_internal_predictor = mock_internal_predictor
     return segmenter
-
-
-# --- Test Cases ---
 
 
 def test_initialization(segmenter, mock_settings):
@@ -142,9 +125,6 @@ def test_load_model(segmenter, mocker):
     ) == os.path.normcase(os.path.abspath(os.path.normpath(expected_config_path)))
 
 
-# --- Additional Coverage Tests ---
-
-
 def test_load_model_failure(segmenter, mocker):
     """Test that _load_model raises if build_sam2 fails."""
     mocker.patch(
@@ -166,7 +146,7 @@ def test_visualize_shape_mismatch(segmenter, mocker):
     """Test visualize raises if mask and image shapes do not match."""
     mocker.patch("culicidaelab.predictors.segmenter.cv2")
     input_image = np.zeros((10, 10, 3), dtype=np.uint8)
-    prediction_mask = np.ones((5, 5), dtype=np.uint8)  # shape mismatch
+    prediction_mask = np.ones((5, 5), dtype=np.uint8)
     with pytest.raises(IndexError):
         segmenter.visualize(input_image, prediction_mask)
 
@@ -229,7 +209,6 @@ def test_predict_triggers_load_model(segmenter, mocker):
 def test_predict_image_preprocessing(loaded_segmenter, mocker):
     """Test that input images are correctly converted to RGB."""
     mock_cv2 = mocker.patch("culicidaelab.predictors.segmenter.cv2")
-    # Make cvtColor return the input to isolate the call check
     mock_cv2.cvtColor.side_effect = lambda img, flag: img
 
     loaded_segmenter.mocked_internal_predictor.predict.return_value = (
@@ -315,7 +294,6 @@ def test_visualize(segmenter, mocker):
 
     str_to_bgr_mock.assert_called_once_with(overlay_color_str)
     mock_cv2.addWeighted.assert_called_once()
-    # Check that alpha from config is used
     assert mock_cv2.addWeighted.call_args[0][3] == alpha
 
 
@@ -359,7 +337,6 @@ def test_evaluate_integration(loaded_segmenter, mocker):
     gt_mask = np.ones((10, 10), dtype=np.uint8)
     pred_mask = np.zeros((10, 10), dtype=np.uint8)
 
-    # Mock the predict method and spy on the internal _evaluate method
     mocker.patch.object(loaded_segmenter, "predict", return_value=pred_mask)
     mocker.patch.object(
         loaded_segmenter,
@@ -367,10 +344,8 @@ def test_evaluate_integration(loaded_segmenter, mocker):
         wraps=loaded_segmenter._evaluate_from_prediction,
     )
 
-    # BasePredictor.evaluate is not provided, so we mock it to call the logic we want to test
     def mock_evaluate(input_data, ground_truth, **kwargs):
         prediction = loaded_segmenter.predict(input_data, **kwargs)
-        # Call with keyword arguments to match the assertion
         return loaded_segmenter._evaluate_from_prediction(
             prediction=prediction,
             ground_truth=ground_truth,
@@ -381,6 +356,11 @@ def test_evaluate_integration(loaded_segmenter, mocker):
     metrics = loaded_segmenter.evaluate(input_data=dummy_image, ground_truth=gt_mask)
 
     loaded_segmenter.predict.assert_called_once_with(dummy_image)
+    loaded_segmenter._evaluate_from_prediction.assert_called_once_with(
+        prediction=pred_mask,
+        ground_truth=gt_mask,
+    )
+    assert metrics["iou"] == 0.0
     loaded_segmenter._evaluate_from_prediction.assert_called_once_with(
         prediction=pred_mask,
         ground_truth=gt_mask,

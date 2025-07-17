@@ -7,26 +7,21 @@ from culicidaelab.core.settings import Settings
 from culicidaelab.core.resource_manager import ResourceManager
 
 
-# This is the base fixture that just defines the path.
 @pytest.fixture(scope="session")
 def project_fixtures_dir() -> Path:
     """Returns the absolute path to the project's fixtures directory."""
     return Path(__file__).parent.parent / "fixtures"
 
 
-# This separate 'autouse' fixture USES the path to create files.
-# It runs automatically for the session, before any tests that need it.
 @pytest.fixture(scope="session", autouse=True)
 def create_dummy_model_files(project_fixtures_dir: Path):
     """Ensures dummy model files exist before any tests run."""
     project_fixtures_dir.mkdir(exist_ok=True)
-    # Create empty files as placeholders
     (project_fixtures_dir / "dummy_detector_model.pt").touch()
     (project_fixtures_dir / "dummy_segmenter_model.pt").touch()
     (project_fixtures_dir / "dummy_classifier_model.pkl").touch()
 
 
-# Creates a temporary base directory for the test session
 @pytest.fixture(scope="session")
 def integration_test_dir(tmp_path_factory):
     base_dir = tmp_path_factory.mktemp("integration_tests")
@@ -34,13 +29,11 @@ def integration_test_dir(tmp_path_factory):
     shutil.rmtree(base_dir)
 
 
-# Initializes ResourceManager to manage files in the test environment
 @pytest.fixture(scope="session")
 def resource_manager(integration_test_dir: Path) -> ResourceManager:
     return ResourceManager(app_name="culicidaelab_test", custom_base_dir=integration_test_dir)
 
 
-# Fixture to create a temporary user config directory for each test
 @pytest.fixture
 def user_config_dir(tmp_path: Path) -> Path:
     config_dir = tmp_path / "user_config"
@@ -48,7 +41,6 @@ def user_config_dir(tmp_path: Path) -> Path:
     return config_dir
 
 
-# A factory for creating isolated Settings instances.
 @pytest.fixture
 def settings_factory(monkeypatch, resource_manager):
     original_instance = Settings._instance
@@ -69,11 +61,8 @@ def settings_factory(monkeypatch, resource_manager):
     monkeypatch.setattr(Settings, "_instance", original_instance)
 
 
-# Fixture to create a base provider configuration
 def create_provider_config(config_dir: Path):
     """Creates a providers.yaml file with the correct structure."""
-    # FIX: ConfigManager loads `providers.yaml` into the `providers` key.
-    # The content of the file should be a dictionary of providers.
     provider_dict = {
         "huggingface": {
             "_target_": "culicidaelab.providers.huggingface_provider.HuggingFaceProvider",

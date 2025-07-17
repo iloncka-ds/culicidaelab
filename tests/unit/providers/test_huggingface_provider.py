@@ -26,7 +26,6 @@ def mock_settings():
                 provider_name="huggingface",
             )
         if "predictors" in path:
-            # Add required fields for PredictorConfig to avoid ValidationError
             return PredictorConfig(
                 _target_="a.b",
                 model_path="/fake/models/classifier.pt",
@@ -52,7 +51,6 @@ def hf_provider(mock_settings):
 
 
 def test_initialization(mock_settings):
-    # Test with api_key from kwargs
     provider_with_key = HuggingFaceProvider(
         settings=mock_settings,
         dataset_url="url",
@@ -60,7 +58,6 @@ def test_initialization(mock_settings):
     )
     assert provider_with_key.api_key == "kwarg_key"
 
-    # Test with api_key from settings (env var)
     provider_from_env = HuggingFaceProvider(settings=mock_settings, dataset_url="url")
     assert provider_from_env.api_key == "fake_api_key_from_env"
     mock_settings.get_api_key.assert_called_with("huggingface")
@@ -128,10 +125,9 @@ def test_download_model_weights_not_found(
     hf_provider,
     mock_settings,
 ):
-    mock_exists.return_value = False  # File does not exist
+    mock_exists.return_value = False
     mock_settings.cache_dir = Path("/fake/cache")
 
-    # The SUT returns a resolved path. We must compare against a resolved path.
     expected_path = Path("/fake/models/classifier.pt").resolve()
     mock_hf_download.return_value = str(expected_path)
 
@@ -148,11 +144,10 @@ def test_download_model_weights_already_exists(
     mock_is_symlink,
     hf_provider,
 ):
-    mock_exists.return_value = True  # File exists
+    mock_exists.return_value = True
 
     result_path = hf_provider.download_model_weights("classifier")
 
-    # The SUT returns a resolved path. The assertion must compare against a resolved path.
     expected_path = Path("/fake/models/classifier.pt").resolve()
     assert result_path == expected_path
 
@@ -171,7 +166,6 @@ def test_download_model_weights_download_failure(
     mock_hf_download,
     hf_provider,
 ):
-    # Should raise RuntimeError if download fails
     with pytest.raises(
         RuntimeError,
         match="Failed to download weights for 'classifier'",
@@ -189,7 +183,6 @@ def test_download_dataset_failure(mock_load_dataset, hf_provider):
 
 
 def test_download_model_weights_missing_config(hf_provider, mock_settings):
-    # Patch get_config to return incomplete config
     def broken_predictor_config(path):
         if "predictors" in path:
             return PredictorConfig(

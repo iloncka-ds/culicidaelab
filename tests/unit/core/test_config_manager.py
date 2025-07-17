@@ -15,7 +15,6 @@ from culicidaelab.core.config_manager import ConfigManager, _deep_merge
 from culicidaelab.core.config_models import CulicidaeLabConfig
 
 
-# Fixtures
 @pytest.fixture
 def temp_config_dirs():
     """Create temporary directories for testing."""
@@ -51,7 +50,6 @@ def mock_config_data():
     }
 
 
-# Helper functions
 def create_yaml_files(config_dir: Path, config_data: dict[str, Any]):
     """Helper to create YAML files in a directory."""
     for section, data in config_data.items():
@@ -60,7 +58,6 @@ def create_yaml_files(config_dir: Path, config_data: dict[str, Any]):
             yaml.dump(data, f)
 
 
-# Tests for _deep_merge utility function
 def test_deep_merge_simple_dict():
     """Test merging simple dictionaries."""
     source = {"a": 1, "b": 2}
@@ -106,13 +103,11 @@ def test_deep_merge_overwrites_non_dict_values():
     assert result == expected
 
 
-# Tests for ConfigManager initialization
 def test_config_manager_init_with_user_config_dir(temp_config_dirs, mock_config_data):
     """Test initialization with user config directory."""
     default_dir = temp_config_dirs["default_dir"]
     user_dir = temp_config_dirs["user_dir"]
 
-    # Create config files
     create_yaml_files(default_dir, mock_config_data["default"])
     create_yaml_files(user_dir, mock_config_data["user"])
 
@@ -141,29 +136,23 @@ def test_config_manager_pathlib_path_handling(temp_config_dirs):
 
     with patch.object(ConfigManager, "_get_default_config_path", return_value=Path("/mock")):
         with patch.object(ConfigManager, "_load", return_value=Mock(spec=CulicidaeLabConfig)):
-            # Test with Path object
             manager = ConfigManager(user_config_dir=user_dir)
             assert isinstance(manager.user_config_dir, Path)
             assert manager.user_config_dir == user_dir
 
-            # Test with string
             manager2 = ConfigManager(user_config_dir=str(user_dir))
             assert isinstance(manager2.user_config_dir, Path)
             assert manager2.user_config_dir == user_dir
 
 
-# Tests for default config path resolution
 def test_get_default_config_path_success():
     """Test successful retrieval of default config path."""
     mock_path = Path("/mock/path/conf")
 
     with patch("culicidaelab.core.config_manager.resources.files") as mock_resources:
-        # Based on the original error, the implementation likely accesses a private `_path`
-        # attribute instead of using the public API. We mock this behavior.
-        # The implementation likely does `Path(resources.files(...)._path) / "conf"`.
         mock_resources.return_value._path = mock_path.parent
 
-        manager = ConfigManager.__new__(ConfigManager)  # Create without __init__
+        manager = ConfigManager.__new__(ConfigManager)
         result = manager._get_default_config_path()
 
         assert result == mock_path
@@ -176,7 +165,6 @@ def test_get_default_config_path_fallback():
             manager = ConfigManager.__new__(ConfigManager)
             result = manager._get_default_config_path()
 
-            # We can't easily test the exact path, so just ensure it's a Path object
             assert isinstance(result, Path)
 
 
@@ -190,7 +178,6 @@ def test_get_default_config_path_failure():
                 manager._get_default_config_path()
 
 
-# Tests for config loading from directories
 def test_load_config_from_dir_success(temp_config_dirs, mock_config_data):
     """Test successful loading of config from directory."""
     config_dir = temp_config_dirs["default_dir"]
@@ -208,7 +195,6 @@ def test_load_config_from_dir_nested_structure(temp_config_dirs):
     """Test loading config with nested directory structure."""
     config_dir = temp_config_dirs["default_dir"]
 
-    # Create nested directory structure
     nested_dir = config_dir / "predictors"
     nested_dir.mkdir()
 
@@ -239,7 +225,6 @@ def test_load_config_from_dir_empty_yaml(temp_config_dirs):
     manager = ConfigManager.__new__(ConfigManager)
     result = manager._load_config_from_dir(config_dir)
 
-    # Empty files should be skipped
     assert "empty" not in result
 
 
@@ -253,7 +238,6 @@ def test_load_config_from_dir_invalid_yaml(temp_config_dirs, capsys):
     manager = ConfigManager.__new__(ConfigManager)
     result = manager._load_config_from_dir(config_dir)
 
-    # Should print warning and continue
     captured = capsys.readouterr()
     assert "Warning: Could not load or parse" in captured.out
     assert "invalid" not in result
@@ -275,17 +259,14 @@ def test_load_config_from_dir_none():
     assert result == {}
 
 
-# Tests for config loading and validation
 @patch.object(ConfigManager, "_load_config_from_dir")
 def test_load_success(mock_load_config, temp_config_dirs):
     """Test successful configuration loading and validation."""
-    # Mock the directory loading
     mock_load_config.side_effect = [
-        {"predictors": {"classifier": {"target_": "test.Classifier"}}},  # default
-        {"predictors": {"classifier": {"threshold": 0.8}}},  # user
+        {"predictors": {"classifier": {"target_": "test.Classifier"}}},
+        {"predictors": {"classifier": {"threshold": 0.8}}},
     ]
 
-    # Mock the CulicidaeLabConfig validation
     mock_validated_config = Mock(spec=CulicidaeLabConfig)
 
     with patch("culicidaelab.core.config_manager.CulicidaeLabConfig", return_value=mock_validated_config):
@@ -296,20 +277,17 @@ def test_load_success(mock_load_config, temp_config_dirs):
         result = manager._load()
 
         assert result == mock_validated_config
-        # Verify both directories were loaded
         assert mock_load_config.call_count == 2
 
 
 @patch.object(ConfigManager, "_load_config_from_dir")
 def test_load_validation_error(mock_load_config, temp_config_dirs, capsys):
     """Test handling of validation errors during loading."""
-    # Mock the directory loading
     mock_load_config.side_effect = [
-        {"invalid": "config"},  # default
-        {},  # user
+        {"invalid": "config"},
+        {},
     ]
 
-    # Mock validation error
     validation_error = ValidationError.from_exception_data(
         "CulicidaeLabConfig",
         [{"type": "missing", "loc": ("required_field",), "msg": "Field required"}],
@@ -323,12 +301,10 @@ def test_load_validation_error(mock_load_config, temp_config_dirs, capsys):
         with pytest.raises(ValidationError):
             manager._load()
 
-        # Verify error message was printed
         captured = capsys.readouterr()
         assert "FATAL: Configuration validation failed" in captured.out
 
 
-# Tests for config retrieval and saving
 def test_get_config():
     """Test getting the validated configuration."""
     mock_config = Mock(spec=CulicidaeLabConfig)
@@ -353,12 +329,10 @@ def test_save_config(temp_config_dirs):
 
         manager.save_config(save_path)
 
-        # Verify directory was created and OmegaConf.save was called
         assert save_path.parent.exists()
         mock_save.assert_called_once_with(config={"test": "config"}, f=save_path)
 
 
-# Tests for object instantiation
 def test_instantiate_from_config_success():
     """Test successful instantiation from config."""
     mock_config = Mock()
@@ -368,7 +342,6 @@ def test_instantiate_from_config_success():
     manager = ConfigManager.__new__(ConfigManager)
     result = manager.instantiate_from_config(mock_config, extra_param="extra")
 
-    # Should create a dict with the merged parameters
     assert isinstance(result, dict)
 
 
@@ -376,7 +349,7 @@ def test_instantiate_from_config_no_target():
     """Test instantiation with missing target."""
     mock_config = Mock()
     mock_config.configure_mock(**{"target_": None})
-    del mock_config.target_  # Remove the attribute
+    del mock_config.target_
 
     manager = ConfigManager.__new__(ConfigManager)
 
@@ -408,36 +381,30 @@ def test_instantiate_from_config_invalid_class():
         manager.instantiate_from_config(mock_config)
 
 
-# Integration tests
 def test_integration_full_workflow(temp_config_dirs, mock_config_data):
     """Test the full configuration workflow integration."""
     default_dir = temp_config_dirs["default_dir"]
     user_dir = temp_config_dirs["user_dir"]
 
-    # Create realistic config files
     create_yaml_files(default_dir, mock_config_data["default"])
     create_yaml_files(user_dir, mock_config_data["user"])
 
-    # Mock the validation to pass
     mock_config = Mock(spec=CulicidaeLabConfig)
 
     with patch.object(ConfigManager, "_get_default_config_path", return_value=default_dir):
         with patch("culicidaelab.core.config_manager.CulicidaeLabConfig", return_value=mock_config):
             manager = ConfigManager(user_config_dir=str(user_dir))
 
-            # Verify the manager was initialized properly
             assert manager.user_config_dir == user_dir
             assert manager.default_config_path == default_dir
             assert manager.config == mock_config
 
 
-# Edge case tests
 def test_yaml_file_with_special_characters(tmp_path):
     """Test handling of YAML files with special characters in names."""
     config_dir = tmp_path / "config"
     config_dir.mkdir()
 
-    # Create file with special characters
     special_file = config_dir / "config-with-dashes_and_underscores.yaml"
     with special_file.open("w") as f:
         yaml.dump({"test": "value"}, f)

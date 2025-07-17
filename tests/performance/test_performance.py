@@ -47,7 +47,7 @@ def temp_env_vars(new_vars: dict[str, str]) -> Generator[None, Any, None]:
         print("---")
         print("Restoring original environment variables...")
         for key, original_value in original_vars.items():
-            if original_value is None:  #
+            if original_value is None:
                 print(f"  - Unsetting {key}")
                 os.environ.pop(key, None)
             else:

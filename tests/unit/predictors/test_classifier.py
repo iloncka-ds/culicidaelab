@@ -4,13 +4,11 @@ from unittest.mock import Mock, patch
 import torch
 from typing import Any
 
-# Import the Pydantic model we need to instantiate
 from culicidaelab.core.config_models import PredictorConfig
 from culicidaelab.predictors.classifier import MosquitoClassifier
 from culicidaelab.core.base_predictor import BasePredictor
 
 
-# --- Fixtures ---
 def get_mock_provider(settings, *args: Any, **kwargs: Any):
     """
     A factory function for hydra to instantiate a mock provider.
