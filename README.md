@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://pypi.org/project/culicidaelab/"><img alt="PyPI" src="https://img.shields.io/pypi/v/culicidaelab?color=blue"></a>
-  <a href="https://github.com/iloncka-ds/culicidaelab/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/pypi/l/culicidaelab"></a>
+
   <a href="#">
   <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff" /></a>
 </p>
