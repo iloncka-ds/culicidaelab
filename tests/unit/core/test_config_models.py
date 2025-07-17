@@ -13,7 +13,6 @@ from culicidaelab.core.config_models import (
 
 
 def test_predictor_config_validation():
-    # Valid config
     valid_data = {
         "_target_": "culicidaelab.predictors.Classifier",
         "model_path": "/path/to/model.pt",
@@ -28,7 +27,6 @@ def test_predictor_config_validation():
     assert predictor.target_ == valid_data["_target_"]
     assert predictor.confidence == 0.6
 
-    # Missing required field '_target_'
     with pytest.raises(ValidationError):
         PredictorConfig(model_path="/path/to/model.pt")
 
@@ -45,7 +43,6 @@ def test_dataset_config_validation():
     assert dataset.name == "classification"
     assert len(dataset.classes) == 2
 
-    # Missing required field 'name'
     with pytest.raises(ValidationError):
         DatasetConfig(
             path="path",
@@ -65,7 +62,6 @@ def test_provider_config_validation():
     assert provider.target_ == valid_data["_target_"]
     assert provider.api_key == "some_key"
 
-    # Test with no api_key (it's optional)
     valid_data_no_key = {
         "_target_": "culicidaelab.providers.HuggingFaceProvider",
         "dataset_url": "https://api.huggingface.co/datasets/{dataset_name}",
@@ -75,7 +71,6 @@ def test_provider_config_validation():
 
 
 def test_species_config_models():
-    # Test nested models
     single_species_data = {
         "common_name": "Yellow Fever Mosquito",
         "taxonomy": {
@@ -113,7 +108,6 @@ def test_species_config_models():
 
 
 def test_root_config_model():
-    # A minimal but valid full config
     full_config_data = {
         "app_settings": {"environment": "testing"},
         "processing": {"batch_size": 16},

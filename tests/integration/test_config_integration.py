@@ -24,8 +24,6 @@ def test_instantiate_provider_via_service(user_config_dir: Path, settings_factor
     Tests that a provider can be instantiated via the ProviderService,
     which correctly handles dependency injection.
     """
-    # FIX: `create_provider_config` now creates `providers.yaml` directly.
-    # The config structure for a provider named 'my_huggingface' would be:
     provider_dict = {
         "my_huggingface": {
             "_target_": "culicidaelab.providers.huggingface_provider.HuggingFaceProvider",
@@ -37,7 +35,6 @@ def test_instantiate_provider_via_service(user_config_dir: Path, settings_factor
 
     settings = settings_factory(config_dir=user_config_dir)
 
-    # FIX: Use the ProviderService to get the object. This is the intended use pattern.
     provider_service = ProviderService(settings=settings)
     instance = provider_service.get_provider("my_huggingface")
 

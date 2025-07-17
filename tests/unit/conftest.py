@@ -22,9 +22,7 @@ def reset_global_settings_singleton(monkeypatch):
     """Ensure the settings singleton is reset before each test run."""
     import culicidaelab.core.settings
 
-    # Reset the singleton instance
     monkeypatch.setattr(culicidaelab.core.settings, "_SETTINGS_INSTANCE", None)
-    # Reset the class-level initialization flag so that __init__ runs again
     monkeypatch.setattr(culicidaelab.core.settings.Settings, "_initialized", False)
 
 

@@ -9,7 +9,6 @@ from culicidaelab.predictors.segmenter import MosquitoSegmenter
 from .conftest import create_provider_config
 
 
-# This test is now passing and correct. No changes needed.
 def test_full_detector_workflow(
     settings_factory,
     user_config_dir: Path,
@@ -122,26 +121,20 @@ def test_full_segmenter_workflow(
         mock_build_sam.return_value = mock_sam2_model_instance
         mock_predictor_instance = MagicMock()
 
-        # The underlying model returns a 3D mask with a batch dimension.
         dummy_mask_3d = np.zeros((1, 100, 150), dtype=bool)
         mock_predictor_instance.predict.return_value = (dummy_mask_3d, MagicMock(), MagicMock())
 
         mock_predictor_class.return_value = mock_predictor_instance
 
         segmenter.load_model()
-        # The segmenter.predict() method should remove the batch dimension.
         result_mask = segmenter.predict(np.zeros((100, 150, 3), dtype=np.uint8))
 
     assert segmenter.model_loaded
 
-    # FIX: Assert the actual, correct behavior.
-    # The final result should be a 2D array.
     assert result_mask.shape == (100, 150)
 
-    # Create the corresponding 2D expected mask.
     expected_mask_2d = np.zeros((100, 150), dtype=np.uint8)
 
-    # Compare the 2D result with the 2D expectation.
     assert np.array_equal(result_mask, expected_mask_2d)
 
     mock_build_sam.assert_called_once()

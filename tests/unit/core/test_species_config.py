@@ -17,7 +17,6 @@ def mock_species_model():
             "species_info_mapping": {
                 "aedes_aegypti": "Aedes aegypti",
                 "aedes_albopictus": "Aedes albopictus",
-                # Note: anopheles_gambiae is missing from mapping to test fallback
             },
             "species_metadata": {
                 "Aedes aegypti": {
@@ -58,7 +57,7 @@ def test_species_map_creation(species_config):
     expected_map = {
         0: "Aedes aegypti",
         1: "Aedes albopictus",
-        2: "anopheles_gambiae",  # Falls back to class name
+        2: "anopheles_gambiae",
     }
     assert species_config.species_map == expected_map
 
@@ -69,7 +68,6 @@ def test_get_species_metadata(species_config):
     assert metadata["common_name"] == "Yellow Fever Mosquito"
     assert metadata["metadata"]["vector_status"] is True
 
-    # Test non-existent species
     assert species_config.get_species_metadata("Culex quinquefasciatus") is None
 
 

@@ -33,14 +33,12 @@ def test_get_provider_instantiates_on_first_call(mock_settings):
     provider_name = "huggingface"
     mock_provider_instance = MockProvider()
 
-    # Configure mocks
     mock_settings.get_config.return_value = {"_target_": "some.path.Provider"}
     mock_settings.instantiate_from_config.return_value = mock_provider_instance
 
     service = ProviderService(mock_settings)
     provider = service.get_provider(provider_name)
 
-    # Assertions
     mock_settings.get_config.assert_called_once_with(f"providers.{provider_name}")
     mock_settings.instantiate_from_config.assert_called_once_with(
         f"providers.{provider_name}",
@@ -53,27 +51,22 @@ def test_get_provider_returns_cached_instance(mock_settings):
     provider_name = "huggingface"
     mock_provider_instance = MockProvider()
 
-    # Configure mocks
     mock_settings.get_config.return_value = {"_target_": "some.path.Provider"}
     mock_settings.instantiate_from_config.return_value = mock_provider_instance
 
     service = ProviderService(mock_settings)
 
-    # First call
     provider1 = service.get_provider(provider_name)
 
-    # Second call
     provider2 = service.get_provider(provider_name)
 
-    # Assertions
-    mock_settings.instantiate_from_config.assert_called_once()  # Should only be called once
-    assert provider1 is provider2  # Should be the exact same object
+    mock_settings.instantiate_from_config.assert_called_once()
+    assert provider1 is provider2
 
 
 def test_get_provider_raises_error_if_not_configured(mock_settings):
     provider_name = "non_existent_provider"
 
-    # Configure mock to simulate missing config
     mock_settings.get_config.return_value = None
 
     service = ProviderService(mock_settings)
