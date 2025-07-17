@@ -84,7 +84,9 @@ class Settings:
             return default
 
     def set_config(self, path: str, value: Any) -> None:
-        """Sets a configuration value at a specified dot-separated path.
+        """
+        Sets a configuration value at a specified dot-separated path.
+        This method can traverse both objects (Pydantic models) and dictionaries.
 
         Note: This modifies the configuration in memory. To make it persistent,
         call `save_config()`.
@@ -95,9 +97,21 @@ class Settings:
         """
         keys = path.split(".")
         obj = self.config
+
         for key in keys[:-1]:
-            obj = getattr(obj, key)
-        setattr(obj, keys[-1], value)
+            if isinstance(obj, dict):
+                obj = obj.get(key)
+            else:
+                obj = getattr(obj, key)
+
+            if obj is None:
+                raise KeyError(f"The path part '{key}' in '{path}' was not found.")
+
+        last_key = keys[-1]
+        if isinstance(obj, dict):
+            obj[last_key] = value
+        else:
+            setattr(obj, last_key, value)
 
     def save_config(self, file_path: str | Path | None = None) -> None:
         """Save current configuration to a user config file.

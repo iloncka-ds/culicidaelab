@@ -337,7 +337,16 @@ class MosquitoClassifier(
         class_labels = list(range(self.num_classes))
         y_true_indices, y_pred_indices, y_scores = [], [], []
 
-        for gt_str, pred_list in zip(ground_truths, predictions):
+        for gt, pred_list in zip(ground_truths, predictions):
+            gt_str = gt
+            if isinstance(gt_str, np.ndarray):
+                if gt_str.shape == ():  # scalar array
+                    gt_str = str(gt_str.item())
+                else:
+                    gt_str = str(gt_str.tolist())
+            else:
+                gt_str = str(gt_str)
+            # Now safe to use as dict key
             if gt_str in species_to_idx and pred_list:
                 true_idx = species_to_idx[gt_str]
                 pred_str = pred_list[0][0]

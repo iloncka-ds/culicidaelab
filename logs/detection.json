@@ -1,0 +1,7 @@
+{
+  "time_seconds": 0.018659353256225586,
+  "cpu_percent": 0.0,
+  "memory_rss_bytes": -16384,
+  "tracemalloc_peak_bytes": 53925,
+  "gpu_memory_diff_mb": null
+}
