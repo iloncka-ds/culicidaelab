@@ -14,12 +14,12 @@ jobs:
         with:
           fetch-depth: 0
       - name: Build TR docs
-        uses: ./
+        uses: .
         with:
           entrypoint: mkdocs
           args: build --config-file=mkdocs.ru.yml
       - name: Build EN docs
-        uses: ./
+        uses: .
         with:
           entrypoint: mkdocs
           args: build --config-file=mkdocs.en.yml
