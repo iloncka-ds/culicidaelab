@@ -18,8 +18,7 @@ RUN pip install --no-cache-dir \
 
 RUN git config --global --add safe.directory /github/workspace
 
-EXPOSE 8000
+WORKDIR /github/workspace
 
-ENTRYPOINT ["mkdocs", "serve", "--dev-addr=0.0.0.0:8000" ]
-
-CMD ["--config-file=mkdocs.en.yml"]
+# The ENTRYPOINT will be executed by the "args" from the action.yml
+ENTRYPOINT ["sh", "-c"]
