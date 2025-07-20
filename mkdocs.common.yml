@@ -1,5 +1,5 @@
 site_name: CulicidaeLab
-repo_url: https://github.com/berkantsahn/mkdocs-sample/
+repo_url: https://github.com/iloncka-ds/culicidaelab
 strict: false
 validation:
   absolute_links: warn
