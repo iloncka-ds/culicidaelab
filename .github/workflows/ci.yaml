@@ -37,11 +37,11 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
 
-      # - uses: actions/cache@v2
-      #   with:
-      #     key: ${{ github.ref }}
-      #     path: .cache
-      # - run: pip install mkdocs-material
-      # - run: pip install mike --force-reinstall --verbose
-      # - run: mike deploy --push --update-aliases 1.0 latest --ignore
-      # - run: mkdocs gh-deploy --force
+      - uses: actions/cache@v2
+        with:
+          key: ${{ github.ref }}
+          path: .cache
+      - run: pip install mkdocs-material
+      - run: pip install mike --force-reinstall --verbose
+      - run: mike deploy --push --update-aliases 1.0 latest --ignore
+      - run: mkdocs gh-deploy --force
