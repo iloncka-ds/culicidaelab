@@ -35,7 +35,7 @@ It is recommended to use a modern package manager like `uv` or `pip`.
 
 ```bash
 # Using uv
-uv pip install culicidaelab
+uv add culicidaelab
 
 # Or using pip
 pip install culicidaelab

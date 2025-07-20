@@ -27,7 +27,7 @@ jobs:
             mkdocs-material-
       - run: pip install mkdocs-material[i18n]==9.5.46 mkdocstrings[python]==0.27.0
       - run: pip install mkdocs-custom-fences==0.1.2 mkdocs-gallery>=0.10.4
-      # - run: pip install culicidaelab
+      - run: pip install culicidaelab
       - run: mkdocs build --config-file=mkdocs.en.yml --clean -d site/en
       - run: mkdocs build --config-file=mkdocs.ru.yml --dirty -d site/ru
       - run: mkdocs gh-deploy --force --dirty --config-file=mkdocs.en.yml
