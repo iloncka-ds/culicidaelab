@@ -225,7 +225,7 @@ class HuggingFaceProvider(BaseProvider):
         """
         return self.provider_name
 
-    def load_dataset(self, dataset_path: str | Path, split: str | None = None, **kwargs) -> Any:
+    def load_dataset(self, dataset_path: str | Path, split: str | None = None, **kwargs: Any) -> Any:
         """Loads a dataset from disk.
 
         This method attempts to load a dataset from the specified path. If a `split`

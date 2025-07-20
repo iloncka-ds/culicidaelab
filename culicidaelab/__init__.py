@@ -23,11 +23,19 @@ from __future__ import annotations
 from .core.base_predictor import BasePredictor
 from .core.base_provider import BaseProvider
 from .core.config_manager import ConfigManager
-from .core.config_models import CulicidaeLabConfig
+from .core.config_models import (
+    CulicidaeLabConfig,
+    DatasetConfig,
+    PredictorConfig,
+    ProviderConfig,
+    SpeciesModel,
+)
 from .core.resource_manager import ResourceManager
 from .core.settings import Settings, get_settings
 from .core.species_config import SpeciesConfig
 from .core.utils import download_file
+from .core.weights_manager_protocol import WeightsManagerProtocol
+from .core.provider_service import ProviderService
 
 # Dataset management
 from .datasets.datasets_manager import DatasetsManager
@@ -47,15 +55,22 @@ __all__ = [
     "BaseProvider",
     "ConfigManager",
     "CulicidaeLabConfig",
+    "PredictorConfig",
+    "DatasetConfig",
+    "ProviderConfig",
+    "SpeciesModel",
+    "SpeciesConfig",
     "DatasetsManager",
     "HuggingFaceProvider",
     "ModelWeightsManager",
     "MosquitoClassifier",
     "MosquitoDetector",
     "MosquitoSegmenter",
+    "ProviderService",
     "ResourceManager",
     "Settings",
     "SpeciesConfig",
+    "WeightsManagerProtocol",
     "download_file",
     "get_settings",
 ]

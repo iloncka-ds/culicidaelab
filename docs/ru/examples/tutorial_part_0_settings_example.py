@@ -1,107 +1,177 @@
 """
-# CulicidaeLab Settings Module Example
+# Использование модуля `settings`
 
-This notebook demonstrates how to use the settings module in CulicidaeLab.
+В этом руководстве демонстрируется, как использовать основной объект `settings` в CulicidaeLab.
+Объект `settings` является основной точкой входа для доступа к конфигурациям, путям к файлам
+и параметрам моделей во всей библиотеке.
 """
+# %%
+# Установите библиотеку `culicidaelab`, если она еще не установлена
+# !pip install -q culicidaelab
 
-import os
+# %%
 import yaml
+from pathlib import Path
 
-from culicidaelab.core.settings import get_settings
+# %%
+from culicidaelab import get_settings
 
-# ## 1. Using Default Settings
+# %% [markdown]
+# ## 1. Использование настроек по умолчанию
 #
-# Get the default settings instance. This will use configurations from the default_configs directory.
+# Самый простой способ начать работу с `CulicidaeLab` — это загрузить настройки по умолчанию.
+# Функция `get_settings()` действует как синглтон; она загружает конфигурацию один раз
+# и возвращает тот же экземпляр при последующих вызовах. Это обеспечивает согласованное
+# состояние во всем вашем приложении.
+#
+# Настройки по умолчанию загружаются из файлов конфигурации, поставляемых с библиотекой.
 
-# +
-# Get default settings
+# %%
+# Получить экземпляр настроек по умолчанию
 settings = get_settings()
 
-# Print some basic information
-print(f"Config directory: {settings.config_dir}")
-print(f"Models directory: {settings.model_dir}")
-print(f"Datasets directory: {settings.dataset_dir}")
-print(f"Cache directory: {settings.cache_dir}")
-# -
+# Объект настроек обеспечивает легкий доступ к ключевым каталогам ресурсов.
+# Библиотека автоматически создаст эти каталоги, если они не существуют.
+print("--- Каталоги ресурсов по умолчанию ---")
+print(f"Активный каталог конфигурации: {settings.config_dir}")
+print(f"Каталог моделей: {settings.model_dir}")
+print(f"Каталог наборов данных: {settings.dataset_dir}")
+print(f"Каталог кэша: {settings.cache_dir}")
 
-# ## 2. Working with Model Weights
+# %% [markdown]
+# ## 2. Доступ к путям весов моделей
 #
-# Demonstrate how to get model weights paths and handle downloads.
+# Объект `settings` знает локальные пути по умолчанию для всех весов моделей-предикторов.
+# Когда вы создаете экземпляр предиктора, он использует эти пути для поиска или загрузки моделей.
 
-# +
-# Get paths for different model types
+# %%
+# Получить настроенные локальные пути к файлам для разных типов моделей
 detection_weights = settings.get_model_weights_path("detector")
 segmentation_weights = settings.get_model_weights_path("segmenter")
 classification_weights = settings.get_model_weights_path("classifier")
 
-print("Model weights paths:")
-print(f"Detection: {detection_weights}")
-print(f"Segmentation: {segmentation_weights}")
-print(f"Classification: {classification_weights}")
-# -
+print("--- Пути к весам моделей по умолчанию ---")
+print(f"Модель обнаружения: {detection_weights}")
+print(f"Модель сегментации: {segmentation_weights}")
+print(f"Модель классификации: {classification_weights}")
 
-# ## 3. Working with Species Configuration
+# %% [markdown]
+# ## 3. Работа с конфигурацией видов
 #
-# Access species information from the configuration.
+# Вся информация, связанная с видами, включая названия классов и подробные метаданные,
+# управляется через свойство `species_config`. Это крайне важно для интерпретации
+# выходных данных модели классификации.
 
-# +
-# Get species configuration
+# %%
+# Получить специальный объект конфигурации видов
 species_config = settings.species_config
 
-# Print species mapping
-print("Species mapping:")
+# Вы можете легко получить сопоставление индексов классов с названиями видов.
+print("\n--- Сопоставление индексов видов с названиями ---")
 for idx, species in species_config.species_map.items():
-    print(f"Class {idx}: {species}")
+    print(f"Класс {idx}: {species}")
 
-# Print metadata for a specific species
+# Вы также можете получить подробные метаданные для любого конкретного вида.
 species_name = "Aedes aegypti"
 metadata = species_config.get_species_metadata(species_name)
 if isinstance(metadata, dict):
-    print(f"\nMetadata for {species_name}:")
+    print(f"\n--- Метаданные для '{species_name}' ---")
     for key, value in metadata.items():
         print(f"{key}: {value}")
-# -
 
-# ## 4. Using Custom Configuration
+# %% [markdown]
+# ## 4. Использование пользовательского каталога конфигурации
 #
-# Demonstrate how to use custom configuration directory.
+# Для более сложных случаев использования, таких как предоставление собственных метаданных о видах или изменение
+# параметров модели по умолчанию, вы можете указать библиотеке на пользовательский каталог конфигурации.
+#
+# `CulicidaeLab` загрузит ваши пользовательские файлы `.yaml` и объединит их с настройками по умолчанию.
+# Это позволяет вам переопределить только те настройки, которые необходимо изменить.
 
-# +
+# %%
+# Создать пользовательский каталог конфигурации и новый файл конфигурации
+custom_config_dir = Path("custom_configs")
+custom_config_dir.mkdir(exist_ok=True)
 
-# Create a custom config directory
-custom_config_dir = "custom_configs"
-os.makedirs(custom_config_dir, exist_ok=True)
-
-# Example minimal config with required "species" key
+# Определим минимальную пользовательскую конфигурацию. Мы просто переопределим информацию о видах.
+# Все настройки, не определенные здесь, будут использовать значения по умолчанию из библиотеки.
 example_config = {
     "species": {
-        "species_map": {0: "Aedes aegypti", 1: "Anopheles gambiae"},
-        "metadata": {
-            "Aedes aegypti": {"color": "yellow", "region": "tropical"},
-            "Anopheles gambiae": {"color": "brown", "region": "Africa"},
+        "species_classes": {0: "Aedes aegypti", 1: "Anopheles gambiae"},
+        "species_metadata": {
+            "species_info_mapping": {
+                "aedes_aegypti": "Aedes aegypti",
+                "anopheles_gambiae": "Anopheles gambiae",
+            },
+            "species_metadata": {
+                "Aedes aegypti": {
+                    "common_name": "Пользовательский комар-переносчик желтой лихорадки",
+                    "taxonomy": {
+                        "family": "Culicidae",
+                        "subfamily": "Culicinae",
+                        "genus": "Aedes",
+                    },
+                    "metadata": {
+                        "vector_status": True,
+                        "diseases": ["Dengue", "Zika"],
+                        "habitat": "Urban",
+                        "breeding_sites": ["Artificial containers"],
+                        "sources": ["custom_source"],
+                    },
+                },
+                "Anopheles gambiae": {
+                    "common_name": "Пользовательский африканский малярийный комар",
+                    "taxonomy": {
+                        "family": "Culicidae",
+                        "subfamily": "Anophelinae",
+                        "genus": "Anopheles",
+                    },
+                    "metadata": {
+                        "vector_status": True,
+                        "diseases": ["Malaria"],
+                        "habitat": "Rural",
+                        "breeding_sites": ["Puddles"],
+                        "sources": ["custom_source"],
+                    },
+                },
+            },
         },
     },
 }
 
-# Write example config.yaml if it doesn't exist
-config_file_path = os.path.join(custom_config_dir, "config.yaml")
-if not os.path.exists(config_file_path):
-    with open(config_file_path, "w") as f:
-        yaml.safe_dump(example_config, f)
 
-# Validate the custom configuration directory contains the required key
-required_key = "species"
-with open(config_file_path) as file:
-    config_data = yaml.safe_load(file)
-    if required_key not in config_data:
-        raise KeyError(
-            f"Missing required key '{required_key}' in custom configuration file.",
-        )
+# Записать пользовательский файл конфигурации
+config_file_path = custom_config_dir / "species.yaml"
+with open(config_file_path, "w") as f:
+    yaml.safe_dump(example_config, f)
 
-# Get settings with custom config directory
-custom_settings = get_settings(config_dir=custom_config_dir)
+# Теперь инициализируем настройки с путем к нашему пользовательскому каталогу.
+# `get_settings` достаточно умен, чтобы создать *новый* экземпляр, если указан другой `config_dir`.
+print("\n--- Инициализация с пользовательскими настройками ---")
+custom_settings = get_settings(config_dir=str(custom_config_dir))
 
-print(f"Custom config directory: {custom_settings.config_dir}")
+print(f"Активный каталог конфигурации: {custom_settings.config_dir}")
 
-# Note: This will use default configs if custom configs are not found
-print(f"Using default configs: {custom_settings.config_dir == settings.config_dir}")
+# Давайте проверим, загрузилась ли наша пользовательская карта видов
+print("\n--- Пользовательское сопоставление видов ---")
+for idx, species in custom_settings.species_config.species_map.items():
+    print(f"Класс {idx}: {species}")
+
+# %% [markdown]
+# ## 5. Переопределение одного значения конфигурации
+#
+# Иногда вам может потребоваться изменить только одно значение во время выполнения без создания новых YAML-файлов.
+# Метод `set_config` идеально подходит для этого.
+#
+# Давайте загрузим настройки по умолчанию и изменим порог уверенности для детектора.
+
+# %%
+# Снова загрузить настройки по умолчанию (или использовать предыдущий экземпляр 'settings')
+runtime_settings = get_settings()
+original_confidence = runtime_settings.get_config("predictors.detector.confidence")
+print(f"Исходная уверенность детектора: {original_confidence}")
+
+# Установить новое значение порога уверенности детектора с помощью `set_config`
+runtime_settings.set_config("predictors.detector.confidence", 0.85)
+new_confidence = runtime_settings.get_config("predictors.detector.confidence")
+print(f"Новая уверенность детектора: {new_confidence}")

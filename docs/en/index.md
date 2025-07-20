@@ -1,40 +1,35 @@
-**CulicidaeLab** — это мощная и гибкая Python-библиотека для анализа изображений комаров.
+# CulicidaeLab: A Powerful Toolkit for Mosquito Image Analysis
 
-Она предоставляет готовые решения для:
 
-- **Детекции**: обнаружение комаров на изображении.
-- **Сегментации**: выделение точных масок комаров.
-- **Классификации**: определение вида комара.
+**CulicidaeLab** is a powerful and flexible Python library designed to provide an end-to-end solution for analyzing mosquito images. Whether you are a biologist, an epidemiologist, or a data scientist, this library provides the tools you need to detect, classify, and segment mosquitoes with state-of-the-art models.
 
-### Ключевые возможности
+Built on a configuration-driven architecture, `CulicidaeLab` simplifies complex deep learning pipelines, making them accessible and reproducible for researchers and developers alike.
 
-- **Готовые модели**: Используйте предобученные модели для быстрого старта.
-- **Гибкая конфигурация**: Управляйте всеми аспектами через YAML-файлы.
-- **Оценка качества**: Встроенные инструменты для оценки точности моделей.
-- **Расширяемость**: Легко добавляйте свои модели и источники данных.
+---
 
-### Пример использования
+### Key Features
 
-```python
-import cv2
-from culicidaelab import get_settings
-from culicidaelab.predictors import MosquitoClassifier
+| Feature | Description |
+| :--- | :--- |
+| 🧠 **Pre-trained Models** | Get started immediately with high-accuracy models for detection, classification, and segmentation. No training required. |
+| ⚙️ **Configuration-Driven** | Manage all aspects of the library—from file paths to model parameters—through simple and clear YAML files. |
+| 📊 **Built-in Evaluation** | Use integrated tools to assess model performance with standard metrics like Average Precision and IoU. |
+| 🧩 **Extensible & Modular** | The library is designed with modularity in mind, allowing you to easily add your own models or data providers. |
 
-# Получаем настройки по умолчанию
-settings = get_settings()
+### Practical Applications of the `culicidaelab` Library
 
-# Инициализируем классификатор (модель загрузится при первом вызове)
-classifier = MosquitoClassifier(settings=settings)
+-   **Automation in Scientific Laboratories:**
+    -   **Bulk Data Processing:** Automatically analyzing thousands of images from camera traps or microscopes to assess mosquito populations without manual labor.
+    -   **Reproducibility of Research:** Standardizing the data analysis process, which allows other scientists to easily reproduce and verify research results published using this library.
 
-# Загружаем ваше изображение (например, с помощью OpenCV)
+-   **Integration into Governmental and Commercial Systems:**
+    -   **Building Monitoring Systems:** Using the library as the core "engine" for national or regional epidemiological surveillance systems.
+    -   **Developing Custom Solutions:** Rapidly prototyping and creating specialized software products for disinsection services, agro-industrial companies, or environmental organizations.
 
-image = cv2.imread("path/to/your/mosquito_image.jpg")
-image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+-   **Analytics and Data Science:**
+    -   Writing scripts for in-depth data analysis, building distribution maps, and forecasting disease outbreaks based on the presence of vectors.
 
-# Получаем предсказание
-predictions = classifier.predict(image_rgb)
 
-# Выводим лучший результат
-top_prediction = predictions[0]
-print(f"Вид: {top_prediction[0]}, Точность: {top_prediction[1]:.2f}")
-```
+### Found an Issue or Have an Idea?
+
+This project is open-source and thrives on community feedback. If you encounter a bug or have a suggestion for a new feature, please **[open an issue on GitHub](https://github.com/iloncka-ds/culicidaelab/issues)**. We'd love to hear from you!

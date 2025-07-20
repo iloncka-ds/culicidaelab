@@ -1,0 +1,40 @@
+species:
+  species_classes:
+    0: Aedes aegypti
+    1: Anopheles gambiae
+  species_metadata:
+    species_info_mapping:
+      aedes_aegypti: Aedes aegypti
+      anopheles_gambiae: Anopheles gambiae
+    species_metadata:
+      Aedes aegypti:
+        common_name: Custom Yellow Fever Mosquito
+        metadata:
+          breeding_sites:
+          - Artificial containers
+          diseases:
+          - Dengue
+          - Zika
+          habitat: Urban
+          sources:
+          - custom_source
+          vector_status: true
+        taxonomy:
+          family: Culicidae
+          genus: Aedes
+          subfamily: Culicinae
+      Anopheles gambiae:
+        common_name: Custom African Malaria Mosquito
+        metadata:
+          breeding_sites:
+          - Puddles
+          diseases:
+          - Malaria
+          habitat: Rural
+          sources:
+          - custom_source
+          vector_status: true
+        taxonomy:
+          family: Culicidae
+          genus: Anopheles
+          subfamily: Anophelinae

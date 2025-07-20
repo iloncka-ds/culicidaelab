@@ -1,8 +1,9 @@
 site_name: CulicidaeLab
-
-repo_url: 'https://github.com/iloncka-ds/culicidaelab'
-
+repo_url: https://github.com/berkantsahn/mkdocs-sample/
 strict: false
+validation:
+  absolute_links: warn
+  unrecognized_links: warn
 
 theme:
   name: material

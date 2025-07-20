@@ -1,59 +1,104 @@
-# Быстрый старт
+# Краткое руководство
 
-Этот гайд покажет, как за несколько шагов загрузить изображение, классифицировать вид комара и визуализировать результат.
+Это руководство поможет вам пройти путь от нуля до вашей первой классификации комара менее чем за пять минут. Мы рассмотрим один полный пример кода, который вы можете скопировать, вставить и запустить, чтобы увидеть `CulicidaeLab` в действии.
 
-### 1. Импорт и инициализация
+Пример покажет вам, как:
 
-Сначала импортируем необходимые классы и получаем объект настроек.
+1.  Инициализировать библиотеку с помощью центрального объекта `settings`.
+2.  Загрузить изображение комара.
+3.  Запустить `MosquitoClassifier` для предсказания его вида.
+4.  Визуализировать результат.
+
+### Предварительные требования
+
+Перед запуском кода у вас должно быть:
+
+1.  **Установлен `CulicidaeLab`**. Если вы еще не установили его, пожалуйста, следуйте **[Руководству по установке](./installation.md)**.
+2.  **Тестовое изображение**. Создайте папку с именем `test_imgs` в корневом каталоге вашего проекта. Поместите в нее изображение комара и назовите его `mosquito.jpg`.
+
+Структура вашего проекта должна выглядеть так:
+```
+ваш_проект/
+├── test_imgs/
+│   └── mosquito.jpg
+└── ваш_скрипт.py
+```
+
+---
+
+### Полный пример: от изображения до классификации
+
+Скопируйте блок кода ниже в ваш скрипт Python или Jupyter Notebook и запустите его. Библиотека автоматически загрузит и закэширует необходимую модель при первом запуске.
 
 ```python
+# 1. Импорты: Получаем все необходимые инструменты
 import cv2
+import matplotlib.pyplot as plt
 from pathlib import Path
-from culicidae_lab import get_settings
-from culicidae_lab.predictors import MosquitoClassifier
-from culicidae_lab.utils import download_file # Для загрузки тестового изображения
 
-# Получаем стандартные настройки
+# Импортируем основную точку входа и классификатор из CulicidaeLab
+from culicidaelab import get_settings
+from culicidaelab.predictors import MosquitoClassifier
+
+# --- Основной скрипт ---
+
+# 2. Инициализация: Настраиваем библиотеку и классификатор
+print("Инициализация CulicidaeLab...")
+# Получаем центральный объект настроек, который управляет всеми конфигурациями.
 settings = get_settings()
+# Просим объект настроек создать классификатор. Это рекомендуемый способ.
+classifier = MosquitoClassifier(settings=settings)
+print("Классификатор готов.")
 
-# Инициализируем классификатор. Модель будет скачана и загружена при необходимости.
-classifier = MosquitoClassifier(settings=settings, load_model=True)
-```
-### 2. Подготовка данных
 
-Загрузим тестовое изображение.
+# 3. Загрузка изображения: Подготавливаем данные для предсказания
+print("Загрузка изображения...")
+image_path = Path("test_imgs") / "mosquito.jpg"
+try:
+    # Используем OpenCV для чтения файла изображения
+    image = cv2.imread(str(image_path))
+    # Библиотека ожидает изображения в формате RGB, поэтому мы конвертируем из формата BGR по умолчанию в OpenCV
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    print("Изображение успешно загружено.")
+except Exception as e:
+    print(f"Ошибка: Не удалось загрузить изображение из {image_path}.")
+    print("Пожалуйста, убедитесь, что файл существует и путь указан верно.")
+    exit()
 
-```python
-# Загрузим пример изображения
-image_url = "URL_К_ВАШЕМУ_ТЕСТОВОМУ_ИЗОБРАЖЕНИЮ.jpg" # Замените на реальный URL
-image_path = download_file(image_url, downloads_dir=settings.cache_dir)
 
-# Чтение изображения с помощью OpenCV
-image_bgr = cv2.imread(str(image_path))
-# Конвертация в RGB, т.к. большинство моделей ожидают этот формат
-image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-```
+# 4. Выполнение предсказания: Получаем результат классификации
+print("Выполнение предсказания...")
+# Менеджер `model_context()` эффективно управляет загрузкой/выгрузкой модели из памяти.
+with classifier.model_context():
+    predictions = classifier.predict(image_rgb)
+print("Предсказание завершено.")
 
-### 3. Получение предсказания
+# Объект `predictions` представляет собой список кортежей (имя_вида, оценка_уверенности),
+# отсортированный от наиболее к наименее вероятному.
+top_prediction = predictions[0]
+print(f"\n---> Лучший результат: {top_prediction[0]} (Уверенность: {top_prediction[1]:.2%})")
 
-```python
-# Предсказание вида
-predictions = classifier.predict(image_rgb)
 
-print("Результаты классификации:")
-for species, confidence in predictions:
-    print(f"- {species}: {confidence:.4f}")
-```
+# 5. Визуализация результата: Просматриваем предсказание на изображении
+print("\nВизуализация результата...")
+# Метод `.visualize()` наносит лучшие предсказания непосредственно на изображение.
+with classifier.model_context():
+    annotated_image = classifier.visualize(image_rgb, predictions)
 
-### 4. Визуализация
+# Отображаем исходное и аннотированное изображения рядом для сравнения
+plt.figure(figsize=(15, 7))
 
-```python
-# Визуализируем результат на исходном изображении
-output_image = classifier.visualize(image_rgb, predictions)
+plt.subplot(1, 2, 1)
+plt.imshow(image_rgb)
+plt.title("Исходное изображение")
+plt.axis("off")
 
-# Сохраняем результат
-save_path = Path("./result.png")
-cv2.imwrite(str(save_path), cv2.cvtColor(output_image, cv2.COLOR_RGB2BGR))
+plt.subplot(1, 2, 2)
+plt.imshow(annotated_image)
+plt.title("Результат классификации")
+plt.axis("off")
 
-print(f"Визуализация сохранена в {save_path}")
+plt.tight_layout()
+plt.show()
+print("Готово!")
 ```

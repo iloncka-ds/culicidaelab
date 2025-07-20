@@ -24,3 +24,8 @@ md_*/
 example3/
 .VSCodeCounter
 tree-maker/
+
+# Documentation files
+docs/en/generated/*
+docs/ru/generated/*
+site/

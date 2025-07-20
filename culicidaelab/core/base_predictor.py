@@ -182,7 +182,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         input_data_batch: list[np.ndarray] | None = None,
         num_workers: int = 4,
         show_progress: bool = True,
-        **predict_kwargs,
+        **predict_kwargs: Any,
     ) -> dict[str, float]:
         """Evaluate on a batch of items using parallel processing.
 
@@ -197,7 +197,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
                 to generate predictions from.
             num_workers (int): Number of parallel workers for calculating metrics.
             show_progress (bool): Whether to show a progress bar.
-            **predict_kwargs: Additional arguments passed to `predict_batch`.
+            **predict_kwargs (Any): Additional arguments passed to `predict_batch`.
 
         Returns:
             dict[str, float]: Dictionary containing aggregated evaluation metrics.
