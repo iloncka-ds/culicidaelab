@@ -1,0 +1,15 @@
+name: 'MkDocs Build Action'
+description: 'A custom action to build MkDocs sites'
+inputs:
+  entrypoint:
+    description: 'The command to run'
+    required: true
+  args:
+    description: 'Arguments for the command'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.entrypoint }}
+    - ${{ inputs.args }}
