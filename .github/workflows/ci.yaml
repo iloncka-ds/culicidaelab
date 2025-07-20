@@ -2,6 +2,7 @@ name: ci
 on:
   push:
     branches:
+      - master
       - main
 permissions:
   contents: write
@@ -9,34 +10,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Configure Git Credentials
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      - uses: actions/setup-python@v5
         with:
-          fetch-depth: 0
-      - name: Build TR docs
-        uses: ./
-        with:
-          entrypoint: mkdocs
-          args: build --config-file=mkdocs.ru.yml
-      - name: Build EN docs
-        uses: ./
-        with:
-          entrypoint: mkdocs
-          args: build --config-file=mkdocs.en.yml
-
-      # - name: Copy redirect index page
-      #   run: sudo cp /index.html /site
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
-
-      - name: Deploy docs to gh-pages branch
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site
-
+          python-version: 3.x
+      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
       - uses: actions/cache@v4
         with:
           key: mkdocs-material-${{ env.cache_id }}
