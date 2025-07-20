@@ -1,2 +1,2 @@
 
-culicidaelab
+culicidaelab==0.1.0
