@@ -97,4 +97,5 @@ test = [
 dev = [
     "culicidaelab[docs]",
     "culicidaelab[test]",
+    "git-filter-repo>=2.47.0",
 ]
