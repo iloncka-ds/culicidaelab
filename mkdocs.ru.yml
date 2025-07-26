@@ -53,13 +53,6 @@ plugins:
       image_scrapers:
         - matplotlib
       within_subsection_order: FileNameSortKey
-      binder:
-        org: iloncka-ds
-        repo: culicidaelab
-        branch: gh-pages
-        dependencies: docs/ru/binder_cfg/requirements.txt
-        notebooks_dir: docs/ru/examples
-        use_jupyter_lab: true
       show_memory: false
       matplotlib_animations: true
       image_srcset:

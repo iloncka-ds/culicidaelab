@@ -174,5 +174,5 @@ for i, single_image_preds in enumerate(classifier_batch_result):
     top_pred_conf = single_image_preds[0][1]
     print(
         f"  - Image '{image_paths[i].name}': ",
-        "Top prediction is '{top_pred_species}' with {top_pred_conf:.2%} confidence.",
+        f"Top prediction is '{top_pred_species}' with {top_pred_conf:.2%} confidence.",
     )

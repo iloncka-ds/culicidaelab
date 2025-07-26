@@ -21,7 +21,7 @@ requirements.in
 cache/
 weights/
 md_*/
-example3/
+scripts*/
 .VSCodeCounter
 tree-maker/
 
