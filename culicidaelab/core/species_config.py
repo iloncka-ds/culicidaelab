@@ -32,10 +32,11 @@ class SpeciesConfig:
         """Initializes the species configuration helper."""
         self._config = config
         self._species_map: dict[int, str] = {}
-        class_to_full_name_map = self._config.species_metadata.species_info_mapping
+        self.class_to_full_name_map = self._config.species_metadata.species_info_mapping
+        self.reverse_class_to_full_name_map = {v: k for k, v in self.class_to_full_name_map.items()}
 
         for idx, class_name in self._config.species_classes.items():
-            full_name = class_to_full_name_map.get(class_name, class_name)
+            full_name = self.class_to_full_name_map.get(class_name, class_name)
             self._species_map[idx] = full_name
 
         self._reverse_species_map: dict[str, int] = {name: idx for idx, name in self._species_map.items()}
@@ -74,6 +75,15 @@ class SpeciesConfig:
             str | None: The full species name as a string, or None if not found.
         """
         return self._species_map.get(index)
+
+    def get_species_label(self, species_name: str) -> str:
+        """Gets label for the full species name (e.g., "Aedes aegypti").
+        Args:
+            species_name (str): The full name of the species (e.g., "Aedes aegypti").
+        Returns:
+            str: The dataset label for the species.
+        """
+        return self.reverse_class_to_full_name_map[species_name]
 
     def get_species_metadata(self, species_name: str) -> dict[str, Any] | None:
         """Gets the detailed metadata for a specific species as a dictionary.
