@@ -32,11 +32,15 @@ import pathlib
 import platform
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import Any, TypeAlias, Union
+from collections.abc import Sequence
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
+from fastai.callback.progress import ProgressCallback
 from fastai.vision.all import load_learner
+from fastprogress.fastprogress import progress_bar
 from PIL import Image
 from sklearn.metrics import confusion_matrix, roc_auc_score
 from sklearn.preprocessing import label_binarize
@@ -49,6 +53,7 @@ from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
 ClassificationPredictionType: TypeAlias = list[tuple[str, float]]
 ClassificationGroundTruthType: TypeAlias = str
+ImageInput = Union[np.ndarray, str, Path, Image.Image]
 
 
 @contextmanager
@@ -110,12 +115,18 @@ class MosquitoClassifier(
             weights_manager=weights_manager,
             load_model=load_model,
         )
-
         self.arch: str | None = self.config.model_arch
         self.data_dir: Path = self.settings.dataset_dir
         self.species_map: dict[int, str] = self.settings.species_config.species_map
-        self.labels_map: dict[str, str] = self.settings.species_config.class_to_full_name_map
+        self.labels_map: dict[
+            str,
+            str,
+        ] = self.settings.species_config.class_to_full_name_map
         self.num_classes: int = len(self.species_map)
+
+    # --------------------------------------------------------------------------
+    # Public Methods
+    # --------------------------------------------------------------------------
 
     def get_class_index(self, species_name: str) -> int | None:
         """Retrieves the class index for a given species name.
@@ -140,43 +151,34 @@ class MosquitoClassifier(
 
     def predict(
         self,
-        input_data: np.ndarray,
+        input_data: ImageInput,
         **kwargs: Any,
     ) -> ClassificationPredictionType:
         """Classifies the mosquito species in a single image.
 
         Args:
-            input_data (np.ndarray): An input image as a NumPy array with a
-                shape of (H, W, 3) in RGB format. Values can be uint8
-                [0, 255] or float [0, 1].
+            input_data: Input image in one of the following formats:
+                - np.ndarray: Image array with shape (H, W, 3) in RGB format.
+                  Values can be uint8 [0, 255] or float32/float64 [0, 1].
+                - str or pathlib.Path: Path to an image file.
+                - PIL.Image.Image: PIL Image object.
             **kwargs (Any): Additional arguments (not used).
 
         Returns:
-            ClassificationPredictionType: A list of (species_name, confidence)
-            tuples, sorted in descending order of confidence.
+            A list of (species_name, confidence) tuples, sorted in
+            descending order of confidence.
 
         Raises:
             RuntimeError: If the model has not been loaded.
-            ValueError: If the input data has an invalid shape, data type,
-                or is not a valid image.
+            ValueError: If the input data has an invalid format.
+            FileNotFoundError: If the image file path doesn't exist.
         """
         if not self.model_loaded:
             raise RuntimeError(
                 "Model is not loaded. Call load_model() or use a context manager.",
             )
 
-        if not isinstance(input_data, np.ndarray):
-            input_data = np.array(input_data)
-
-        if input_data.ndim != 3 or input_data.shape[2] != 3:
-            raise ValueError(f"Expected 3D RGB image, got shape: {input_data.shape}")
-
-        if input_data.dtype == np.uint8:
-            image = Image.fromarray(input_data)
-        elif input_data.dtype in [np.float32, np.float64]:
-            image = Image.fromarray((input_data * 255).astype(np.uint8))
-        else:
-            raise ValueError(f"Unsupported dtype: {input_data.dtype}")
+        image = self._load_and_validate_image(input_data)
 
         with set_posix_windows():
             _, _, probabilities = self.learner.predict(image)
@@ -191,139 +193,262 @@ class MosquitoClassifier(
 
     def predict_batch(
         self,
-        input_data_batch: list[Any],
+        input_data_batch: Sequence[ImageInput],
         show_progress: bool = False,
+        batch_size: int = 32,
         **kwargs: Any,
     ) -> list[ClassificationPredictionType]:
         """Classifies mosquito species in a batch of images.
 
-        Note: This method currently iterates and calls `predict` for each image.
-        True batch processing is not yet implemented.
+        This method uses FastAI's test_dl for efficient batch processing and
+        the `ProgressCallback` system to display progress.
 
         Args:
-            input_data_batch (list[Any]): A list of input images, where each
-                image is a NumPy array.
-            show_progress (bool, optional): If True, a progress bar is displayed.
-                Defaults to False.
-            **kwargs (Any): Additional arguments passed to `predict`.
+            input_data_batch: A sequence of input images.
+            batch_size: Number of images per batch. Defaults to 32.
+            show_progress: If True, a progress bar is displayed. Defaults to False.
+            **kwargs: Additional arguments (not currently used).
 
         Returns:
-            list[ClassificationPredictionType]: A list of prediction results,
-            where each result corresponds to an input image.
+            A list of prediction results for each image.
         """
-        results = []
-        for img in input_data_batch:
-            results.append(self.predict(img, **kwargs))
+        if not self.model_loaded:
+            raise RuntimeError(
+                "Model is not loaded. Call load_model() or use a context manager.",
+            )
+        if not input_data_batch:
+            return []
+
+        results: list[ClassificationPredictionType] = [[] for _ in input_data_batch]
+        valid_images, valid_indices = self._prepare_batch_images(input_data_batch)
+
+        if not valid_images:
+            self._logger.warning("No valid images found in the batch to process.")
+            return results
+        try:
+            with set_posix_windows():
+                test_dl = self.learner.dls.test_dl(
+                    valid_images,
+                    batch_size=batch_size,
+                    shuffle=False,
+                    drop_last=False,
+                )
+                cbs = [ProgressCallback()] if show_progress else None
+                probabilities, _ = self.learner.get_preds(dl=test_dl, cbs=cbs)
+
+                for pred_idx, original_idx in enumerate(valid_indices):
+                    probs = probabilities[pred_idx]
+                    species_probs = []
+                    for class_idx, prob in enumerate(probs):
+                        species_name = self.species_map.get(
+                            class_idx,
+                            f"unknown_{class_idx}",
+                        )
+                        species_probs.append((species_name, float(prob)))
+
+                    species_probs.sort(key=lambda x: x[1], reverse=True)
+                    results[original_idx] = species_probs
+
+        except Exception as e:
+            self._logger.error(
+                f"Error during FastAI batch processing: {e}",
+                exc_info=True,
+            )
+            self._logger.info("Falling back to individual predictions...")
+
+            fallback_iterable = zip(valid_images, valid_indices)
+            if show_progress:
+                fallback_iterable = progress_bar(
+                    list(fallback_iterable),
+                    total=len(valid_images),
+                    comment="Processing Fallback",
+                )
+            for image, original_idx in fallback_iterable:
+                try:
+                    prediction = self.predict(image)
+                    results[original_idx] = prediction
+                except Exception as individual_error:
+                    self._logger.error(
+                        f"Failed to process image at original index {original_idx}: {individual_error}",
+                    )
+                    results[original_idx] = []
         return results
 
     def visualize(
         self,
-        input_data: np.ndarray,
+        input_data: ImageInput,
         predictions: ClassificationPredictionType,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
-        """Creates a composite image with classification results on the left
-        and the input image on the right.
+        """Creates a composite image with results and the input image.
 
-        This method generates a clean visualization by placing the top-k predictions
-        and their confidence scores in a separate panel to the left of the image,
-        avoiding clutter on the image itself.
+        This method generates a visualization by placing the top-k predictions
+        in a separate panel to the left of the image.
 
         Args:
-            input_data (np.ndarray): The original image (H, W, 3) as a NumPy array in RGB format.
-            predictions (ClassificationPredictionType): The prediction output from
-                the `predict` method.
-            save_path (str | Path | None, optional): If provided, the visualized
-                image will be saved to this path. Defaults to None.
+            input_data: The input image (NumPy array, path, or PIL Image).
+            predictions: The prediction output from the `predict` method.
+            save_path: If provided, the image is saved to this path.
 
         Returns:
-            np.ndarray: A new, wider image array (in RGB format) containing the
-            text panel and the original image.
+            A new image array containing the text panel and original image.
 
         Raises:
-            ValueError: If the input data is not a 3D image or if the
-                predictions list is empty.
+            ValueError: If the input data is invalid or predictions are empty.
+            FileNotFoundError: If the image file path doesn't exist.
         """
-        if input_data.ndim != 3:
-            raise ValueError(f"Expected 3D image, got shape: {input_data.shape}")
+        image_pil = self._load_and_validate_image(input_data)
+        image_np_rgb = np.array(image_pil)
 
         if not predictions:
             raise ValueError("Predictions list cannot be empty")
 
-        # --- Configuration ---
         vis_config = self.config.visualization
         font_scale = vis_config.font_scale
         thickness = vis_config.text_thickness if vis_config.text_thickness is not None else 1
-        # OpenCV's putText function expects a BGR color format.
         text_color_bgr = str_to_bgr(vis_config.text_color)
         top_k = self.config.params.get("top_k", 5)
         font = cv2.FONT_HERSHEY_SIMPLEX
 
-        # --- Canvas Creation ---
-        img_h, img_w, _ = input_data.shape
-
-        # Define the width for the text panel on the left.
-        # This can be adjusted based on the expected length of your species names.
-        text_panel_width = 450
+        img_h, img_w, _ = image_np_rgb.shape
+        text_panel_width = 350
         padding = 20
-
-        # Create a new white canvas to hold both the text and the image.
-        # The canvas will have the same height as the image.
         canvas_h = img_h
         canvas_w = text_panel_width + img_w
-        # The canvas is created as an RGB image (for compatibility with input_data).
         canvas = np.full((canvas_h, canvas_w, 3), 255, dtype=np.uint8)
 
-        # --- Draw Text on the Left Panel ---
-        y_offset = 40  # Starting y-position for the first line of text.
-        line_height = int(font_scale * 40)  # Dynamically calculate line height based on font size
-
+        y_offset = 40
+        line_height = int(font_scale * 40)
         for species, conf in predictions[:top_k]:
-            text = f"{species}: {conf:.3f}"
+            display_name = self.labels_map.get(species, species)
+            text = f"{display_name}: {conf:.3f}"
             cv2.putText(
                 canvas,
                 text,
-                (padding, y_offset),  # (x, y) position on the canvas
+                (padding, y_offset),
                 font,
                 font_scale,
                 text_color_bgr,
                 thickness,
-                lineType=cv2.LINE_AA,  # For smoother text rendering
+                lineType=cv2.LINE_AA,
             )
             y_offset += line_height
 
-        # --- Place the Original Image on the Right Panel ---
-        # The input image (input_data) is in RGB, and so is our canvas.
-        # We can directly copy the pixel data using numpy slicing.
-        canvas[:, text_panel_width:] = input_data
+        canvas[:, text_panel_width:] = image_np_rgb
 
-        # --- Save the Final Image (Optional) ---
         if save_path:
             save_path = Path(save_path)
             save_path.parent.mkdir(parents=True, exist_ok=True)
-            # Convert the final RGB canvas to BGR format for saving with OpenCV.
             save_img_bgr = cv2.cvtColor(canvas, cv2.COLOR_RGB2BGR)
             cv2.imwrite(str(save_path), save_img_bgr)
 
-        # Return the final composite image in RGB format.
         return canvas
+
+    def visualize_report(
+        self,
+        report_data: dict[str, Any],
+        save_path: str | Path | None = None,
+    ) -> None:
+        """Generates a visualization of the evaluation report.
+
+        This function creates a figure with a text summary of key performance
+        metrics and a heatmap of the confusion matrix.
+
+        Args:
+            report_data: The evaluation report from the `evaluate` method.
+            save_path: If provided, the figure is saved to this path.
+
+        Raises:
+            ValueError: If `report_data` is missing required keys.
+        """
+        required_keys = [
+            "accuracy_mean",
+            "confidence_mean",
+            "top_5_correct_mean",
+            "count",
+            "confusion_matrix",
+        ]
+        if not all(key in report_data for key in required_keys):
+            raise ValueError("report_data is missing one or more required keys.")
+
+        conf_matrix = np.array(report_data["confusion_matrix"])
+        class_labels = self.get_species_names()
+
+        fig, (ax_text, ax_matrix) = plt.subplots(
+            1,
+            2,
+            figsize=(20, 8),
+            gridspec_kw={"width_ratios": [1, 2.5]},
+        )
+        fig.suptitle("Model Evaluation Report", fontsize=20, y=1.02)
+
+        ax_text.axis("off")
+        text_content = (
+            f"Summary (on {report_data['count']} samples):\n\n"
+            f"Mean Accuracy (Top-1): {report_data['accuracy_mean']:.3f}\n"
+            f"Mean Top-5 Accuracy:   {report_data['top_5_correct_mean']:.3f}\n\n"
+            f"Mean Confidence:         {report_data['confidence_mean']:.3f}\n"
+        )
+        if "roc_auc" in report_data:
+            text_content += f"ROC-AUC Score:           {report_data['roc_auc']:.3f}\n"
+        ax_text.text(
+            0.0,
+            0.7,
+            text_content,
+            ha="left",
+            va="top",
+            transform=ax_text.transAxes,
+            fontsize=14,
+            family="monospace",
+        )
+
+        im = ax_matrix.imshow(conf_matrix, cmap="Blues", interpolation="nearest")
+        tick_marks = np.arange(len(class_labels))
+        ax_matrix.set_xticks(tick_marks)
+        ax_matrix.set_yticks(tick_marks)
+        ax_matrix.set_xticklabels(
+            class_labels,
+            rotation=45,
+            ha="right",
+            rotation_mode="anchor",
+        )
+        ax_matrix.set_yticklabels(class_labels, rotation=0)
+        fig.colorbar(im, ax=ax_matrix, fraction=0.046, pad=0.04)
+
+        threshold = conf_matrix.max() / 2.0
+        for i in range(len(class_labels)):
+            for j in range(len(class_labels)):
+                text_color = "white" if conf_matrix[i, j] > threshold else "black"
+                ax_matrix.text(
+                    j,
+                    i,
+                    f"{conf_matrix[i, j]}",
+                    ha="center",
+                    va="center",
+                    color=text_color,
+                )
+        ax_matrix.set_title("Confusion Matrix", fontsize=16)
+        ax_matrix.set_xlabel("Predicted Label", fontsize=12)
+        ax_matrix.set_ylabel("True Label", fontsize=12)
+
+        plt.tight_layout(rect=(0, 0, 1, 0.96))
+        if save_path:
+            save_path = Path(save_path)
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            plt.savefig(save_path, dpi=300, bbox_inches="tight")
+            print(f"Report visualization saved to: {save_path}")
+        plt.show()
+
+    # --------------------------------------------------------------------------
+    # Private Methods
+    # --------------------------------------------------------------------------
 
     def _evaluate_from_prediction(
         self,
         prediction: ClassificationPredictionType,
         ground_truth: ClassificationGroundTruthType,
     ) -> dict[str, float]:
-        """Calculates core evaluation metrics for a single prediction.
-
-        Args:
-            prediction (ClassificationPredictionType): The model's prediction, which is
-                a list of (species, confidence) tuples.
-            ground_truth (ClassificationGroundTruthType): The true species label as a string.
-
-        Returns:
-            dict[str, float]: A dictionary of metrics including accuracy,
-            confidence, top-1 correctness, and top-5 correctness.
-        """
+        """Calculates core evaluation metrics for a single prediction."""
         if not prediction:
             return {
                 "accuracy": 0.0,
@@ -331,14 +456,12 @@ class MosquitoClassifier(
                 "top_1_correct": 0.0,
                 "top_5_correct": 0.0,
             }
-        ground_truth_species = self.labels_map[ground_truth]
+        ground_truth_species = self.labels_map.get(ground_truth, ground_truth)
         pred_species = prediction[0][0]
         confidence = prediction[0][1]
         top_1_correct = float(pred_species == ground_truth_species)
-
         top_5_species = [p[0] for p in prediction[:5]]
         top_5_correct = float(ground_truth_species in top_5_species)
-
         return {
             "accuracy": top_1_correct,
             "confidence": confidence,
@@ -352,33 +475,19 @@ class MosquitoClassifier(
         predictions: list[ClassificationPredictionType],
         ground_truths: list[ClassificationGroundTruthType],
     ) -> dict[str, Any]:
-        """Calculates and adds confusion matrix and ROC-AUC to the final report.
-
-        Args:
-            aggregated_metrics (dict[str, float]): A dictionary of metrics that have
-                already been aggregated over the dataset.
-            predictions (list[ClassificationPredictionType]): The list of all predictions.
-            ground_truths (list[ClassificationGroundTruthType]): The list of all ground truths.
-
-        Returns:
-            dict[str, Any]: The updated report with the confusion matrix
-            (as a list of lists) and the overall ROC-AUC score.
-        """
+        """Calculates and adds confusion matrix and ROC-AUC to the final report."""
         species_to_idx = {v: k for k, v in self.species_map.items()}
         class_labels = list(range(self.num_classes))
         y_true_indices, y_pred_indices, y_scores = [], [], []
 
         for gt, pred_list in zip(ground_truths, predictions):
-            gt_str = self.labels_map[gt] if gt in self.labels_map else gt
-            # Now safe to use as dict key
+            gt_str = self.labels_map.get(gt, gt)
             if gt_str in species_to_idx and pred_list:
                 true_idx = species_to_idx[gt_str]
                 pred_str = pred_list[0][0]
                 pred_idx = species_to_idx.get(pred_str, -1)
-
                 y_true_indices.append(true_idx)
                 y_pred_indices.append(pred_idx)
-
                 prob_vector = [0.0] * self.num_classes
                 for species, conf in pred_list:
                     class_idx = species_to_idx.get(species)
@@ -410,24 +519,87 @@ class MosquitoClassifier(
             except ValueError as e:
                 self._logger.warning(f"Could not compute ROC AUC score: {e}")
                 aggregated_metrics["roc_auc"] = 0.0
-
         return aggregated_metrics
+
+    def _load_and_validate_image(self, input_data: ImageInput) -> Image.Image:
+        """Loads and validates an input image from various formats.
+
+        Args:
+            input_data: Image input (numpy array, file path, or PIL Image).
+
+        Returns:
+            A validated PIL Image in RGB format.
+
+        Raises:
+            ValueError: If input format is invalid or image cannot be loaded.
+            FileNotFoundError: If image file path does not exist.
+        """
+        if isinstance(input_data, (str, Path)):
+            image_path = Path(input_data)
+            if not image_path.exists():
+                raise FileNotFoundError(f"Image file not found: {image_path}")
+            try:
+                image = Image.open(image_path).convert("RGB")
+                return image
+            except Exception as e:
+                raise ValueError(f"Cannot load image from {image_path}: {e}")
+
+        elif isinstance(input_data, Image.Image):
+            return input_data.convert("RGB")
+
+        elif isinstance(input_data, np.ndarray):
+            if input_data.ndim != 3 or input_data.shape[2] != 3:
+                raise ValueError(
+                    f"Expected 3D RGB image, got shape: {input_data.shape}",
+                )
+            if input_data.dtype == np.uint8:
+                return Image.fromarray(input_data)
+            elif input_data.dtype in [np.float32, np.float64]:
+                if input_data.max() > 1.0 or input_data.min() < 0.0:
+                    raise ValueError("Float images must be in range [0, 1]")
+                return Image.fromarray((input_data * 255).astype(np.uint8))
+            else:
+                raise ValueError(f"Unsupported numpy dtype: {input_data.dtype}")
+        else:
+            raise TypeError(
+                f"Unsupported input type: {type(input_data)}. "
+                f"Expected np.ndarray, str, pathlib.Path, or PIL.Image.Image",
+            )
 
     def _load_model(self) -> None:
         """Loads the pre-trained FastAI learner model from disk.
 
-        This method uses the `set_posix_windows` context manager to ensure
-        path compatibility across operating systems.
-
         Raises:
-            RuntimeError: If the model file cannot be loaded, either because
-                it is missing, corrupted, or dependencies are not met.
+            RuntimeError: If the model file cannot be loaded.
         """
         with set_posix_windows():
             try:
                 self.learner = load_learner(self.model_path)
             except Exception as e:
                 raise RuntimeError(
-                    f"Failed to load existing model from {self.model_path}. "
-                    f"Ensure the model file is valid and all dependencies are installed. Original error: {e}",
+                    f"Failed to load model from {self.model_path}. " f"Ensure the file is valid. Original error: {e}",
                 ) from e
+
+    def _prepare_batch_images(
+        self,
+        input_data_batch: Sequence[ImageInput],
+    ) -> tuple[list[Image.Image], list[int]]:
+        """Prepares and validates a batch of images for processing.
+
+        Args:
+            input_data_batch: A sequence of input images.
+
+        Returns:
+            A tuple of (valid_images, valid_indices) where valid_indices
+            tracks the original position of each valid image.
+        """
+        valid_images = []
+        valid_indices = []
+        for idx, input_data in enumerate(input_data_batch):
+            try:
+                image = self._load_and_validate_image(input_data)
+                valid_images.append(image)
+                valid_indices.append(idx)
+            except Exception as e:
+                self._logger.warning(f"Skipping image at index {idx}: {e}")
+        return valid_images, valid_indices
