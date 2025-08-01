@@ -1,178 +1,259 @@
 """
 # Classifying Mosquito Species
 
-This tutorial shows how to use the `MosquitoClassifier` from the CulicidaeLab
-library to perform species classification. We will cover:
+This tutorial demonstrates how to use the `MosquitoClassifier` from the CulicidaeLab
+library to identify mosquito species from images. We will walk through the entire
+process, from loading the model to evaluating its performance on a batch of data.
 
-- Loading the classification model
-- Preparing an image
-- Running the model to get classification results
-- Visualizing and interpreting the results
-- Evaluating a classification prediction
+This guide will cover:
 
+- **Initialization**: How to load the settings and the pre-trained model.
+- **Data Handling**: How to use the `DatasetsManager` to fetch sample data.
+- **Single Image Prediction**: How to classify a single mosquito image.
+- **Visualization**: How to interpret and visualize the model's predictions.
+- **Batch Evaluation**: How to measure the model's accuracy on a set of test images.
+- **Reporting**: How to generate and visualize a comprehensive performance report.
 """
 
-# %%
-# Install the `culicidaelab` library if not already installed
-# !pip install -q culicidaelab
-
 # %% [markdown]
-# ## 1. Initialization
+# ## 1. Initialization and Setup
 #
-# We start by initializing the `MosquitoClassifier`. The `settings` object will handle
-# the configuration, and `load_model=True` will ensure the model is downloaded and
-# loaded into memory right away.
+# Our first step is to set up the necessary components. We will initialize:
+#
+# - **`settings`**: An object that holds all library configuration, such as
+#   model paths and confidence thresholds.
+# - **`DatasetsManager`**: A helper class to download and manage the sample
+#   datasets used in this tutorial.
+# - **`MosquitoClassifier`**: The main class for our classification task. We'll
+#   pass `load_model=True` to ensure the pre-trained model weights are downloaded
+#   and loaded into memory immediately.
 
 # %%
-import cv2
-import re
+# Import necessary libraries
 import matplotlib.pyplot as plt
-from pathlib import Path
 
-from culicidaelab import MosquitoClassifier, get_settings
+# Import the required classes from the CulicidaeLab library
+from culicidaelab import (
+    DatasetsManager,
+    MosquitoClassifier,
+    ProviderService,
+    get_settings,
+)
 
-# Get settings instance
+# Get the default library settings instance
 settings = get_settings()
 
-# Instantiate the classifier and load the model
+# Initialize the services needed to manage and download data
+provider_service = ProviderService(settings)
+manager = DatasetsManager(settings, provider_service)
+
+# Instantiate the classifier and load the model.
+# This might take a moment on the first run as it downloads the model weights.
 print("Initializing MosquitoClassifier and loading model...")
 classifier = MosquitoClassifier(settings, load_model=True)
 print("Model loaded successfully.")
 
-# You can inspect the model's configuration directly from the settings object.
-classifier_conf = settings.get_config("predictors.classifier")
-print(f"\nLoaded model architecture: {classifier_conf.model_arch}")
-
-
 # %% [markdown]
 # ### Inspecting Model Classes
-# It's often useful to see which species the model was trained to recognize.
-# The recommended way is to use the `species_config`.
+#
+# Before we start predicting, it's useful to know which species the model was
+# trained to recognize. We can easily access this information from the settings
+# object.
 
 # %%
 species_map = settings.species_config.species_map
-print("--- Model Classes (from settings) ---")
-print(species_map)
+print(f"--- The model can recognize {len(species_map)} species ---")
+# Print the first 5 for brevity
+for idx, name in list(species_map.items())[:5]:
+    print(f"  Class Index {idx}: {name}")
+print("  ...")
 
 # %% [markdown]
-# ## 2. Preparing an Image for Classification
+# ## 2. Loading the Test Dataset
 #
-# Now, let's load a test image. The classifier expects an image in RGB format.
+# For this tutorial, we will use a built-in test dataset provided by the library.
+# The `DatasetsManager` makes it simple to download and load this data. The dataset
+# contains images and their corresponding correct labels, which we will use for
+# prediction and later for evaluation.
 
 # %%
-# Load a test image
-image_path = Path("test_imgs") / "640px-Aedes_aegypti.jpg"
-image = cv2.imread(str(image_path))
-if image is None:
-    raise ValueError(f"Could not load image from {image_path}")
+print("\n--- Loading the 'classification' dataset's 'test' split ---")
+classification_test_data = manager.load_dataset("classification", split="test")
+print("Test dataset loaded successfully!")
+print(f"Number of samples in the test dataset: {len(classification_test_data)}")
 
-# Convert from BGR (OpenCV's default) to RGB
-image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+# Let's select one sample to work with.
+# The sample is a dictionary containing the image and its ground truth label.
+sample_index = 287
+sample = classification_test_data[sample_index]
+image = sample["image"]
+ground_truth_label = sample["label"]
+
+print(f"\nSelected sample's ground truth label: '{ground_truth_label}'")
 
 # Display the input image
-plt.figure(figsize=(8, 8))
-plt.imshow(image_rgb)
+plt.figure(figsize=(6, 6))
+plt.imshow(image)
+plt.title(f"Input Image\n(Ground Truth: {ground_truth_label})")
 plt.axis("off")
-plt.title("Input Image")
 plt.show()
 
+
 # %% [markdown]
-# ## 3. Running Classification and Interpreting Results
+# ## 3. Classifying a Single Image
 #
-# The `predict` method returns a list of tuples, where each tuple contains
-# a `(species_name, confidence_score)`, sorted by confidence.
+# Now we'll use the classifier to predict the species of the mosquito in our
+# selected image. The `predict()` method takes an image (as a NumPy array, file
+# path, or PIL Image) and returns a list of predictions, sorted from most to
+# least confident.
 
 # %%
-# Run classification
-predictions = classifier.predict(image_rgb)
+# Run the classification on our sample image
+predictions = classifier.predict(image)
 
-# Let's print the top 5 predictions
+# Print the top 5 predictions in a readable format
 print("--- Top 5 Predictions ---")
-for species, prob in predictions[:5]:
-    print(f"{species}: {prob:.2%}")
+for species, probability in predictions[:5]:
+    print(f"{species}: {probability:.2%}")
 
 # %% [markdown]
-# ## 4. Visualizing Classification Results
+# ## 4. Visualizing and Interpreting the Results
 #
-# `CulicidaeLab` provides two easy ways to visualize the results:
-# 1. A bar plot showing the confidence for all classes.
-# 2. An annotated image with the top predictions overlaid.
+# A raw list of predictions is useful, but visualizations make the results much
+# easier to understand. We'll create two plots:
+#
+# 1.  **A Bar Plot**: This shows the model's confidence for every possible
+#     species. It's great for seeing not just the top prediction, but also which
+#     other species the model considered.
+# 2.  **A Composite Image**: This uses the built-in `visualize()` method to create
+#     a clean image that displays the top predictions alongside the input image.
 
 # %%
-# Get all species names and their predicted probabilities
+# Create a bar plot to visualize the probabilities for all species
+plt.figure(figsize=(10, 8))
+
+# The predictions are already sorted, so we can plot them directly
 species_names = [p[0] for p in predictions]
 probabilities = [p[1] for p in predictions]
+
+# We'll reverse the lists (`[::-1]`) so the highest probability is at the top
+bars = plt.barh(species_names[::-1], probabilities[::-1])
+
+# Highlight the bars that meet our confidence threshold
 conf_threshold = settings.get_config("predictors.classifier.confidence")
+for bar in bars:
+    if bar.get_width() >= conf_threshold:
+        bar.set_color("teal")
+    else:
+        bar.set_color("lightgray")
 
-# Create a bar plot of the probabilities
-plt.figure(figsize=(12, 7))
-bars = plt.barh(species_names[::-1], probabilities[::-1])  # Reverse to show highest on top
-
-# Color bars based on confidence
-for i, prob in enumerate(probabilities[::-1]):
-    bars[i].set_color("teal" if prob >= conf_threshold else "lightgray")
-
-plt.axvline(x=conf_threshold, color="r", linestyle="--", label=f"Confidence Threshold ({conf_threshold:.0%})")
-plt.xlabel("Probability")
+# Add a reference line for the confidence threshold
+plt.axvline(
+    x=conf_threshold,
+    color="red",
+    linestyle="--",
+    label=f"Confidence Threshold ({conf_threshold:.0%})",
+)
+plt.xlabel("Assigned Probability")
 plt.title("Species Classification Probabilities")
 plt.legend()
 plt.tight_layout()
 plt.show()
 
 # %%
-# The `visualize` method overlays the top predictions directly onto the image.
-annotated_image = classifier.visualize(image_rgb, predictions)
+# Now, let's use the built-in visualizer for a clean presentation
+annotated_image = classifier.visualize(image, predictions)
 
-# Display the annotated image
-plt.figure(figsize=(10, 10))
+# Display the final annotated image
+plt.figure(figsize=(10, 6))
 plt.imshow(annotated_image)
+plt.title("Formatted Classification Result")
 plt.axis("off")
-plt.title("Classification Result with Overlay")
 plt.show()
 
-
 # %% [markdown]
-# ## 5. Evaluating a Prediction
+# ## 5. Evaluating Model Performance on a Batch
 #
-# To measure performance, you can evaluate a prediction against a known ground truth label.
-# This returns key metrics like accuracy and top-5 correctness.
+# While classifying a single image is useful, a more rigorous test involves
+# evaluating the model's performance across an entire dataset. The
+# `evaluate_batch()` method is designed for this. It processes a batch of
+# images and their corresponding ground truth labels, then computes aggregate
+# metrics.
+#
+# The result is a `report` dictionary containing key metrics like mean
+# accuracy and a **confusion matrix**, which shows exactly where the model is
+# succeeding or failing.
 
 # %%
-# The true label for our test image is 'aedes_aegypti'
-ground_truth_label = "aedes_aegypti"
+# Let's evaluate the first 30 images from the test set for this example
+num_samples_to_evaluate = 30
+batch_images = [sample["image"] for sample in classification_test_data[:num_samples_to_evaluate]]
+ground_truths = [sample["label"] for sample in classification_test_data[:num_samples_to_evaluate]]
 
-# You can evaluate from a pre-computed prediction...
-print(f"--- Evaluating prediction against ground truth '{ground_truth_label}' ---")
-metrics_from_prediction = classifier.evaluate(ground_truth_label, prediction=predictions)
-print(f"Metrics from prediction: {metrics_from_prediction}")
+print(f"\n--- Evaluating a batch of {len(batch_images)} images ---")
 
-# ... or directly from the input image.
-metrics_from_image = classifier.evaluate(ground_truth_label, input_data=image_rgb)
-print(f"Metrics from image: {metrics_from_image}")
+# Run the batch evaluation.
+# The method can take images and ground truths separately, or it can
+# run predictions internally if you only provide the images.
+report = classifier.evaluate_batch(
+    input_data_batch=batch_images,
+    ground_truth_batch=ground_truths,
+    show_progress=True,
+)
+
+print("\n--- Evaluation Report Summary ---")
+for key, value in report.items():
+    if key != "confusion_matrix":
+        # Check if value is a float before formatting
+        if isinstance(value, float):
+            print(f"  {key}: {value:.4f}")
+        else:
+            print(f"  {key}: {value}")
+
 
 # %% [markdown]
-# ## 6. Batch Classification
+# ## 6. Visualizing the Evaluation Report
 #
-# Just like the detector, the classifier can process a batch of images for improved performance.
+# The generated `report` dictionary contains a wealth of information, but the
+# confusion matrix is best understood visually. The `visualize_report()` method
+# creates a comprehensive plot that summarizes the evaluation results.
+#
+# **How to read the confusion matrix:**
+# - Each row represents the *actual* ground truth species.
+# - Each column represents the species that the *model predicted*.
+# - The diagonal (from top-left to bottom-right) shows the number of correct
+#   predictions for each class.
+# - Off-diagonal numbers indicate misclassifications. For example, a number
+#   in row "A" and column "B" means an image of species A was incorrectly
+#   classified as species B.
 
 # %%
-image_dir = Path("test_imgs")
-pattern = re.compile(r"\.(jpg|jpeg|png)$", re.IGNORECASE)
-image_paths = [path for path in image_dir.iterdir() if path.is_file() and pattern.search(str(path))]
+# Pass the report dictionary to the visualization function
+classifier.visualize_report(report)
 
-try:
-    batch = [cv2.cvtColor(cv2.imread(str(path)), cv2.COLOR_BGR2RGB) for path in image_paths]
-    print(f"\n--- Classifying a batch of {len(batch)} images ---")
-except Exception as e:
-    print(f"An error occurred while reading images: {e}")
-    batch = []
+# %% [markdown]
+# ## 7. Batch Prediction for Efficiency
+#
+# If your goal is simply to classify many images (and not to evaluate
+# performance), using `predict_batch()` is much more efficient than looping
+# over `predict()`. It leverages the GPU to process images in parallel,
+# resulting in a significant speed-up.
 
-classifier_batch_result = classifier.predict_batch(batch, show_progress=True)
-print("\n--- Batch Classification Results ---")
-for i, single_image_preds in enumerate(classifier_batch_result):
-    top_pred_species = single_image_preds[0][0]
-    top_pred_conf = single_image_preds[0][1]
-    print(
-        f"  - Image '{image_paths[i].name}': ",
-        f"Top prediction is '{top_pred_species}' with {top_pred_conf:.2%} confidence.",
-    )
+# %%
+# We'll use the same small batch from our evaluation example
+print(
+    f"\n--- Classifying a batch of {len(batch_images)} images with predict_batch ---",
+)
+batch_predictions = classifier.predict_batch(batch_images, show_progress=True)
+
+print("\n--- Batch Classification Results (Top prediction for each image) ---")
+for i, single_image_preds in enumerate(batch_predictions):
+    if single_image_preds:  # Check if the prediction list is not empty
+        top_pred_species = single_image_preds[0][0]
+        top_pred_conf = single_image_preds[0][1]
+        print(
+            f"  - Image {i+1} (GT: {ground_truths[i]}): "
+            f"Predicted '{top_pred_species}' with {top_pred_conf:.2%} confidence.",
+        )
+    else:
+        print(f"  - Image {i+1} (GT: {ground_truths[i]}): Prediction failed.")
