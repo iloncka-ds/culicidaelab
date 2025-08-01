@@ -114,6 +114,7 @@ class MosquitoClassifier(
         self.arch: str | None = self.config.model_arch
         self.data_dir: Path = self.settings.dataset_dir
         self.species_map: dict[int, str] = self.settings.species_config.species_map
+        self.labels_map: dict[str, str] = self.settings.species_config.class_to_full_name_map
         self.num_classes: int = len(self.species_map)
 
     def get_class_index(self, species_name: str) -> int | None:
@@ -221,20 +222,23 @@ class MosquitoClassifier(
         predictions: ClassificationPredictionType,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
-        """Overlays classification results on an image.
+        """Creates a composite image with classification results on the left
+        and the input image on the right.
 
-        This method draws the top-k predictions and their confidence scores
-        onto the input image.
+        This method generates a clean visualization by placing the top-k predictions
+        and their confidence scores in a separate panel to the left of the image,
+        avoiding clutter on the image itself.
 
         Args:
-            input_data (np.ndarray): The original image (H, W, 3) as a NumPy array.
+            input_data (np.ndarray): The original image (H, W, 3) as a NumPy array in RGB format.
             predictions (ClassificationPredictionType): The prediction output from
                 the `predict` method.
             save_path (str | Path | None, optional): If provided, the visualized
                 image will be saved to this path. Defaults to None.
 
         Returns:
-            np.ndarray: A new image array with the prediction text overlaid.
+            np.ndarray: A new, wider image array (in RGB format) containing the
+            text panel and the original image.
 
         Raises:
             ValueError: If the input data is not a 3D image or if the
@@ -246,36 +250,63 @@ class MosquitoClassifier(
         if not predictions:
             raise ValueError("Predictions list cannot be empty")
 
-        vis_img = input_data.copy()
+        # --- Configuration ---
         vis_config = self.config.visualization
         font_scale = vis_config.font_scale
         thickness = vis_config.text_thickness if vis_config.text_thickness is not None else 1
-        color = str_to_bgr(vis_config.text_color)
+        # OpenCV's putText function expects a BGR color format.
+        text_color_bgr = str_to_bgr(vis_config.text_color)
         top_k = self.config.params.get("top_k", 5)
-
         font = cv2.FONT_HERSHEY_SIMPLEX
-        y_offset = 30
+
+        # --- Canvas Creation ---
+        img_h, img_w, _ = input_data.shape
+
+        # Define the width for the text panel on the left.
+        # This can be adjusted based on the expected length of your species names.
+        text_panel_width = 450
+        padding = 20
+
+        # Create a new white canvas to hold both the text and the image.
+        # The canvas will have the same height as the image.
+        canvas_h = img_h
+        canvas_w = text_panel_width + img_w
+        # The canvas is created as an RGB image (for compatibility with input_data).
+        canvas = np.full((canvas_h, canvas_w, 3), 255, dtype=np.uint8)
+
+        # --- Draw Text on the Left Panel ---
+        y_offset = 40  # Starting y-position for the first line of text.
+        line_height = int(font_scale * 40)  # Dynamically calculate line height based on font size
 
         for species, conf in predictions[:top_k]:
             text = f"{species}: {conf:.3f}"
             cv2.putText(
-                vis_img,
+                canvas,
                 text,
-                (10, y_offset),
+                (padding, y_offset),  # (x, y) position on the canvas
                 font,
                 font_scale,
-                color,
+                text_color_bgr,
                 thickness,
+                lineType=cv2.LINE_AA,  # For smoother text rendering
             )
-            y_offset += 35
+            y_offset += line_height
 
+        # --- Place the Original Image on the Right Panel ---
+        # The input image (input_data) is in RGB, and so is our canvas.
+        # We can directly copy the pixel data using numpy slicing.
+        canvas[:, text_panel_width:] = input_data
+
+        # --- Save the Final Image (Optional) ---
         if save_path:
             save_path = Path(save_path)
             save_path.parent.mkdir(parents=True, exist_ok=True)
-            save_img = cv2.cvtColor(vis_img, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(str(save_path), save_img)
+            # Convert the final RGB canvas to BGR format for saving with OpenCV.
+            save_img_bgr = cv2.cvtColor(canvas, cv2.COLOR_RGB2BGR)
+            cv2.imwrite(str(save_path), save_img_bgr)
 
-        return vis_img
+        # Return the final composite image in RGB format.
+        return canvas
 
     def _evaluate_from_prediction(
         self,
@@ -287,7 +318,7 @@ class MosquitoClassifier(
         Args:
             prediction (ClassificationPredictionType): The model's prediction, which is
                 a list of (species, confidence) tuples.
-            ground_truth (ClassificationGroundTruthType): The true species name as a string.
+            ground_truth (ClassificationGroundTruthType): The true species label as a string.
 
         Returns:
             dict[str, float]: A dictionary of metrics including accuracy,
@@ -300,13 +331,13 @@ class MosquitoClassifier(
                 "top_1_correct": 0.0,
                 "top_5_correct": 0.0,
             }
-
+        ground_truth_species = self.labels_map[ground_truth]
         pred_species = prediction[0][0]
         confidence = prediction[0][1]
-        top_1_correct = float(pred_species == ground_truth)
+        top_1_correct = float(pred_species == ground_truth_species)
 
         top_5_species = [p[0] for p in prediction[:5]]
-        top_5_correct = float(ground_truth in top_5_species)
+        top_5_correct = float(ground_truth_species in top_5_species)
 
         return {
             "accuracy": top_1_correct,
@@ -338,14 +369,7 @@ class MosquitoClassifier(
         y_true_indices, y_pred_indices, y_scores = [], [], []
 
         for gt, pred_list in zip(ground_truths, predictions):
-            gt_str = gt
-            if isinstance(gt_str, np.ndarray):
-                if gt_str.shape == ():  # scalar array
-                    gt_str = str(gt_str.item())
-                else:
-                    gt_str = str(gt_str.tolist())
-            else:
-                gt_str = str(gt_str)
+            gt_str = self.labels_map[gt] if gt in self.labels_map else gt
             # Now safe to use as dict key
             if gt_str in species_to_idx and pred_list:
                 true_idx = species_to_idx[gt_str]

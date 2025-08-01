@@ -26,6 +26,8 @@ class SpeciesConfig:
         _reverse_species_map (dict[str, int]): A reverse mapping of species
             names to indices.
         _metadata_store (dict): A store for species metadata.
+        class_to_full_name_map (dict[str, str]): A mapping of class names to full species names.
+        reverse_class_to_full_name_map (dict[str, str]): A reverse mapping of full species names to class names.
     """
 
     def __init__(self, config: SpeciesModel):
