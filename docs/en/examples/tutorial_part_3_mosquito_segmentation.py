@@ -21,7 +21,7 @@ import cv2
 from pathlib import Path
 import matplotlib.pyplot as plt
 from culicidaelab import MosquitoSegmenter, MosquitoDetector
-from culicidaelab import ProviderService
+
 from culicidaelab import ModelWeightsManager
 from culicidaelab import get_settings
 
@@ -38,11 +38,7 @@ settings.list_model_types()
 # %%
 model_config = settings.get_config("predictors.segmenter")
 model_path = settings.get_model_weights_path("segmenter")
-provider_service = ProviderService(settings=settings)
-weights_manager = ModelWeightsManager(
-    settings=settings,
-    provider_service=provider_service,
-)
+weights_manager = ModelWeightsManager(settings=settings)
 # Initialize segmenter
 segmenter = MosquitoSegmenter(settings=settings, load_model=True)
 

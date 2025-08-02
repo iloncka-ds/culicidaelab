@@ -18,7 +18,7 @@ import requests
 from collections import defaultdict
 
 # CulicidaeLab imports
-from culicidaelab import get_settings, ProviderService, DatasetsManager
+from culicidaelab import get_settings, DatasetsManager
 
 # %% [markdown]
 # ## 1. Initializing the DatasetsManager
@@ -29,8 +29,7 @@ from culicidaelab import get_settings, ProviderService, DatasetsManager
 # %%
 print("--- 1. Initializing DatasetsManager ---")
 settings = get_settings()
-provider_service = ProviderService(settings)
-manager = DatasetsManager(settings, provider_service)
+manager = DatasetsManager(settings)
 print("DatasetsManager initialized successfully.")
 
 # %% [markdown]

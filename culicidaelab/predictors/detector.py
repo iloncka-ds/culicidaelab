@@ -42,7 +42,7 @@ from fastprogress.fastprogress import progress_bar
 from ultralytics import YOLO
 
 from culicidaelab.core.base_predictor import BasePredictor
-from culicidaelab.core.provider_service import ProviderService
+
 from culicidaelab.core.settings import Settings
 from culicidaelab.core.utils import str_to_bgr
 from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
@@ -76,10 +76,9 @@ class MosquitoDetector(
 
     def __init__(self, settings: Settings, load_model: bool = False) -> None:
         """Initializes the MosquitoDetector."""
-        provider_service = ProviderService(settings)
+
         weights_manager = ModelWeightsManager(
             settings=settings,
-            provider_service=provider_service,
         )
         super().__init__(
             settings=settings,

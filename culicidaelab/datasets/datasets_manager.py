@@ -30,16 +30,14 @@ class DatasetsManager:
         loaded_datasets: A cache for storing the paths of downloaded datasets.
     """
 
-    def __init__(self, settings: Settings, provider_service: ProviderService):
+    def __init__(self, settings: Settings):
         """Initializes the DatasetsManager with its dependencies.
 
         Args:
             settings (Settings): The main Settings object for the library.
-            provider_service (ProviderService): The ProviderService for resolving
-                dataset paths and loading data.
         """
         self.settings = settings
-        self.provider_service = provider_service
+        self.provider_service = ProviderService(settings)
         self.loaded_datasets: dict[str, str | Path] = {}
 
     def get_dataset_info(self, dataset_name: str) -> DatasetConfig:
@@ -56,7 +54,7 @@ class DatasetsManager:
             KeyError: If the specified dataset is not found in the configuration.
 
         Example:
-            >>> manager = DatasetsManager(settings, provider_service)
+            >>> manager = DatasetsManager(settings)
             >>> try:
             ...     info = manager.get_dataset_info('classification')
             ...     print(info.provider_name)
@@ -75,7 +73,7 @@ class DatasetsManager:
             list[str]: A list of configured dataset names.
 
         Example:
-            >>> manager = DatasetsManager(settings, provider_service)
+            >>> manager = DatasetsManager(settings)
             >>> available_datasets = manager.list_datasets()
             >>> print(available_datasets)
         """
@@ -88,7 +86,7 @@ class DatasetsManager:
             list[str]: A list of names for datasets that are currently cached.
 
         Example:
-            >>> manager = DatasetsManager(settings, provider_service)
+            >>> manager = DatasetsManager(settings)
             >>> _ = manager.load_dataset('classification', split='train')
             >>> loaded = manager.list_loaded_datasets()
             >>> print(loaded)

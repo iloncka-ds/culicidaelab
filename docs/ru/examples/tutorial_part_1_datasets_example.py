@@ -18,19 +18,18 @@ import requests
 from collections import defaultdict
 
 # Импорты CulicidaeLab
-from culicidaelab import get_settings, ProviderService, DatasetsManager
+from culicidaelab import get_settings, DatasetsManager
 
 # %% [markdown]
 # ## 1. Инициализация DatasetsManager
 #
 # `DatasetsManager` — это высокоуровневый интерфейс для всех операций с наборами данных.
-# Для его функционирования требуются объект `settings` и `ProviderService`.
+# Для его функционирования требуются объект `settings`.
 
 # %%
 print("--- 1. Инициализация DatasetsManager ---")
 settings = get_settings()
-provider_service = ProviderService(settings)
-manager = DatasetsManager(settings, provider_service)
+manager = DatasetsManager(settings)
 print("DatasetsManager успешно инициализирован.")
 
 # %% [markdown]

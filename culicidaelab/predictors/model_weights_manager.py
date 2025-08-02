@@ -28,13 +28,12 @@ class ModelWeightsManager(WeightsManagerProtocol):
 
     Args:
         settings (Settings): The application's global settings object.
-        provider_service (ProviderService): The service for downloading artifacts.
     """
 
-    def __init__(self, settings: Settings, provider_service: ProviderService):
+    def __init__(self, settings: Settings):
         """Initializes the ModelWeightsManager."""
         self.settings = settings
-        self.provider_service = provider_service
+        self.provider_service = ProviderService(settings)
 
     def ensure_weights(self, model_type: str) -> Path:
         """Ensures model weights exist locally, downloading them if needed.

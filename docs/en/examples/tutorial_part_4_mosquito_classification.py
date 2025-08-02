@@ -36,7 +36,6 @@ import matplotlib.pyplot as plt
 from culicidaelab import (
     DatasetsManager,
     MosquitoClassifier,
-    ProviderService,
     get_settings,
 )
 
@@ -44,8 +43,8 @@ from culicidaelab import (
 settings = get_settings()
 
 # Initialize the services needed to manage and download data
-provider_service = ProviderService(settings)
-manager = DatasetsManager(settings, provider_service)
+
+manager = DatasetsManager(settings)
 
 # Instantiate the classifier and load the model.
 # This might take a moment on the first run as it downloads the model weights.
