@@ -1,3 +1,4 @@
+# %%
 """
 # Classifying Mosquito Species
 
@@ -14,6 +15,10 @@ This guide will cover:
 - **Batch Evaluation**: How to measure the model's accuracy on a set of test images.
 - **Reporting**: How to generate and visualize a comprehensive performance report.
 """
+
+# %%
+# Install the `culicidaelab` library if not already installed
+# # !pip install -q culicidaelab
 
 # %% [markdown]
 # ## 1. Initialization and Setup
@@ -61,7 +66,7 @@ print("Model loaded successfully.")
 
 # %%
 species_map = settings.species_config.species_map
-print(f"--- The model can recognize {len(species_map)} species ---")
+print(f"--- The model can recognize {len(species_map)} classes ---")
 # Print the first 5 for brevity
 for idx, name in list(species_map.items())[:5]:
     print(f"  Class Index {idx}: {name}")
@@ -186,8 +191,9 @@ plt.show()
 # %%
 # Let's evaluate the first 30 images from the test set for this example
 num_samples_to_evaluate = 30
-batch_images = [sample["image"] for sample in classification_test_data[:num_samples_to_evaluate]]
-ground_truths = [sample["label"] for sample in classification_test_data[:num_samples_to_evaluate]]
+batch_samples = classification_test_data.select(range(num_samples_to_evaluate))
+batch_images = [sample["image"] for sample in batch_samples]
+ground_truths = [sample["label"] for sample in batch_samples]
 
 print(f"\n--- Evaluating a batch of {len(batch_images)} images ---")
 

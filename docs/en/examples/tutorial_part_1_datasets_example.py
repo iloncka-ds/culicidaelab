@@ -1,3 +1,4 @@
+# %%
 """
 # Managing and Loading Datasets
 
@@ -7,7 +8,7 @@ to interact with the datasets defined in the library's configuration.
 
 # %%
 # Install the `culicidaelab` library if not already installed
-# !pip install -q culicidaelab
+# # !pip install -q culicidaelab
 
 # %%
 # Third-party imports
@@ -308,16 +309,17 @@ def create_tree_visualization(dataset_info, figsize=(15, 10), output_file="tree_
     plt.suptitle("Mosquito Species Distribution by Genus and Species", y=0.95, fontsize=18)
     # Add total samples count and legend
     total_samples = sum(label_stats.values())
-    text_img = f"""Total samples: {total_samples}\n
+    text_img = f"""
+    Total samples: {total_samples}\n
     Number of genera: {len(genus_groups)}\n
     Number of species: {len(label_stats)}\n
     Branch length ∝ sample count"""
     # Add text at the bottom of the figure
     plt.figtext(
-        0.02,
-        0.02,
+        0.0,
+        0.0,
         text_img,
-        fontsize=18,
+        fontsize=16,
     )
     # Save the plot
     plt.savefig(output_file, dpi=300, bbox_inches="tight")

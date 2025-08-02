@@ -1,3 +1,4 @@
+# %%
 """
 # Mosquito Detection Tutorial
 
@@ -12,6 +13,10 @@ library to perform object detection on images. We will cover:
 - Running predictions on a batch of images
 
 """
+# %%
+# Install the `culicidaelab` library if not already installed
+# # !pip install -q culicidaelab
+
 # %% [markdown]
 # ## 1. Initialization
 #

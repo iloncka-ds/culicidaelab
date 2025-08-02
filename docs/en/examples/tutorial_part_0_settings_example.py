@@ -1,3 +1,4 @@
+# %%
 """
 # Understanding and Using the Settings
 

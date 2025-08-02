@@ -1,3 +1,4 @@
+# %%
 """
 # Mosquito Segmentation Tutorial
 
@@ -13,7 +14,7 @@ to perform mosquito segmentation on images. We'll cover:
 
 # %%
 # Install the `culicidaelab` library if not already installed
-# !pip install -q culicidaelab
+# # !pip install -q culicidaelab
 
 # %%
 # First, let's import the necessary libraries:
@@ -142,12 +143,12 @@ plt.tight_layout()
 plt.show()
 
 # %%
-metrics = segmenter.evaluate(mask_with_boxes, input_data=image)
+metrics = segmenter.evaluate(mask_with_boxes, input_data=image, detection_boxes=detections)
 print(metrics)
 
 # %%
 metrics_default = segmenter.evaluate(
     mask_with_boxes,
-    mask_with_boxes,
+    mask,
 )
 print(metrics_default)
