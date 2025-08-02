@@ -10,17 +10,29 @@ Example:
     from culicidaelab.core.settings import Settings
     from culicidaelab.predictors import MosquitoClassifier
     import numpy as np
+    import io
 
     # Initialize settings and classifier
     settings = Settings()
     classifier = MosquitoClassifier(settings, load_model=True)
 
-    # Create a dummy image
-    image = np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)
+    # Create a dummy image and in-memory byte stream
+    image_array = np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)
+    success,-encoded_image = cv2.imencode(".png", image_array)
+    image_bytes = encoded_image.tobytes()
+    image_stream = io.BytesIO(image_bytes)
 
-    # Get predictions
-    predictions = classifier.predict(image)
-    print(f"Top prediction: {predictions[0][0]} with confidence {predictions[0][1]:.4f}")
+
+    # Get predictions from bytes
+    predictions_from_bytes = classifier.predict(image_bytes)
+    print("Top prediction from bytes: ",
+    f"{predictions_from_bytes[0][0]} with confidence {predictions_from_bytes[0][1]:.4f}")
+
+    # Get predictions from stream
+    predictions_from_stream = classifier.predict(image_stream)
+    print("Top prediction from stream: ",
+    f"{predictions_from_stream[0][0]} with confidence {predictions_from_stream[0][1]:.4f}")
+
 
     # Clean up (if not using a context manager)
     classifier.unload_model()
@@ -34,6 +46,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, TypeAlias, Union
 from collections.abc import Sequence
+import io
 
 import cv2
 import matplotlib.pyplot as plt
@@ -53,7 +66,7 @@ from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
 ClassificationPredictionType: TypeAlias = list[tuple[str, float]]
 ClassificationGroundTruthType: TypeAlias = str
-ImageInput = Union[np.ndarray, str, Path, Image.Image]
+ImageInput = Union[np.ndarray, str, Path, Image.Image, bytes, io.BytesIO]
 
 
 @contextmanager
@@ -162,6 +175,8 @@ class MosquitoClassifier(
                   Values can be uint8 [0, 255] or float32/float64 [0, 1].
                 - str or pathlib.Path: Path to an image file.
                 - PIL.Image.Image: PIL Image object.
+                - bytes: In-memory bytes of an image.
+                - io.BytesIO: A binary stream of an image.
             **kwargs (Any): Additional arguments (not used).
 
         Returns:
@@ -525,7 +540,7 @@ class MosquitoClassifier(
         """Loads and validates an input image from various formats.
 
         Args:
-            input_data: Image input (numpy array, file path, or PIL Image).
+            input_data: Image input (numpy array, file path, PIL Image, bytes, or io.BytesIO).
 
         Returns:
             A validated PIL Image in RGB format.
@@ -560,10 +575,23 @@ class MosquitoClassifier(
                 return Image.fromarray((input_data * 255).astype(np.uint8))
             else:
                 raise ValueError(f"Unsupported numpy dtype: {input_data.dtype}")
+
+        elif isinstance(input_data, bytes):
+            try:
+                return Image.open(io.BytesIO(input_data)).convert("RGB")
+            except Exception as e:
+                raise ValueError(f"Cannot load image from bytes: {e}")
+
+        elif isinstance(input_data, io.BytesIO):
+            try:
+                return Image.open(input_data).convert("RGB")
+            except Exception as e:
+                raise ValueError(f"Cannot load image from BytesIO stream: {e}")
+
         else:
             raise TypeError(
                 f"Unsupported input type: {type(input_data)}. "
-                f"Expected np.ndarray, str, pathlib.Path, or PIL.Image.Image",
+                f"Expected np.ndarray, str, pathlib.Path, PIL.Image.Image, bytes, or io.BytesIO",
             )
 
     def _load_model(self) -> None:
