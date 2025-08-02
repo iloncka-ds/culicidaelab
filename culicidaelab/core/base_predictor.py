@@ -6,31 +6,29 @@ detectors, segmenters, and classifiers.
 """
 
 import logging
-import sys
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Generic, TypeVar
+from collections.abc import Sequence
 
 import numpy as np
-from tqdm import tqdm as tqdm_console
+
+from fastprogress.fastprogress import progress_bar
 
 from culicidaelab.core.config_models import PredictorConfig
 from culicidaelab.core.settings import Settings
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
 
-try:
-    from tqdm.notebook import tqdm as tqdm_notebook
-except ImportError:
-    tqdm_notebook = tqdm_console
-
 logger = logging.getLogger(__name__)
+
+InputDataType = TypeVar("InputDataType")
 PredictionType = TypeVar("PredictionType")
 GroundTruthType = TypeVar("GroundTruthType")
 
 
-class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
+class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC):
     """Abstract base class for all predictors.
 
     This class defines the common interface for all predictors (e.g., detector,
@@ -81,7 +79,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         if load_model:
             self.load_model()
 
-    def __call__(self, input_data: np.ndarray, **kwargs: Any) -> Any:
+    def __call__(self, input_data: InputDataType, **kwargs: Any) -> Any:
         """Convenience method that calls `predict()`."""
         if not self._model_loaded:
             self.load_model()
@@ -139,7 +137,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         self,
         ground_truth: GroundTruthType,
         prediction: PredictionType | None = None,
-        input_data: np.ndarray | None = None,
+        input_data: InputDataType | None = None,
         **predict_kwargs: Any,
     ) -> dict[str, float]:
         """Evaluate a prediction against a ground truth.
@@ -151,7 +149,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         Args:
             ground_truth (GroundTruthType): The ground truth annotation.
             prediction (PredictionType, optional): A pre-computed prediction.
-            input_data (np.ndarray, optional): Input data to generate a
+            input_data (InputDataType, optional): Input data to generate a
                 prediction from, if one isn't provided.
             **predict_kwargs (Any): Additional arguments passed to the `predict`
                 method.
@@ -177,30 +175,30 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
 
     def evaluate_batch(
         self,
-        ground_truth_batch: list[GroundTruthType],
-        predictions_batch: list[PredictionType] | None = None,
-        input_data_batch: list[np.ndarray] | None = None,
+        ground_truth_batch: Sequence[GroundTruthType],
+        predictions_batch: Sequence[PredictionType] | None = None,
+        input_data_batch: Sequence[InputDataType] | None = None,
         num_workers: int = 4,
         show_progress: bool = True,
         **predict_kwargs: Any,
-    ) -> dict[str, float]:
+    ) -> dict[str, Any]:
         """Evaluate on a batch of items using parallel processing.
 
         Either `predictions_batch` or `input_data_batch` must be provided.
 
         Args:
-            ground_truth_batch (list[GroundTruthType]): List of corresponding
+            ground_truth_batch (Sequence[GroundTruthType]): List of corresponding
                 ground truth annotations.
-            predictions_batch (list[PredictionType], optional): A pre-computed
+            predictions_batch (Sequence[PredictionType], optional): A pre-computed
                 list of predictions.
-            input_data_batch (list[np.ndarray], optional): List of input data
+            input_data_batch (Sequence[InputDataType], optional): List of input data
                 to generate predictions from.
             num_workers (int): Number of parallel workers for calculating metrics.
             show_progress (bool): Whether to show a progress bar.
             **predict_kwargs (Any): Additional arguments passed to `predict_batch`.
 
         Returns:
-            dict[str, float]: Dictionary containing aggregated evaluation metrics.
+            dict[str, Any]: Dictionary containing aggregated evaluation metrics.
 
         Raises:
             ValueError: If the number of predictions does not match the number
@@ -280,7 +278,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
 
     def predict_batch(
         self,
-        input_data_batch: list[np.ndarray],
+        input_data_batch: Sequence[InputDataType],
         show_progress: bool = True,
         **kwargs: Any,
     ) -> list[PredictionType]:
@@ -290,7 +288,7 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         native batching capabilities SHOULD override this method.
 
         Args:
-            input_data_batch (list[np.ndarray]): List of input data to make
+            input_data_batch (Sequence[InputDataType]): List of input data to make
                 predictions on.
             show_progress (bool): Whether to show a progress bar.
             **kwargs (Any): Additional arguments passed to each `predict` call.
@@ -309,15 +307,13 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
             if not self._model_loaded:
                 raise RuntimeError("Failed to load model for batch prediction")
 
-        in_notebook = "ipykernel" in sys.modules
-        tqdm_iterator = tqdm_notebook if in_notebook else tqdm_console
         iterator = input_data_batch
-
         if show_progress:
-            iterator = tqdm_iterator(
+            iterator = progress_bar(
                 input_data_batch,
-                desc=f"Predicting batch ({self.predictor_type})",
-                leave=False,
+                parent=None,
+                display=True,
+                comment=f"Predicting batch ({self.predictor_type})",
             )
         try:
             return [self.predict(item, **kwargs) for item in iterator]
@@ -364,11 +360,11 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
         pass
 
     @abstractmethod
-    def predict(self, input_data: np.ndarray, **kwargs: Any) -> PredictionType:
+    def predict(self, input_data: InputDataType, **kwargs: Any) -> PredictionType:
         """Makes a prediction on a single input data sample.
 
         Args:
-            input_data (np.ndarray): The input data (e.g., an image as a NumPy
+            input_data (InputDataType): The input data (e.g., an image as a NumPy
                 array) to make a prediction on.
             **kwargs (Any): Additional predictor-specific arguments.
 
@@ -384,14 +380,14 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
     @abstractmethod
     def visualize(
         self,
-        input_data: np.ndarray,
+        input_data: InputDataType,
         predictions: PredictionType,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
         """Visualizes the predictions on the input data.
 
         Args:
-            input_data (np.ndarray): The original input data (e.g., an image).
+            input_data (InputDataType): The original input data (e.g., an image).
             predictions (PredictionType): The prediction result obtained from
                 the `predict` method.
             save_path (str | Path, optional): An optional path to save the
@@ -429,15 +425,13 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
 
     def _calculate_metrics_parallel(
         self,
-        predictions: list[PredictionType],
-        ground_truths: list[GroundTruthType],
+        predictions: Sequence[PredictionType],
+        ground_truths: Sequence[GroundTruthType],
         num_workers: int = 4,
         show_progress: bool = True,
     ) -> list[dict[str, float]]:
         """Calculates metrics for individual items in parallel."""
         per_item_metrics = []
-        in_notebook = "ipykernel" in sys.modules
-        tqdm_iterator = tqdm_notebook if in_notebook else tqdm_console
 
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             future_to_idx = {
@@ -448,19 +442,21 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
                 ): i
                 for i in range(len(predictions))
             }
+
             iterator = as_completed(future_to_idx)
             if show_progress:
-                iterator = tqdm_iterator(
+                iterator = progress_bar(
                     iterator,
                     total=len(future_to_idx),
-                    desc="Calculating metrics",
+                    comment="Calculating metrics",
                 )
             for future in iterator:
                 try:
                     per_item_metrics.append(future.result())
                 except Exception as e:
+                    idx = future_to_idx.get(future, "unknown")
                     self._logger.error(
-                        f"Error calculating metrics for item {future_to_idx[future]}: {e}",
+                        f"Error calculating metrics for item {idx}: {e}",
                     )
                     per_item_metrics.append({})
         return per_item_metrics
@@ -468,9 +464,9 @@ class BasePredictor(Generic[PredictionType, GroundTruthType], ABC):
     def _finalize_evaluation_report(
         self,
         aggregated_metrics: dict[str, float],
-        predictions: list[PredictionType],
-        ground_truths: list[GroundTruthType],
-    ) -> dict[str, float]:
+        predictions: Sequence[PredictionType],
+        ground_truths: Sequence[GroundTruthType],
+    ) -> dict[str, Any]:
         """Optional hook to post-process the final evaluation report."""
         return aggregated_metrics
 

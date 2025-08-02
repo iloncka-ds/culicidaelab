@@ -32,10 +32,13 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Any, TypeAlias
+from collections.abc import Sequence
 
 import cv2
 import numpy as np
-from tqdm import tqdm
+
+# CHANGED: Replaced tqdm with fastprogress for consistency.
+from fastprogress.fastprogress import progress_bar
 from ultralytics import YOLO
 
 from culicidaelab.core.base_predictor import BasePredictor
@@ -50,7 +53,9 @@ DetectionPredictionType: TypeAlias = list[tuple[float, float, float, float, floa
 DetectionGroundTruthType: TypeAlias = list[tuple[float, float, float, float]]
 
 
-class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTruthType]):
+class MosquitoDetector(
+    BasePredictor[np.ndarray, DetectionPredictionType, DetectionGroundTruthType],
+):
     """Detects mosquitos in images using a YOLO model.
 
     This class loads a YOLO model and provides methods for predicting bounding
@@ -108,7 +113,10 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
             if self._model is None:
                 raise RuntimeError("Failed to load model")
 
-        confidence_threshold = kwargs.get("confidence_threshold", self.confidence_threshold)
+        confidence_threshold = kwargs.get(
+            "confidence_threshold",
+            self.confidence_threshold,
+        )
 
         try:
             results = self._model(
@@ -136,14 +144,14 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
 
     def predict_batch(
         self,
-        input_data_batch: list[np.ndarray],
+        input_data_batch: Sequence[np.ndarray],
         show_progress: bool = True,
         **kwargs: Any,
     ) -> list[DetectionPredictionType]:
         """Detects mosquitos in a batch of images using YOLO's native batching.
 
         Args:
-            input_data_batch (list[np.ndarray]): A list of input images.
+            input_data_batch (Sequence[np.ndarray]): A list of input images.
             show_progress (bool, optional): If True, a progress bar is shown.
                 Defaults to True.
             **kwargs (Any): Additional arguments (not used).
@@ -157,9 +165,8 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
         """
         if not self.model_loaded or self._model is None:
             raise RuntimeError("Model not loaded. Call load_model() first.")
-
-        # The tqdm iterator is just for visual feedback; actual prediction happens in one go.
-        iterator = tqdm(range(len(input_data_batch)), desc="Predicting detection batch", disable=not show_progress)
+        if not input_data_batch:
+            return []
 
         yolo_results = self._model(
             source=input_data_batch,
@@ -171,7 +178,16 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
         )
 
         all_predictions: list[DetectionPredictionType] = []
-        for r in yolo_results:
+        # CHANGED: Refactored the loop to use progress_bar correctly.
+        iterator = yolo_results
+        if show_progress:
+            iterator = progress_bar(
+                yolo_results,
+                total=len(input_data_batch),
+                comment="Processing batch results",
+            )
+
+        for r in iterator:
             detections = []
             for box in r.boxes:
                 xyxy_tensor = box.xyxy[0]
@@ -181,8 +197,6 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
                 conf = float(box.conf[0])
                 detections.append((center_x, center_y, w, h, conf))
             all_predictions.append(detections)
-            iterator.update(1)
-        iterator.close()
 
         return all_predictions
 
@@ -216,7 +230,15 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
             x2, y2 = int(x + w / 2), int(y + h / 2)
             cv2.rectangle(vis_img, (x1, y1), (x2, y2), box_color, thickness)
             text = f"{conf:.2f}"
-            cv2.putText(vis_img, text, (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_color, thickness)
+            cv2.putText(
+                vis_img,
+                text,
+                (x1, y1 - 5),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                font_scale,
+                text_color,
+                thickness,
+            )
 
         if save_path:
             cv2.imwrite(str(save_path), cv2.cvtColor(vis_img, cv2.COLOR_RGB2BGR))
@@ -266,11 +288,29 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
             dict[str, float]: A dictionary containing the calculated metrics.
         """
         if not ground_truth and not prediction:
-            return {"precision": 1.0, "recall": 1.0, "f1": 1.0, "ap": 1.0, "mean_iou": 0.0}
+            return {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "ap": 1.0,
+                "mean_iou": 0.0,
+            }
         if not ground_truth:  # False positives exist
-            return {"precision": 0.0, "recall": 0.0, "f1": 0.0, "ap": 0.0, "mean_iou": 0.0}
+            return {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "ap": 0.0,
+                "mean_iou": 0.0,
+            }
         if not prediction:  # False negatives exist
-            return {"precision": 0.0, "recall": 0.0, "f1": 0.0, "ap": 0.0, "mean_iou": 0.0}
+            return {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "ap": 0.0,
+                "mean_iou": 0.0,
+            }
 
         predictions_sorted = sorted(prediction, key=lambda x: x[4], reverse=True)
         tp = np.zeros(len(predictions_sorted))
@@ -349,4 +389,6 @@ class MosquitoDetector(BasePredictor[DetectionPredictionType, DetectionGroundTru
         except Exception as e:
             logger.error(f"Failed to load YOLO model: {e}", exc_info=True)
             self._model = None
-            raise RuntimeError(f"Could not load YOLO model from {self.model_path}.") from e
+            raise RuntimeError(
+                f"Could not load YOLO model from {self.model_path}.",
+            ) from e

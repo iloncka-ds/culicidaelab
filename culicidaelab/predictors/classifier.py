@@ -18,7 +18,7 @@ Example:
 
     # Create a dummy image and in-memory byte stream
     image_array = np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)
-    success,-encoded_image = cv2.imencode(".png", image_array)
+    success, encoded_image = cv2.imencode(".png", image_array)
     image_bytes = encoded_image.tobytes()
     image_stream = io.BytesIO(image_bytes)
 
@@ -93,7 +93,7 @@ def set_posix_windows():
 
 
 class MosquitoClassifier(
-    BasePredictor[ClassificationPredictionType, ClassificationGroundTruthType],
+    BasePredictor[ImageInput, ClassificationPredictionType, ClassificationGroundTruthType],
 ):
     """Classifies mosquito species from an image using a FastAI model.
 
@@ -487,8 +487,8 @@ class MosquitoClassifier(
     def _finalize_evaluation_report(
         self,
         aggregated_metrics: dict[str, float],
-        predictions: list[ClassificationPredictionType],
-        ground_truths: list[ClassificationGroundTruthType],
+        predictions: Sequence[ClassificationPredictionType],
+        ground_truths: Sequence[ClassificationGroundTruthType],
     ) -> dict[str, Any]:
         """Calculates and adds confusion matrix and ROC-AUC to the final report."""
         species_to_idx = {v: k for k, v in self.species_map.items()}
