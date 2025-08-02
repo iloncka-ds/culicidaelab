@@ -137,8 +137,7 @@ class MosquitoSegmenter(
                     multimask_output=False,
                 )
                 masks.append(mask[0])
-            # Combine all masks for the image with a logical OR
-            combined_mask = np.logical_or.reduce([m.cpu().numpy() for m in masks])
+            combined_mask = np.logical_or.reduce([self._to_numpy(m) for m in masks])
             return combined_mask.astype(np.uint8)
 
         # Fallback to default prediction if no boxes are provided
@@ -148,7 +147,7 @@ class MosquitoSegmenter(
             box=None,
             multimask_output=False,
         )
-        return masks[0].cpu().numpy().astype(np.uint8)
+        return self._to_numpy(masks[0]).astype(np.uint8)
 
     def predict_batch(
         self,
@@ -233,7 +232,7 @@ class MosquitoSegmenter(
 
         for i, masks_for_image in enumerate(iterator):
             if masks_for_image.shape[0] > 0:
-                combined_mask = np.logical_or.reduce(masks_for_image.cpu().numpy())
+                combined_mask = np.logical_or.reduce(self._to_numpy(masks_for_image))
                 final_masks.append(combined_mask.astype(np.uint8))
             else:
                 h, w, _ = processed_images[i].shape
@@ -373,3 +372,10 @@ class MosquitoSegmenter(
                 f"Failed to load SAM model from {self.model_path}. "
                 f"Please check model path and configuration. Error: {e}",
             ) from e
+
+    def _to_numpy(self, tensor: Any) -> np.ndarray:
+        """Safely converts a torch.Tensor to a numpy array, passing through if already numpy."""
+        if isinstance(tensor, np.ndarray):
+            return tensor
+
+        return tensor.detach().cpu().numpy()
