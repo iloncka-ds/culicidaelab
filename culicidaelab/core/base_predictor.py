@@ -313,7 +313,6 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
                 input_data_batch,
                 parent=None,
                 display=True,
-                comment=f"Predicting batch ({self.predictor_type})",
             )
         try:
             return [self.predict(item, **kwargs) for item in iterator]
@@ -448,7 +447,6 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
                 iterator = progress_bar(
                     iterator,
                     total=len(future_to_idx),
-                    comment="Calculating metrics",
                 )
             for future in iterator:
                 try:

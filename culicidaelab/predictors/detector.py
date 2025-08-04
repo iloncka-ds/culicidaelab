@@ -183,7 +183,6 @@ class MosquitoDetector(
             iterator = progress_bar(
                 yolo_results,
                 total=len(input_data_batch),
-                comment="Processing batch results",
             )
 
         for r in iterator:

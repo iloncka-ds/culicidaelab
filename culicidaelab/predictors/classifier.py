@@ -271,11 +271,7 @@ class MosquitoClassifier(
 
             fallback_iterable = zip(valid_images, valid_indices)
             if show_progress:
-                fallback_iterable = progress_bar(
-                    list(fallback_iterable),
-                    total=len(valid_images),
-                    comment="Processing Fallback",
-                )
+                fallback_iterable = progress_bar(list(fallback_iterable), total=len(valid_images))
             for image, original_idx in fallback_iterable:
                 try:
                     prediction = self.predict(image)

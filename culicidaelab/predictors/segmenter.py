@@ -227,7 +227,6 @@ class MosquitoSegmenter(
             iterator = progress_bar(
                 masks_batch,
                 total=len(processed_images),
-                comment="Processing batch masks",
             )
 
         for i, masks_for_image in enumerate(iterator):
