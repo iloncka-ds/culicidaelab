@@ -12,12 +12,26 @@ from culicidaelab.core.config_models import DatasetConfig
 def mock_settings():
     """Fixture for a mocked Settings object."""
     settings = Mock(spec=Settings)
+
+    # Mock dataset config
     mock_dataset_config = Mock(spec=DatasetConfig)
     mock_dataset_config.provider_name = "mock_provider"
     mock_dataset_config.name = "classification"
     mock_dataset_config.path = "some/path/to/classification"
 
-    settings.get_config.side_effect = lambda path: (mock_dataset_config if path == "datasets.classification" else None)
+    # Mock provider config
+    mock_provider_config = Mock()
+    mock_provider_config.name = "mock_provider"
+
+    # Configure get_config to return different mocks based on the path
+    def get_config_side_effect(path):
+        if path == "datasets.classification":
+            return mock_dataset_config
+        elif path == "providers.mock_provider":
+            return mock_provider_config
+        return None
+
+    settings.get_config.side_effect = get_config_side_effect
     settings.list_datasets.return_value = ["classification"]
     return settings
 
@@ -42,7 +56,10 @@ def mock_provider_service(mock_provider):
 @pytest.fixture
 def datasets_manager(mock_settings, mock_provider_service):
     """Fixture to create a DatasetsManager instance with mocked dependencies."""
-    return DatasetsManager(settings=mock_settings, provider_service=mock_provider_service)
+    manager = DatasetsManager(settings=mock_settings)
+    # Replace the provider_service with our mock
+    manager.provider_service = mock_provider_service
+    return manager
 
 
 def test_get_dataset_info(datasets_manager, mock_settings):

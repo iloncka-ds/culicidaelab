@@ -77,6 +77,7 @@ def mock_settings(tmp_path, mock_predictor_config, mock_species_map):
     species_config_mock.get_index_by_species.side_effect = lambda name: inverse_map.get(
         name,
     )
+    species_config_mock.class_to_full_name_map = {name: name for name in mock_species_map.values()}
     settings.species_config = species_config_mock
     settings.dataset_dir = tmp_path
     settings.model_dir = tmp_path
@@ -169,7 +170,9 @@ def test_visualize(classifier):
     with patch("cv2.putText") as mock_putText:
         vis_img = classifier.visualize(dummy_image, predictions)
         assert isinstance(vis_img, np.ndarray)
-        assert vis_img.shape == dummy_image.shape
+        # visualize adds side panel; height equal, width larger
+        assert vis_img.shape[0] == dummy_image.shape[0]
+        assert vis_img.shape[1] > dummy_image.shape[1]
         assert mock_putText.call_count == 3
 
 

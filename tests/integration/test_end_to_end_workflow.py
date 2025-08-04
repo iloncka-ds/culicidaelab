@@ -49,7 +49,7 @@ def test_full_detector_workflow(
         "culicidaelab.predictors.detector.ModelWeightsManager",
         MagicMock(return_value=mock_weights_manager_instance),
     )
-    monkeypatch.setattr("culicidaelab.predictors.detector.ProviderService", MagicMock())
+    # ProviderService is instantiated internally by ModelWeightsManager; no need to patch here.
 
     detector = MosquitoDetector(settings=settings)
 
@@ -110,13 +110,16 @@ def test_full_segmenter_workflow(
         "culicidaelab.predictors.segmenter.ModelWeightsManager",
         MagicMock(return_value=mock_weights_manager_instance),
     )
-    monkeypatch.setattr("culicidaelab.predictors.segmenter.ProviderService", MagicMock())
+    # ProviderService is instantiated internally by ModelWeightsManager; no need to patch here.
 
     segmenter = MosquitoSegmenter(settings=settings)
 
-    with patch("culicidaelab.predictors.segmenter.build_sam2") as mock_build_sam, patch(
-        "culicidaelab.predictors.segmenter.SAM2ImagePredictor",
-    ) as mock_predictor_class:
+    with (
+        patch("culicidaelab.predictors.segmenter.build_sam2") as mock_build_sam,
+        patch(
+            "culicidaelab.predictors.segmenter.SAM2ImagePredictor",
+        ) as mock_predictor_class,
+    ):
         mock_sam2_model_instance = MagicMock()
         mock_build_sam.return_value = mock_sam2_model_instance
         mock_predictor_instance = MagicMock()

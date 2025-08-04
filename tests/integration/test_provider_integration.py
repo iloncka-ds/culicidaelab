@@ -3,7 +3,6 @@ import yaml
 import shutil
 from pathlib import Path
 from .conftest import create_provider_config
-from culicidaelab.core.provider_service import ProviderService
 from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 from culicidaelab.core.resource_manager import ResourceManager
 
@@ -48,7 +47,8 @@ def test_weights_manager_successful_download(
 
     monkeypatch.setattr("culicidaelab.providers.huggingface_provider.hf_hub_download", mock_download)
 
-    weights_manager = ModelWeightsManager(settings, ProviderService(settings))
+    # ModelWeightsManager expects only the settings object; no separate ProviderService required.
+    weights_manager = ModelWeightsManager(settings)
 
     final_path = weights_manager.ensure_weights(model_type)
 
@@ -89,7 +89,8 @@ def test_weights_manager_handles_download_failure(
 
     monkeypatch.setattr("culicidaelab.providers.huggingface_provider.hf_hub_download", mock_download_fails)
 
-    weights_manager = ModelWeightsManager(settings, ProviderService(settings))
+    # ModelWeightsManager expects only the settings object; no separate ProviderService required.
+    weights_manager = ModelWeightsManager(settings)
 
     with pytest.raises(RuntimeError, match=f"Failed to download weights for '{model_type}'"):
         weights_manager.ensure_weights(model_type)

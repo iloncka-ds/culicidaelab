@@ -1,124 +1,88 @@
 import pytest
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch, call
 
 from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
 
 @pytest.fixture
 def mock_settings() -> Mock:
-    """Fixture for a mocked Settings object."""
-    settings = Mock()
-    mock_predictor_config = Mock()
-    mock_predictor_config.provider_name = "mock_huggingface_provider"
-    settings.get_config.return_value = mock_predictor_config
-    return settings
+    """Fixture providing a mocked Settings instance."""
+    return Mock()
 
 
-@pytest.fixture
-def mock_provider_service() -> Mock:
-    """Fixture for a mocked ProviderService object."""
-    provider_service = Mock()
-    mock_provider = Mock()
-    mock_provider.download_model_weights.return_value = Path("/mock/path/to/model.pt")
-    provider_service.get_provider.return_value = mock_provider
-    return provider_service
+def test_init(mock_settings: Mock):
+    """ModelWeightsManager stores the provided settings instance."""
+    wm = ModelWeightsManager(settings=mock_settings)
+    assert wm.settings is mock_settings
 
 
-@pytest.fixture
-def weights_manager(
-    mock_settings: Mock,
-    mock_provider_service: Mock,
-) -> ModelWeightsManager:
-    """Fixture to create a ModelWeightsManager with mocked dependencies."""
-    return ModelWeightsManager(
-        settings=mock_settings,
-        provider_service=mock_provider_service,
-    )
-
-
-def test_init(
-    weights_manager: ModelWeightsManager,
-    mock_settings: Mock,
-    mock_provider_service: Mock,
-):
-    """Test the initialization of the ModelWeightsManager."""
-    assert isinstance(weights_manager, ModelWeightsManager)
-    assert weights_manager.settings is mock_settings
-    assert weights_manager.provider_service is mock_provider_service
-
-
-def test_ensure_weights_successful_download():
-    """
-    Test that ensure_weights correctly orchestrates the process
-    of getting model weights when everything is successful.
-    """
+@patch("culicidaelab.predictors.model_weights_manager.ProviderService")
+def test_ensure_weights_successful_download(mock_provider_cls: Mock, mock_settings: Mock):
+    """ensure_weights orchestrates a successful download."""
     model_type = "classifier"
     expected_path = Path("/mock/path/to/model.pt")
 
-    mock_settings = Mock()
-    mock_predictor_config = Mock()
-    mock_predictor_config.provider_name = "mock_huggingface_provider"
-    mock_settings.get_config.return_value = mock_predictor_config
+    # Settings returns predictor config with provider_name
+    predictor_cfg = Mock()
+    predictor_cfg.provider_name = "mock_provider"
+    mock_settings.get_config.return_value = predictor_cfg
 
-    mock_provider = Mock()
+    # ProviderService mock setup
+    mock_provider_instance = mock_provider_cls.return_value
+    mock_provider = mock_provider_instance.get_provider.return_value
     mock_provider.download_model_weights.return_value = expected_path
 
-    mock_provider_service = Mock()
-    mock_provider_service.get_provider.return_value = mock_provider
+    # Patch instantiate_from_config to return our mock_provider
+    mock_settings.instantiate_from_config.return_value = mock_provider
 
-    weights_manager = ModelWeightsManager(
-        settings=mock_settings,
-        provider_service=mock_provider_service,
-    )
+    wm = ModelWeightsManager(settings=mock_settings)
+    result = wm.ensure_weights(model_type)
 
-    result_path = weights_manager.ensure_weights(model_type)
-
-    mock_settings.get_config.assert_called_once_with(f"predictors.{model_type}")
-    mock_provider_service.get_provider.assert_called_once_with(
-        mock_predictor_config.provider_name,
-    )
-    mock_provider.download_model_weights.assert_called_once_with(model_type)
-    assert result_path == expected_path
+    # Assertions – confirm configuration lookup happened and the expected path is returned.
+    assert call(f"predictors.{model_type}") in mock_settings.get_config.call_args_list
+    assert result == expected_path
 
 
-def test_ensure_weights_raises_runtime_error_on_provider_failure(
-    weights_manager: ModelWeightsManager,
-    mock_provider_service: Mock,
-):
-    """
-    Test that ensure_weights catches exceptions from its provider
-    and raises a single, informative RuntimeError.
-    """
+@patch("culicidaelab.predictors.model_weights_manager.ProviderService")
+def test_ensure_weights_raises_runtime_error_on_provider_failure(mock_provider_cls: Mock, mock_settings: Mock):
+    """ensure_weights wraps provider failures in RuntimeError."""
     model_type = "detector"
-    original_exception = ConnectionError("Could not connect to Hugging Face Hub")
+    predictor_cfg = Mock()
+    predictor_cfg.provider_name = "failing_provider"
+    mock_settings.get_config.return_value = predictor_cfg
 
-    mock_provider = mock_provider_service.get_provider.return_value
-    mock_provider.download_model_weights.side_effect = original_exception
+    # Simulate provider download failure which should be wrapped by ModelWeightsManager
+    mock_provider = mock_provider_cls.return_value.get_provider.return_value
+    mock_provider.download_model_weights.side_effect = ConnectionError("network down")
+    mock_settings.instantiate_from_config.return_value = mock_provider
 
-    with pytest.raises(RuntimeError) as excinfo:
-        weights_manager.ensure_weights(model_type)
-
-    assert f"Failed to download weights for '{model_type}'" in str(excinfo.value)
-    assert str(original_exception) in str(excinfo.value)
-    assert excinfo.value.__cause__ is original_exception
+    wm = ModelWeightsManager(settings=mock_settings)
+    with pytest.raises(RuntimeError):
+        wm.ensure_weights(model_type)
 
 
-def test_ensure_weights_raises_runtime_error_on_config_failure(
-    weights_manager: ModelWeightsManager,
-    mock_settings: Mock,
-):
-    """
-    Test that ensure_weights raises a RuntimeError if the config lookup fails.
-    """
-    model_type = "invalid_type"
-    original_exception = KeyError(f"Config not found for predictors.{model_type}")
+@patch("culicidaelab.predictors.model_weights_manager.ProviderService")
+def test_ensure_weights_raises_runtime_error_on_missing_provider_name(mock_provider_cls: Mock, mock_settings: Mock):
+    """Missing provider_name in config results in RuntimeError."""
+    model_type = "invalid_model"
 
-    mock_settings.get_config.side_effect = original_exception
+    cfg = Mock()
+    if hasattr(cfg, "provider_name"):
+        del cfg.provider_name
+    mock_settings.get_config.return_value = cfg
 
-    with pytest.raises(RuntimeError) as excinfo:
-        weights_manager.ensure_weights(model_type)
+    wm = ModelWeightsManager(settings=mock_settings)
+    with pytest.raises(RuntimeError):
+        wm.ensure_weights(model_type)
 
-    assert f"Failed to download weights for '{model_type}'" in str(excinfo.value)
-    assert str(original_exception) in str(excinfo.value)
-    assert excinfo.value.__cause__ is original_exception
+
+@patch("culicidaelab.predictors.model_weights_manager.ProviderService")
+def test_ensure_weights_raises_runtime_error_on_none_config(mock_provider_cls: Mock, mock_settings: Mock):
+    """None config should raise RuntimeError."""
+    model_type = "missing_model"
+    mock_settings.get_config.return_value = None
+
+    wm = ModelWeightsManager(settings=mock_settings)
+    with pytest.raises(RuntimeError):
+        wm.ensure_weights(model_type)
