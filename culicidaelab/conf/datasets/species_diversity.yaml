@@ -1,7 +1,53 @@
 name: "mosquito-species-diversity"
 path: "mosquito_species_diversity"
 format: "imagefolder"
-classes: [] # This would be a long list
+classes:
+  - Aedes_annulipes
+  - Aedes_atropalpus
+  - Aedes_canadensis
+  - Aedes_cantans
+  - Aedes_caspius
+  - Aedes_cataphylla
+  - Aedes_cinereus
+  - Aedes_communis
+  - Aedes_cretinus
+  - Aedes_diantaeus
+  - Aedes_euedes
+  - Aedes_excrucians
+  - Aedes_flavescens
+  - Aedes_geniculatus
+  - Aedes_hexodontus
+  - Aedes_intrudens
+  - Aedes_pulcritarsis
+  - Aedes_pullatus
+  - Aedes_punctor
+  - Aedes_riparius
+  - Aedes_rossicus
+  - Aedes_scutellaris
+  - Aedes_sticticus
+  - Aedes_togoi
+  - Aedes_triseriatus
+  - Anopheles_algeriensis
+  - Anopheles_claviger
+  - Anopheles_hyrcanus
+  - Anopheles_maculipennis
+  - Anopheles_messeae
+  - Anopheles_plumbeus
+  - Anopheles_pulcherrimus
+  - Anopheles_superpictus
+  - Coquillettidia_richiardii
+  - Culex_apicalis
+  - Culex_cinereus
+  - Culex_modestus
+  - Culex_theileri
+  - Culex_torrentium
+  - Culex_vagans
+  - Culiseta_alaskaensis
+  - Culiseta_annulata
+  - Culiseta_fumipennis
+  - Culiseta_longiareolata
+  - Culiseta_morsitans
+  - Uranotaenia_unguiculata
 repository: "iloncka/mosquito_dataset_46_3139"
 provider_name: "huggingface"
 derived_datasets:
