@@ -163,7 +163,7 @@ CulicidaeLab development is  supported by a grant from the **Foundation for Assi
 
 ## License
 
-This project is distributed under the MIT License. See the [LICENSE](https://github.com/iloncka-ds/culicidaelab/blob/main/LICENSE) file for more information.
+This project is distributed under the  AGPL-3.0 License. See the [LICENSE](https://github.com/iloncka-ds/culicidaelab/blob/main/LICENSE) file for more information.
 
 ## Citation
 
