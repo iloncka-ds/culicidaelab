@@ -30,7 +30,7 @@ def mock_predictor_config():
     FIX: Added the `provider` and `provider_name` fields to satisfy the model's validation rules.
     """
     return PredictorConfig(
-        _target_="some.dummy.class.path",
+        target="some.dummy.class.path",
         model_path="dummy/path/model.pkl",
         provider="mock_provider",  # Fulfill required field
         provider_name="mock_provider",  # Ensure provider_name is set
@@ -60,7 +60,7 @@ def mock_settings(tmp_path, mock_predictor_config, mock_species_map):
     # Define a mock provider config that points to a factory function.
     # This allows hydra to instantiate a pre-configured mock.
     mock_provider_config = {
-        "_target_": "tests.predictors.test_classifier.get_mock_provider",
+        "target": "tests.predictors.test_classifier.get_mock_provider",
     }
 
     def get_config_side_effect(path: str, default=None):

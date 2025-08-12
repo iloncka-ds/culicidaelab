@@ -404,7 +404,7 @@ core
 * **Interfaces (Provided)**:
   * `__init__(self, user_config_dir: str | Path | None = None)`: Initializes the manager.
   * `get_config(self) -> CulicidaeLabConfig`: Returns the fully validated Pydantic configuration object.
-  * `instantiate_from_config(self, config_obj: Any, **kwargs: Any) -> Any`: Instantiates a Python object from its Pydantic config model, which must contain a `_target_` field.
+  * `instantiate_from_config(self, config_obj: Any, **kwargs: Any) -> Any`: Instantiates a Python object from its Pydantic config model, which must contain a `target` field.
   * `save_config(self, file_path: str | Path) -> None`: Saves the current configuration state to a YAML file.
 * **Interfaces (Used)**:
   * `core.config_models.CulicidaeLabConfig` and other Pydantic models.
@@ -418,7 +418,7 @@ core
 * **Function**: Provides data validation, type safety, and a clear structure for all configuration sections, ensuring robustness and predictability.
 * **Key Models (Provided)**:
   * `CulicidaeLabConfig`: The root model for the entire configuration.
-  * `PredictorConfig`: Defines the configuration for a single predictor, including its class (`_target_`), model path, and other parameters.
+  * `PredictorConfig`: Defines the configuration for a single predictor, including its class (`target`), model path, and other parameters.
   * `ProviderConfig`: Defines the configuration for a data provider (e.g., Hugging Face, Roboflow).
   * `DatasetConfig`: Defines the configuration for a specific dataset.
   * `SpeciesModel`: Defines the configuration for species data, including class mappings and metadata.

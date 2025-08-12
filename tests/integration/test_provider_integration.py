@@ -26,7 +26,7 @@ def test_weights_manager_successful_download(
     expected_relative_path = Path(model_type) / filename
 
     detector_config_value = {
-        "_target_": "culicidaelab.predictors.detector.MosquitoDetector",
+        "target": "culicidaelab.predictors.detector.MosquitoDetector",
         "model_path": str(expected_relative_path),
         "provider_name": "huggingface",
         "repository_id": "test/dummy-model",
@@ -45,7 +45,10 @@ def test_weights_manager_successful_download(
         shutil.copy(project_fixtures_dir / filename, dest_path)
         return str(dest_path)
 
-    monkeypatch.setattr("culicidaelab.providers.huggingface_provider.hf_hub_download", mock_download)
+    monkeypatch.setattr(
+        "culicidaelab.providers.huggingface_provider.hf_hub_download",
+        mock_download,
+    )
 
     # ModelWeightsManager expects only the settings object; no separate ProviderService required.
     weights_manager = ModelWeightsManager(settings)
@@ -70,7 +73,7 @@ def test_weights_manager_handles_download_failure(
 
     model_type = "detector"
     detector_config_value = {
-        "_target_": "...",
+        "target": "...",
         "model_path": "detector/model.pt",
         "provider_name": "huggingface",
         "repository_id": "test/non-existent-model",
@@ -87,10 +90,16 @@ def test_weights_manager_handles_download_failure(
     def mock_download_fails(*args, **kwargs):
         raise Exception("Simulated Hub Download Failure")
 
-    monkeypatch.setattr("culicidaelab.providers.huggingface_provider.hf_hub_download", mock_download_fails)
+    monkeypatch.setattr(
+        "culicidaelab.providers.huggingface_provider.hf_hub_download",
+        mock_download_fails,
+    )
 
     # ModelWeightsManager expects only the settings object; no separate ProviderService required.
     weights_manager = ModelWeightsManager(settings)
 
-    with pytest.raises(RuntimeError, match=f"Failed to download weights for '{model_type}'"):
+    with pytest.raises(
+        RuntimeError,
+        match=f"Failed to download weights for '{model_type}'",
+    ):
         weights_manager.ensure_weights(model_type)

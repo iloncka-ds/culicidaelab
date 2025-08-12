@@ -36,7 +36,7 @@ def mock_config_data():
         "default": {
             "predictors": {
                 "classifier": {
-                    "target_": "culicidaelab.classifiers.DefaultClassifier",
+                    "target": "culicidaelab.classifiers.DefaultClassifier",
                     "model_name": "default_model",
                     "threshold": 0.5,
                 },
@@ -44,7 +44,9 @@ def mock_config_data():
             "datasets": {"batch_size": 32, "num_workers": 4},
         },
         "user": {
-            "predictors": {"classifier": {"threshold": 0.7, "custom_param": "user_value"}},
+            "predictors": {
+                "classifier": {"threshold": 0.7, "custom_param": "user_value"},
+            },
             "datasets": {"batch_size": 64},
         },
     }
@@ -71,12 +73,21 @@ def test_deep_merge_simple_dict():
 def test_deep_merge_nested_dict():
     """Test merging nested dictionaries."""
     source = {"level1": {"level2": {"key1": "new_value", "key2": "source_value"}}}
-    destination = {"level1": {"level2": {"key1": "old_value", "key3": "dest_value"}, "other_key": "preserved"}}
+    destination = {
+        "level1": {
+            "level2": {"key1": "old_value", "key3": "dest_value"},
+            "other_key": "preserved",
+        },
+    }
     result = _deep_merge(source, destination)
 
     expected = {
         "level1": {
-            "level2": {"key1": "new_value", "key2": "source_value", "key3": "dest_value"},
+            "level2": {
+                "key1": "new_value",
+                "key2": "source_value",
+                "key3": "dest_value",
+            },
             "other_key": "preserved",
         },
     }
@@ -111,8 +122,16 @@ def test_config_manager_init_with_user_config_dir(temp_config_dirs, mock_config_
     create_yaml_files(default_dir, mock_config_data["default"])
     create_yaml_files(user_dir, mock_config_data["user"])
 
-    with patch.object(ConfigManager, "_get_default_config_path", return_value=default_dir):
-        with patch.object(ConfigManager, "_load", return_value=Mock(spec=CulicidaeLabConfig)):
+    with patch.object(
+        ConfigManager,
+        "_get_default_config_path",
+        return_value=default_dir,
+    ):
+        with patch.object(
+            ConfigManager,
+            "_load",
+            return_value=Mock(spec=CulicidaeLabConfig),
+        ):
             manager = ConfigManager(user_config_dir=str(user_dir))
 
             assert manager.user_config_dir == user_dir
@@ -123,8 +142,16 @@ def test_config_manager_init_without_user_config_dir(temp_config_dirs):
     """Test initialization without user config directory."""
     default_dir = temp_config_dirs["default_dir"]
 
-    with patch.object(ConfigManager, "_get_default_config_path", return_value=default_dir):
-        with patch.object(ConfigManager, "_load", return_value=Mock(spec=CulicidaeLabConfig)):
+    with patch.object(
+        ConfigManager,
+        "_get_default_config_path",
+        return_value=default_dir,
+    ):
+        with patch.object(
+            ConfigManager,
+            "_load",
+            return_value=Mock(spec=CulicidaeLabConfig),
+        ):
             manager = ConfigManager()
 
             assert manager.user_config_dir is None
@@ -134,8 +161,16 @@ def test_config_manager_pathlib_path_handling(temp_config_dirs):
     """Test that Path objects are handled correctly."""
     user_dir = temp_config_dirs["user_dir"]
 
-    with patch.object(ConfigManager, "_get_default_config_path", return_value=Path("/mock")):
-        with patch.object(ConfigManager, "_load", return_value=Mock(spec=CulicidaeLabConfig)):
+    with patch.object(
+        ConfigManager,
+        "_get_default_config_path",
+        return_value=Path("/mock"),
+    ):
+        with patch.object(
+            ConfigManager,
+            "_load",
+            return_value=Mock(spec=CulicidaeLabConfig),
+        ):
             manager = ConfigManager(user_config_dir=user_dir)
             assert isinstance(manager.user_config_dir, Path)
             assert manager.user_config_dir == user_dir
@@ -160,7 +195,10 @@ def test_get_default_config_path_success():
 
 def test_get_default_config_path_fallback():
     """Test fallback when resources.files fails."""
-    with patch("culicidaelab.core.config_manager.resources.files", side_effect=ModuleNotFoundError):
+    with patch(
+        "culicidaelab.core.config_manager.resources.files",
+        side_effect=ModuleNotFoundError,
+    ):
         with patch("pathlib.Path.exists", return_value=True):
             manager = ConfigManager.__new__(ConfigManager)
             result = manager._get_default_config_path()
@@ -170,11 +208,17 @@ def test_get_default_config_path_fallback():
 
 def test_get_default_config_path_failure():
     """Test failure when both methods fail."""
-    with patch("culicidaelab.core.config_manager.resources.files", side_effect=ModuleNotFoundError):
+    with patch(
+        "culicidaelab.core.config_manager.resources.files",
+        side_effect=ModuleNotFoundError,
+    ):
         with patch("pathlib.Path.exists", return_value=False):
             manager = ConfigManager.__new__(ConfigManager)
 
-            with pytest.raises(FileNotFoundError, match="Could not find the default 'conf' directory"):
+            with pytest.raises(
+                FileNotFoundError,
+                match="Could not find the default 'conf' directory",
+            ):
                 manager._get_default_config_path()
 
 
@@ -198,8 +242,8 @@ def test_load_config_from_dir_nested_structure(temp_config_dirs):
     nested_dir = config_dir / "predictors"
     nested_dir.mkdir()
 
-    classifier_config = {"target_": "test.Classifier", "param": "value"}
-    detector_config = {"target_": "test.Detector", "param": "value"}
+    classifier_config = {"target": "test.Classifier", "param": "value"}
+    detector_config = {"target": "test.Detector", "param": "value"}
 
     with (nested_dir / "classifier.yaml").open("w") as f:
         yaml.dump(classifier_config, f)
@@ -212,7 +256,7 @@ def test_load_config_from_dir_nested_structure(temp_config_dirs):
     assert "predictors" in result
     assert "classifier" in result["predictors"]
     assert "detector" in result["predictors"]
-    assert result["predictors"]["classifier"]["target_"] == "test.Classifier"
+    assert result["predictors"]["classifier"]["target"] == "test.Classifier"
 
 
 def test_load_config_from_dir_empty_yaml(temp_config_dirs):
@@ -263,13 +307,16 @@ def test_load_config_from_dir_none():
 def test_load_success(mock_load_config, temp_config_dirs):
     """Test successful configuration loading and validation."""
     mock_load_config.side_effect = [
-        {"predictors": {"classifier": {"target_": "test.Classifier"}}},
+        {"predictors": {"classifier": {"target": "test.Classifier"}}},
         {"predictors": {"classifier": {"threshold": 0.8}}},
     ]
 
     mock_validated_config = Mock(spec=CulicidaeLabConfig)
 
-    with patch("culicidaelab.core.config_manager.CulicidaeLabConfig", return_value=mock_validated_config):
+    with patch(
+        "culicidaelab.core.config_manager.CulicidaeLabConfig",
+        return_value=mock_validated_config,
+    ):
         manager = ConfigManager.__new__(ConfigManager)
         manager.default_config_path = temp_config_dirs["default_dir"]
         manager.user_config_dir = temp_config_dirs["user_dir"]
@@ -293,7 +340,10 @@ def test_load_validation_error(mock_load_config, temp_config_dirs, capsys):
         [{"type": "missing", "loc": ("required_field",), "msg": "Field required"}],
     )
 
-    with patch("culicidaelab.core.config_manager.CulicidaeLabConfig", side_effect=validation_error):
+    with patch(
+        "culicidaelab.core.config_manager.CulicidaeLabConfig",
+        side_effect=validation_error,
+    ):
         manager = ConfigManager.__new__(ConfigManager)
         manager.default_config_path = temp_config_dirs["default_dir"]
         manager.user_config_dir = temp_config_dirs["user_dir"]
@@ -336,8 +386,12 @@ def test_save_config(temp_config_dirs):
 def test_instantiate_from_config_success():
     """Test successful instantiation from config."""
     mock_config = Mock()
-    mock_config.target_ = "builtins.dict"
-    mock_config.model_dump.return_value = {"target_": "builtins.dict", "param1": "value1", "param2": "value2"}
+    mock_config.target = "builtins.dict"
+    mock_config.model_dump.return_value = {
+        "target": "builtins.dict",
+        "param1": "value1",
+        "param2": "value2",
+    }
 
     manager = ConfigManager.__new__(ConfigManager)
     result = manager.instantiate_from_config(mock_config, extra_param="extra")
@@ -348,20 +402,20 @@ def test_instantiate_from_config_success():
 def test_instantiate_from_config_no_target():
     """Test instantiation with missing target."""
     mock_config = Mock()
-    mock_config.configure_mock(**{"target_": None})
-    del mock_config.target_
+    mock_config.configure_mock(**{"target": None})
+    del mock_config.target
 
     manager = ConfigManager.__new__(ConfigManager)
 
-    with pytest.raises(ValueError, match="Target key '_target_' not found"):
+    with pytest.raises(ValueError, match="Target key 'target' not found"):
         manager.instantiate_from_config(mock_config)
 
 
 def test_instantiate_from_config_invalid_target():
     """Test instantiation with invalid target."""
     mock_config = Mock()
-    mock_config.target_ = "nonexistent.module.Class"
-    mock_config.model_dump.return_value = {"target_": "nonexistent.module.Class"}
+    mock_config.target = "nonexistent.module.Class"
+    mock_config.model_dump.return_value = {"target": "nonexistent.module.Class"}
 
     manager = ConfigManager.__new__(ConfigManager)
 
@@ -372,8 +426,8 @@ def test_instantiate_from_config_invalid_target():
 def test_instantiate_from_config_invalid_class():
     """Test instantiation with invalid class name."""
     mock_config = Mock()
-    mock_config.target_ = "builtins.NonexistentClass"
-    mock_config.model_dump.return_value = {"target_": "builtins.NonexistentClass"}
+    mock_config.target = "builtins.NonexistentClass"
+    mock_config.model_dump.return_value = {"target": "builtins.NonexistentClass"}
 
     manager = ConfigManager.__new__(ConfigManager)
 
@@ -391,8 +445,15 @@ def test_integration_full_workflow(temp_config_dirs, mock_config_data):
 
     mock_config = Mock(spec=CulicidaeLabConfig)
 
-    with patch.object(ConfigManager, "_get_default_config_path", return_value=default_dir):
-        with patch("culicidaelab.core.config_manager.CulicidaeLabConfig", return_value=mock_config):
+    with patch.object(
+        ConfigManager,
+        "_get_default_config_path",
+        return_value=default_dir,
+    ):
+        with patch(
+            "culicidaelab.core.config_manager.CulicidaeLabConfig",
+            return_value=mock_config,
+        ):
             manager = ConfigManager(user_config_dir=str(user_dir))
 
             assert manager.user_config_dir == user_dir
@@ -436,21 +497,29 @@ def test_config_merge_with_complex_structures():
     default_config = {
         "predictors": {
             "classifier": {
-                "target_": "test.Classifier",
+                "target": "test.Classifier",
                 "params": {"threshold": 0.5, "nested": {"deep_param": "default"}},
             },
         },
     }
 
-    user_config = {"predictors": {"classifier": {"params": {"threshold": 0.8, "new_param": "user_value"}}}}
+    user_config = {
+        "predictors": {
+            "classifier": {"params": {"threshold": 0.8, "new_param": "user_value"}},
+        },
+    }
 
     result = _deep_merge(user_config, default_config)
 
     expected = {
         "predictors": {
             "classifier": {
-                "target_": "test.Classifier",
-                "params": {"threshold": 0.8, "new_param": "user_value", "nested": {"deep_param": "default"}},
+                "target": "test.Classifier",
+                "params": {
+                    "threshold": 0.8,
+                    "new_param": "user_value",
+                    "nested": {"deep_param": "default"},
+                },
             },
         },
     }

@@ -14,7 +14,7 @@ from culicidaelab.core.config_models import (
 
 def test_predictor_config_validation():
     valid_data = {
-        "_target_": "culicidaelab.predictors.Classifier",
+        "target": "culicidaelab.predictors.Classifier",
         "model_path": "/path/to/model.pt",
         "confidence": 0.6,
         "device": "cuda",
@@ -24,7 +24,7 @@ def test_predictor_config_validation():
         "model_config_filename": "config.yaml",
     }
     predictor = PredictorConfig(**valid_data)
-    assert predictor.target_ == valid_data["_target_"]
+    assert predictor.target == valid_data["target"]
     assert predictor.confidence == 0.6
 
     with pytest.raises(ValidationError):
@@ -34,6 +34,7 @@ def test_predictor_config_validation():
 def test_dataset_config_validation():
     valid_data = {
         "name": "classification",
+        "repository": "default_repo",
         "path": "culicidae-classification-5-class",
         "format": "huggingface",
         "classes": ["aedes aegypti", "aedes albopictus"],
@@ -54,16 +55,16 @@ def test_dataset_config_validation():
 
 def test_provider_config_validation():
     valid_data = {
-        "_target_": "culicidaelab.providers.HuggingFaceProvider",
+        "target": "culicidaelab.providers.HuggingFaceProvider",
         "dataset_url": "https://api.huggingface.co/datasets/{dataset_name}",
         "api_key": "some_key",
     }
     provider = ProviderConfig(**valid_data)
-    assert provider.target_ == valid_data["_target_"]
+    assert provider.target == valid_data["target"]
     assert provider.api_key == "some_key"
 
     valid_data_no_key = {
-        "_target_": "culicidaelab.providers.HuggingFaceProvider",
+        "target": "culicidaelab.providers.HuggingFaceProvider",
         "dataset_url": "https://api.huggingface.co/datasets/{dataset_name}",
     }
     provider_no_key = ProviderConfig(**valid_data_no_key)
@@ -118,11 +119,12 @@ def test_root_config_model():
                 "format": "hf",
                 "classes": ["a", "b"],
                 "provider_name": "huggingface",
+                "repository": "default-repo",  # Added repository field
             },
         },
         "predictors": {
             "classifier": {
-                "_target_": "some.Classifier",
+                "target": "some.Classifier",
                 "model_path": "path/to/model.pt",
                 "model_config_path": "dummy/path/config.yaml",
                 "model_config_filename": "config.yaml",
@@ -130,7 +132,7 @@ def test_root_config_model():
         },
         "providers": {
             "huggingface": {
-                "_target_": "some.Provider",
+                "target": "some.Provider",
                 "dataset_url": "http://example.com",
             },
         },

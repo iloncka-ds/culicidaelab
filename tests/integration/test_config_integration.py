@@ -26,7 +26,7 @@ def test_instantiate_provider_via_service(user_config_dir: Path, settings_factor
     """
     provider_dict = {
         "my_huggingface": {
-            "_target_": "culicidaelab.providers.huggingface_provider.HuggingFaceProvider",
+            "target": "culicidaelab.providers.huggingface_provider.HuggingFaceProvider",
             "dataset_url": "http://example.com",
         },
     }

@@ -1,4 +1,4 @@
 # provider_url: "https://www.kaggle.com/api/v1/datasets/download/{username}/{dataset_id}"
 # api_key: "{api_key}"
-_target_: "culicidaelab.providers.KaggleProvider"
+target: "culicidaelab.providers.KaggleProvider"
 dataset_url: "https://www.kaggle.com/api/v1/datasets/download/{username}/{dataset_id}"

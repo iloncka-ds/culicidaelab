@@ -84,7 +84,7 @@ def dummy_settings():
     predictor_config_dict = {
         "repository_id": "dummy/repo",
         "filename": "model.pth",
-        "target_": "dummy.module.DummyModel",
+        "target": "dummy.module.DummyModel",
         "params": {"param1": "value1"},
         "model_path": "/fake/path/dummy.pth",
         "model_config_path": "some/path/to/config.yaml",

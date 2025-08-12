@@ -27,7 +27,7 @@ def mock_settings():
             )
         if "predictors" in path:
             return PredictorConfig(
-                _target_="a.b",
+                target="a.b",
                 model_path="/fake/models/classifier.pt",
                 repository_id="org/model_repo",
                 filename="weights.pt",
@@ -186,7 +186,7 @@ def test_download_model_weights_missing_config(hf_provider, mock_settings):
     def broken_predictor_config(path):
         if "predictors" in path:
             return PredictorConfig(
-                _target_="a.b",
+                target="a.b",
                 model_path="/fake/models/classifier.pt",
                 repository_id=None,
                 filename=None,

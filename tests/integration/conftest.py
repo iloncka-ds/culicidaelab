@@ -31,7 +31,10 @@ def integration_test_dir(tmp_path_factory):
 
 @pytest.fixture(scope="session")
 def resource_manager(integration_test_dir: Path) -> ResourceManager:
-    return ResourceManager(app_name="culicidaelab_test", custom_base_dir=integration_test_dir)
+    return ResourceManager(
+        app_name="culicidaelab_test",
+        custom_base_dir=integration_test_dir,
+    )
 
 
 @pytest.fixture
@@ -65,7 +68,7 @@ def create_provider_config(config_dir: Path):
     """Creates a providers.yaml file with the correct structure."""
     provider_dict = {
         "huggingface": {
-            "_target_": "culicidaelab.providers.huggingface_provider.HuggingFaceProvider",
+            "target": "culicidaelab.providers.huggingface_provider.HuggingFaceProvider",
             "dataset_url": "https://huggingface.co/api/datasets/{repo_id}",
             "api_key": None,
         },

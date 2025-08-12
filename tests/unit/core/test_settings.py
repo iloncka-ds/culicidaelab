@@ -26,6 +26,7 @@ def mock_config() -> CulicidaeLabConfig:
         datasets={
             "detection": DatasetConfig(
                 name="detection_dataset",
+                repository="local",
                 path="detection_data",
                 format="coco",
                 classes=["culex"],
@@ -33,6 +34,7 @@ def mock_config() -> CulicidaeLabConfig:
             ),
             "segmentation": DatasetConfig(
                 name="segmentation_dataset",
+                repository="local",
                 path="segmentation_data",
                 format="coco",
                 classes=["culex"],
@@ -40,6 +42,7 @@ def mock_config() -> CulicidaeLabConfig:
             ),
             "classification": DatasetConfig(
                 name="classification_dataset",
+                repository="local",
                 path="classification_data",
                 format="imagefolder",
                 classes=["culex", "aedes"],
@@ -47,16 +50,17 @@ def mock_config() -> CulicidaeLabConfig:
             ),
             "species_diversity": DatasetConfig(
                 name="species_diversity_dataset",
+                repository="local",
                 path="species_diversity_data",
                 format="csv",
                 classes=[],
                 provider_name="local",
             ),
         },
-        processing=ProcessingConfig(batch_size=32, num_workers=4),
+        processing=ProcessingConfig(batch_size=32),
         predictors={
             "default": PredictorConfig(
-                _target_="some.dummy.class",
+                target="some.dummy.class",
                 model_path="models/default.pt",
                 provider_name="local",
                 confidence=0.5,

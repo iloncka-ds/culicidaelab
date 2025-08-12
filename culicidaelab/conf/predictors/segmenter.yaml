@@ -1,4 +1,4 @@
-_target_: "culicidaelab.predictors.Segmenter"
+target: "culicidaelab.predictors.Segmenter"
 model_path: "weights/segmentation/sam2.1_hiera_tiny.pt"
 repository_id: "iloncka/culico-net-segm-v1-nano"
 filename: "sam2.1_hiera_tiny.pt"

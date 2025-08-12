@@ -22,7 +22,7 @@ def test_full_detector_workflow(
     expected_absolute_path = resource_manager.model_dir / expected_relative_path
 
     detector_config_value = {
-        "_target_": "culicidaelab.predictors.detector.MosquitoDetector",
+        "target": "culicidaelab.predictors.detector.MosquitoDetector",
         "model_path": str(expected_relative_path),
         "provider_name": "huggingface",
         "repository_id": "any/repo",
@@ -80,7 +80,7 @@ def test_full_segmenter_workflow(
     expected_absolute_path = resource_manager.model_dir / expected_relative_path
 
     segmenter_config_value = {
-        "_target_": "culicidaelab.predictors.segmenter.MosquitoSegmenter",
+        "target": "culicidaelab.predictors.segmenter.MosquitoSegmenter",
         "model_path": str(expected_relative_path),
         "provider_name": "huggingface",
         "repository_id": "any/repo",
@@ -125,7 +125,11 @@ def test_full_segmenter_workflow(
         mock_predictor_instance = MagicMock()
 
         dummy_mask_3d = np.zeros((1, 100, 150), dtype=bool)
-        mock_predictor_instance.predict.return_value = (dummy_mask_3d, MagicMock(), MagicMock())
+        mock_predictor_instance.predict.return_value = (
+            dummy_mask_3d,
+            MagicMock(),
+            MagicMock(),
+        )
 
         mock_predictor_class.return_value = mock_predictor_instance
 

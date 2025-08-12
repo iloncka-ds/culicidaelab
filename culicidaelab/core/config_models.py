@@ -170,8 +170,8 @@ class PredictorConfig(BaseModel):
     This model defines how to load and use a specific pre-trained model for inference.
 
     Args:
-        target_ (str): The fully qualified import path to the predictor class
-            (e.g., `culicidaelab.models.YOLOv8Predictor`). Aliased from `_target_`.
+        target (str): The fully qualified import path to the predictor class
+            (e.g., `culicidaelab.models.YOLOv8Predictor`). Aliased from `target`.
         model_path (str): The local path or remote URL to the model weights file.
         confidence (float): The default confidence threshold for this predictor.
         device (str): The compute device to use ("cpu" or "cuda").
@@ -187,7 +187,7 @@ class PredictorConfig(BaseModel):
     """
 
     model_config = ConfigDict(extra="allow", protected_namespaces=())
-    target_: str = Field(..., alias="_target_")
+    target: str = Field(..., alias="target")
     model_path: str
     confidence: float = 0.5
     device: str = "cpu"
@@ -232,14 +232,14 @@ class ProviderConfig(BaseModel):
     """Configuration for a data provider, such as Hugging Face.
 
     Args:
-        target_ (str): The fully qualified import path to the provider's
-            service class. Aliased from `_target_`.
+        target (str): The fully qualified import path to the provider's
+            service class. Aliased from `target`.
         dataset_url (str): The base URL for accessing datasets from this provider.
         api_key (str | None): An optional API key for authentication, if required.
     """
 
     model_config = ConfigDict(extra="allow")
-    target_: str = Field(..., alias="_target_")
+    target: str = Field(..., alias="target")
     dataset_url: str
     api_key: str | None = None
 

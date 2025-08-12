@@ -70,7 +70,7 @@ class ConfigManager:
     def instantiate_from_config(self, config_obj: Any, **kwargs: Any) -> Any:
         """Instantiates a Python object from its Pydantic config model.
 
-        The config model must have a `_target_` field specifying the fully
+        The config model must have a `target` field specifying the fully
         qualified class path (e.g., 'my_module.my_class.MyClass').
 
         Args:
@@ -82,25 +82,25 @@ class ConfigManager:
             Any: An instantiated Python object.
 
         Raises:
-            ValueError: If the `_target_` key is not found in the config object.
+            ValueError: If the `target` key is not found in the config object.
             ImportError: If the class could not be imported and instantiated.
         """
-        if not hasattr(config_obj, "target_"):
-            raise ValueError("Target key '_target_' not found in configuration object")
+        if not hasattr(config_obj, "target"):
+            raise ValueError("Target key 'target' not found in configuration object")
 
-        target_path = config_obj.target_
+        targetpath = config_obj.target
         config_params = config_obj.model_dump()
-        config_params.pop("target_", None)
+        config_params.pop("target", None)
         config_params.update(kwargs)
 
         try:
-            module_path, class_name = target_path.rsplit(".", 1)
+            module_path, class_name = targetpath.rsplit(".", 1)
             module = __import__(module_path, fromlist=[class_name])
             cls = getattr(module, class_name)
             return cls(**config_params)
         except (ValueError, ImportError, AttributeError) as e:
             raise ImportError(
-                f"Could not import and instantiate '{target_path}': {e}",
+                f"Could not import and instantiate '{targetpath}': {e}",
             )
 
     def save_config(self, file_path: str | Path) -> None:

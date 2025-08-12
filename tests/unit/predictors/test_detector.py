@@ -11,7 +11,7 @@ from culicidaelab.predictors.detector import MosquitoDetector
 def mock_predictor_config():
     """Provides a valid PredictorConfig instance for the detector."""
     return PredictorConfig(
-        _target_="some.dummy.detector.class",
+        target="some.dummy.detector.class",
         model_path="dummy/path/yolo.pt",
         provider="mock_yolo_provider",
         confidence=0.25,
@@ -39,7 +39,7 @@ def mock_settings(mock_predictor_config):
         if path == "predictors.detector":
             return mock_predictor_config
         if path == "providers.mock_yolo_provider":
-            return Mock(_target_="culicidaelab.core.providers.local.LocalProvider")
+            return Mock(target="culicidaelab.core.providers.local.LocalProvider")
         return default
 
     settings.get_config.side_effect = get_config_side_effect
