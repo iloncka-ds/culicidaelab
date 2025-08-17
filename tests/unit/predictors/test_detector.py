@@ -94,11 +94,11 @@ def test_predict_single_image(detector):
     detector._model.assert_called_once()
     assert isinstance(predictions, list)
     assert len(predictions) == 1
-    cx, cy, w, h, conf = predictions[0]
-    assert cx == pytest.approx(60)
-    assert cy == pytest.approx(70)
-    assert w == pytest.approx(100)
-    assert h == pytest.approx(100)
+    x1, y1, x2, y2, conf = predictions[0]
+    assert x1 == pytest.approx(10.0)
+    assert y1 == pytest.approx(20.0)
+    assert x2 == pytest.approx(110.0)
+    assert y2 == pytest.approx(120.0)
     assert conf == pytest.approx(0.9)
 
 

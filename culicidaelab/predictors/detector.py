@@ -41,7 +41,7 @@ import numpy as np
 from fastprogress.fastprogress import progress_bar
 from ultralytics import YOLO
 
-from culicidaelab.core.base_predictor import BasePredictor
+from culicidaelab.core.base_predictor import BasePredictor, ImageInput
 
 from culicidaelab.core.settings import Settings
 from culicidaelab.core.utils import str_to_bgr
@@ -54,7 +54,7 @@ DetectionGroundTruthType: TypeAlias = list[tuple[float, float, float, float]]
 
 
 class MosquitoDetector(
-    BasePredictor[np.ndarray, DetectionPredictionType, DetectionGroundTruthType],
+    BasePredictor[ImageInput, DetectionPredictionType, DetectionGroundTruthType],
 ):
     """Detects mosquitos in images using a YOLO model.
 
@@ -90,18 +90,18 @@ class MosquitoDetector(
         self.iou_threshold: float = self.config.params.get("iou_threshold", 0.45)
         self.max_detections: int = self.config.params.get("max_detections", 300)
 
-    def predict(self, input_data: np.ndarray, **kwargs: Any) -> DetectionPredictionType:
+    def predict(self, input_data: ImageInput, **kwargs: Any) -> DetectionPredictionType:
         """Detects mosquitos in a single image.
 
         Args:
-            input_data (np.ndarray): The input image as a NumPy array.
+            input_data (ImageInput): The input image as a NumPy array or other supported format.
             **kwargs (Any): Optional keyword arguments, including:
                 confidence_threshold (float): Override the default confidence
                     threshold for this prediction.
 
         Returns:
             DetectionPredictionType: A list of detection tuples. Each tuple is
-            (center_x, center_y, width, height, confidence). Returns an empty
+            (x1, y1, x2, y2, confidence). Returns an empty
             list if no mosquitos are found.
 
         Raises:
@@ -118,6 +118,7 @@ class MosquitoDetector(
         )
 
         try:
+            input_data = np.array(self._load_and_validate_image(input_data))
             results = self._model(
                 source=input_data,
                 conf=confidence_threshold,
@@ -136,14 +137,13 @@ class MosquitoDetector(
                 xyxy_tensor = box.xyxy[0]
                 x1, y1, x2, y2 = xyxy_tensor.cpu().numpy()
                 conf = float(box.conf[0])
-                w, h = x2 - x1, y2 - y1
-                center_x, center_y = x1 + w / 2, y1 + h / 2
-                detections.append((center_x, center_y, w, h, conf))
+
+                detections.append((x1, y1, x2, y2, conf))
         return detections
 
     def predict_batch(
         self,
-        input_data_batch: Sequence[np.ndarray],
+        input_data_batch: Sequence[ImageInput],
         show_progress: bool = True,
         **kwargs: Any,
     ) -> list[DetectionPredictionType]:
@@ -167,8 +167,14 @@ class MosquitoDetector(
         if not input_data_batch:
             return []
 
+        valid_images, valid_indices = self._prepare_batch_images(input_data_batch)
+
+        if not valid_images:
+            self._logger.warning("No valid images found in the batch to process.")
+            return [[]] * len(input_data_batch)
+
         yolo_results = self._model(
-            source=input_data_batch,
+            source=valid_images,
             conf=self.confidence_threshold,
             iou=self.iou_threshold,
             max_det=self.max_detections,
@@ -190,24 +196,22 @@ class MosquitoDetector(
             for box in r.boxes:
                 xyxy_tensor = box.xyxy[0]
                 x1, y1, x2, y2 = xyxy_tensor.cpu().numpy()
-                w, h = x2 - x1, y2 - y1
-                center_x, center_y = x1 + w / 2, y1 + h / 2
                 conf = float(box.conf[0])
-                detections.append((center_x, center_y, w, h, conf))
+                detections.append((x1, y1, x2, y2, conf))
             all_predictions.append(detections)
 
         return all_predictions
 
     def visualize(
         self,
-        input_data: np.ndarray,
+        input_data: ImageInput,
         predictions: DetectionPredictionType,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
         """Draws predicted bounding boxes on an image.
 
         Args:
-            input_data (np.ndarray): The original image.
+            input_data (ImageInput): The original image.
             predictions (DetectionPredictionType): The list of detections from `predict`.
             save_path (str | Path | None, optional): If provided, the output
                 image is saved to this path. Defaults to None.
@@ -216,22 +220,20 @@ class MosquitoDetector(
             np.ndarray: A new image array with bounding boxes and confidence
             scores drawn on it.
         """
-        vis_img = input_data.copy()
+        vis_img = np.array(self._load_and_validate_image(input_data))
         vis_config = self.config.visualization
         box_color = str_to_bgr(vis_config.box_color)
         text_color = str_to_bgr(vis_config.text_color)
         font_scale = vis_config.font_scale
         thickness = vis_config.box_thickness
 
-        for x, y, w, h, conf in predictions:
-            x1, y1 = int(x - w / 2), int(y - h / 2)
-            x2, y2 = int(x + w / 2), int(y + h / 2)
-            cv2.rectangle(vis_img, (x1, y1), (x2, y2), box_color, thickness)
+        for x1, y1, x2, y2, conf in predictions:
+            cv2.rectangle(vis_img, (int(x1), int(y1)), (int(x2), int(y2)), box_color, thickness)
             text = f"{conf:.2f}"
             cv2.putText(
                 vis_img,
                 text,
-                (x1, y1 - 5),
+                (int(x1), int(y1 - 5)),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 font_scale,
                 text_color,
@@ -243,26 +245,25 @@ class MosquitoDetector(
 
         return vis_img
 
-    def _calculate_iou(self, box1_xywh: tuple, box2_xywh: tuple) -> float:
+    def _calculate_iou(self, box1_xyxy: tuple, box2_xyxy: tuple) -> float:
         """Calculates Intersection over Union (IoU) for two boxes.
 
         Args:
-            box1_xywh (tuple): The first box in (cx, cy, w, h) format.
-            box2_xywh (tuple): The second box in (cx, cy, w, h) format.
+            box1_xyxy (tuple): The first box in (x1, y1, x2, y2) format.
+            box2_xyxy (tuple): The second box in (x1, y1, x2, y2) format.
 
         Returns:
             float: The IoU score between 0.0 and 1.0.
         """
-        b1_x1, b1_y1 = box1_xywh[0] - box1_xywh[2] / 2, box1_xywh[1] - box1_xywh[3] / 2
-        b1_x2, b1_y2 = box1_xywh[0] + box1_xywh[2] / 2, box1_xywh[1] + box1_xywh[3] / 2
-        b2_x1, b2_y1 = box2_xywh[0] - box2_xywh[2] / 2, box2_xywh[1] - box2_xywh[3] / 2
-        b2_x2, b2_y2 = box2_xywh[0] + box2_xywh[2] / 2, box2_xywh[1] + box2_xywh[3] / 2
+        b1_x1, b1_y1, b1_x2, b1_y2 = box1_xyxy
+        b2_x1, b2_y1, b2_x2, b2_y2 = box2_xyxy
 
         inter_x1, inter_y1 = max(b1_x1, b2_x1), max(b1_y1, b2_y1)
         inter_x2, inter_y2 = min(b1_x2, b2_x2), min(b1_y2, b2_y2)
         intersection = max(0, inter_x2 - inter_x1) * max(0, inter_y2 - inter_y1)
 
-        area1, area2 = box1_xywh[2] * box1_xywh[3], box2_xywh[2] * box2_xywh[3]
+        area1 = (b1_x2 - b1_x1) * (b1_y2 - b1_y1)
+        area2 = (b2_x2 - b2_x1) * (b2_y2 - b2_y1)
         union = area1 + area2 - intersection
         return float(intersection / union) if union > 0 else 0.0
 

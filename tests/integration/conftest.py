@@ -18,7 +18,7 @@ def create_dummy_model_files(project_fixtures_dir: Path):
     """Ensures dummy model files exist before any tests run."""
     project_fixtures_dir.mkdir(exist_ok=True)
     (project_fixtures_dir / "dummy_detector_model.pt").touch()
-    (project_fixtures_dir / "dummy_segmenter_model.pt").touch()
+    (project_fixtures_dir / "sam2.1_t.pt").touch()
     (project_fixtures_dir / "dummy_classifier_model.pkl").touch()
 
 

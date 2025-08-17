@@ -7,15 +7,16 @@ detectors, segmenters, and classifiers.
 
 import logging
 from abc import ABC, abstractmethod
+import io
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, Union
 from collections.abc import Sequence
 
-import numpy as np
-
+from PIL import Image
 from fastprogress.fastprogress import progress_bar
+import numpy as np
 
 from culicidaelab.core.config_models import PredictorConfig
 from culicidaelab.core.settings import Settings
@@ -23,6 +24,7 @@ from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
 
 logger = logging.getLogger(__name__)
 
+ImageInput = Union[np.ndarray, str, Path, Image.Image, bytes, io.BytesIO]
 InputDataType = TypeVar("InputDataType")
 PredictionType = TypeVar("PredictionType")
 GroundTruthType = TypeVar("GroundTruthType")
@@ -272,6 +274,9 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
             self._logger.info(f"Successfully loaded model for {self.predictor_type}")
         except Exception as e:
             self._logger.error(f"Failed to load model for {self.predictor_type}: {e}")
+
+            self._model = None
+            self._model_loaded = False
             raise RuntimeError(
                 f"Failed to load model for {self.predictor_type}: {e}",
             ) from e
@@ -484,3 +489,85 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
                 f"Configuration for predictor '{self.predictor_type}' not found or is invalid.",
             )
         return config
+
+    def _load_and_validate_image(self, input_data: ImageInput) -> Image.Image:
+        """Loads and validates an input image from various formats.
+
+        Args:
+            input_data: Image input (numpy array, file path, PIL Image, bytes, or io.BytesIO).
+
+        Returns:
+            A validated PIL Image in RGB format.
+
+        Raises:
+            ValueError: If input format is invalid or image cannot be loaded.
+            FileNotFoundError: If image file path does not exist.
+        """
+        if isinstance(input_data, (str, Path)):
+            image_path = Path(input_data)
+            if not image_path.exists():
+                raise FileNotFoundError(f"Image file not found: {image_path}")
+            try:
+                image = Image.open(image_path).convert("RGB")
+                return image
+            except Exception as e:
+                raise ValueError(f"Cannot load image from {image_path}: {e}")
+
+        elif isinstance(input_data, Image.Image):
+            return input_data.convert("RGB")
+
+        elif isinstance(input_data, np.ndarray):
+            if input_data.ndim != 3 or input_data.shape[2] != 3:
+                raise ValueError(
+                    f"Expected 3D RGB image, got shape: {input_data.shape}",
+                )
+            if input_data.dtype == np.uint8:
+                return Image.fromarray(input_data)
+            elif input_data.dtype in [np.float32, np.float64]:
+                if input_data.max() > 1.0 or input_data.min() < 0.0:
+                    raise ValueError("Float images must be in range [0, 1]")
+                return Image.fromarray((input_data * 255).astype(np.uint8))
+            else:
+                raise ValueError(f"Unsupported numpy dtype: {input_data.dtype}")
+
+        elif isinstance(input_data, bytes):
+            try:
+                return Image.open(io.BytesIO(input_data)).convert("RGB")
+            except Exception as e:
+                raise ValueError(f"Cannot load image from bytes: {e}")
+
+        elif isinstance(input_data, io.BytesIO):
+            try:
+                return Image.open(input_data).convert("RGB")
+            except Exception as e:
+                raise ValueError(f"Cannot load image from BytesIO stream: {e}")
+
+        else:
+            raise TypeError(
+                f"Unsupported input type: {type(input_data)}. "
+                f"Expected np.ndarray, str, pathlib.Path, PIL.Image.Image, bytes, or io.BytesIO",
+            )
+
+    def _prepare_batch_images(
+        self,
+        input_data_batch: Sequence[ImageInput],
+    ) -> tuple[list[Image.Image], list[int]]:
+        """Prepares and validates a batch of images for processing.
+
+        Args:
+            input_data_batch: A sequence of input images.
+
+        Returns:
+            A tuple of (valid_images, valid_indices) where valid_indices
+            tracks the original position of each valid image.
+        """
+        valid_images = []
+        valid_indices = []
+        for idx, input_data in enumerate(input_data_batch):
+            try:
+                image = self._load_and_validate_image(input_data)
+                valid_images.append(image)
+                valid_indices.append(idx)
+            except Exception as e:
+                self._logger.warning(f"Skipping image at index {idx}: {e}")
+        return valid_images, valid_indices

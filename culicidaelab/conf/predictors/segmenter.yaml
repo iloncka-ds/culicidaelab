@@ -1,5 +1,5 @@
 target: "culicidaelab.predictors.Segmenter"
-model_path: "weights/segmentation/sam2.1_hiera_tiny.pt"
+model_path: "weights/segmentation/sam2.1_t.pt"
 repository_id: "iloncka/culico-net-segm-v1-nano"
 filename: "sam2.1_hiera_tiny.pt"
 provider_name: "huggingface"

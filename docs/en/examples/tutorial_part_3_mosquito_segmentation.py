@@ -17,12 +17,12 @@ to perform mosquito segmentation on images. We'll cover:
 # # !pip install -q culicidaelab
 
 # %%
-# First, let's import the necessary libraries:
-import cv2
 from pathlib import Path
 import matplotlib.pyplot as plt
-from culicidaelab import MosquitoSegmenter, MosquitoDetector
+from PIL import Image
+import numpy as np
 
+from culicidaelab import MosquitoSegmenter, MosquitoDetector
 from culicidaelab import ModelWeightsManager
 from culicidaelab import get_settings
 
@@ -51,8 +51,6 @@ segmenter = MosquitoSegmenter(settings=settings, load_model=True)
 # %%
 # Load test image
 image_path = str(Path("test_imgs") / "640px-Aedes_aegypti.jpg")
-image = cv2.imread(image_path)
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 # %% [markdown]
 # ## 3. Run Segmentation
@@ -60,7 +58,20 @@ image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 # Now we can run the segmentation model on our image:
 
 # %%
-mask = segmenter.predict(image)
+# Initialize detector
+detector = MosquitoDetector(settings=settings, load_model=True)
+# Load test image
+image_path = str(Path("test_imgs") / "640px-Aedes_aegypti.jpg")
+
+
+# Run detection
+detections = detector.predict(image_path)
+
+# Run segmentation with detection boxes
+mask = segmenter.predict(image_path, detection_boxes=np.array(detections))
+# Draw detections
+annotated_image = detector.visualize(image_path, detections)
+segmented_image = segmenter.visualize(annotated_image, mask)
 
 # %% [markdown]
 # ## 4. Visualize Results
@@ -68,10 +79,7 @@ mask = segmenter.predict(image)
 # Finally, let's visualize the segmentation results overlaid on the original image:
 
 # %%
-# Visualize segmentation results
-segmented_image = segmenter.visualize(image, mask)
-
-# Display results
+image = Image.open(image_path)
 plt.figure(figsize=(15, 5))
 
 plt.subplot(1, 3, 1)
@@ -93,62 +101,8 @@ plt.tight_layout()
 plt.show()
 
 # %% [markdown]
-# ## Segmentation Using Detection Results
-#
-
-# %% [markdown]
-# The segmenter can also use detection results to improve segmentation accuracy.
-# Here's how to combine detection and segmentation:
+# ## 5. Evaluate results
 
 # %%
-# Initialize detector
-detector = MosquitoDetector(settings=settings, load_model=True)
-# Load test image
-image_path = str(Path("test_imgs") / "640px-Aedes_aegypti.jpg")
-image = cv2.imread(image_path)
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-# Run detection
-detections = detector.predict(image)
-
-# Run segmentation with detection boxes
-mask_with_boxes = segmenter.predict(image, detection_boxes=detections)
-# Draw detections
-annotated_image = detector.visualize(image, detections)
-
-# Print detection results
-print("\nDetection Results:")
-for i, (x, y, w, h, conf) in enumerate(detections):
-    print(
-        f"Mosquito {i+1}: Confidence = {conf:.2f}, Box = (x={x:.1f}, y={y:.1f}, w={w:.1f}, h={h:.1f})",
-    )
-# Visualize results
-segmented_image_with_boxes = segmenter.visualize(annotated_image, mask_with_boxes)
-
-# plt.figure(figsize=(10, 10))
-plt.figure(figsize=(15, 5))
-
-plt.subplot(1, 2, 1)
-plt.imshow(mask_with_boxes, cmap="gray")
-plt.axis("off")
-plt.title("Segmentation Mask")
-
-
-plt.subplot(1, 2, 2)
-plt.imshow(segmented_image_with_boxes)
-plt.axis("off")
-plt.title("Segmentation with Detection Boxes")
-
-plt.tight_layout()
-plt.show()
-
-# %%
-metrics = segmenter.evaluate(mask_with_boxes, input_data=image, detection_boxes=detections)
+metrics = segmenter.evaluate(mask, input_data=image_path, detection_boxes=detections)
 print(metrics)
-
-# %%
-metrics_default = segmenter.evaluate(
-    mask_with_boxes,
-    mask,
-)
-print(metrics_default)

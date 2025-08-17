@@ -15,7 +15,7 @@ library to perform object detection on images. We will cover:
 """
 # %%
 # Install the `culicidaelab` library if not already installed
-# # !pip install -q culicidaelab
+# !pip install -q culicidaelab
 
 # %% [markdown]
 # ## 1. Initialization

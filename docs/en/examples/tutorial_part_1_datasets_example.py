@@ -229,11 +229,11 @@ except KeyError:
 
 # %% [markdown]
 # #### **Exploring the mosquito species diversity dataset**
-
+#
 # This dataset serves as the foundational source for the classification, detection, and
 # segmentation datasets. It contains a rich collection of images with corresponding
 # labels and bounding box information.
-
+#
 # Let's start by defining the repository ID and fetching some basic statistics.
 
 # %%
@@ -263,7 +263,7 @@ except requests.exceptions.RequestException as e:
 
 # %% [markdown]
 # #### **Visualizing Class Distribution**
-
+#
 # A balanced dataset is crucial for training a robust model.
 # Let's write a function to visualize the number of samples for
 # each mosquito species to check for any significant imbalances.
@@ -333,7 +333,7 @@ if dataset_info:
 
 # %% [markdown]
 # #### **Visualizing Taxonomic Distribution**
-
+#
 # To better understand the relationships between species, we can visualize the dataset
 # in a hierarchical tree structure, grouping species by their genus.
 # This provides insight into the taxonomic diversity of the data.
@@ -524,11 +524,11 @@ else:
 # ## 6. Next Steps & Further Reading
 # You now have a solid understanding of how to use the `DatasetsManager` in `culicidaelab`.
 # From here, you can:
-
+#
 # *   **Train a new model:** Use the loaded data with your favorite deep learning framework.
 # *   **Contribute to the project:** If you have your own labeled mosquito datasets,
 # consider sharing them with the community.
 # *   **Explore the API:** Dive deeper into the `culicidaelab` source code to discover more functionalities.
-
+#
 # By providing standardized datasets and an easy-to-use interface, `culicidaelab` aims
 # to accelerate innovation in the fight against mosquito-borne diseases. Happy coding!
