@@ -2,13 +2,14 @@
 """
 # Mosquito Segmentation Tutorial
 
-This tutorial demonstrates how to use the CulicidaeLab library
+This tutorial demonstrates how to use the `culicidaelab` library
 to perform mosquito segmentation on images. We'll cover:
 
 1. Setting up the segmentation model
-2. Loading and preprocessing images
+2. Loading segmentation data from the dataset
 3. Running segmentation
 4. Visualizing results
+5. Evaluating performance with ground truth masks
 
 """
 
@@ -17,92 +18,145 @@ to perform mosquito segmentation on images. We'll cover:
 # # !pip install -q culicidaelab
 
 # %%
-from pathlib import Path
 import matplotlib.pyplot as plt
-from PIL import Image
 import numpy as np
 
 from culicidaelab import MosquitoSegmenter, MosquitoDetector
-from culicidaelab import ModelWeightsManager
-from culicidaelab import get_settings
+from culicidaelab import DatasetsManager, get_settings
 
 # %% [markdown]
-# ## 1. Initialize Settings and Segmenter
+# ## 1. Initialize Settings and Load Dataset
 #
-# First, we'll initialize our settings and create a MosquitoSegmenter instance:
+# First, we'll initialize our settings, create MosquitoSegmenter and load the segmentation dataset:
 
 # %%
-# Get settings instance
+# Get settings instance and initialize dataset manager
 settings = get_settings()
-settings.list_model_types()
+manager = DatasetsManager(settings)
 
-# %%
-model_config = settings.get_config("predictors.segmenter")
-model_path = settings.get_model_weights_path("segmenter")
-weights_manager = ModelWeightsManager(settings=settings)
-# Initialize segmenter
+# Load segmentation dataset
+seg_data = manager.load_dataset("segmentation", split="train[:20]")
+
+# Initialize segmenter and detector
 segmenter = MosquitoSegmenter(settings=settings, load_model=True)
-
-# %% [markdown]
-# ## 2. Load and Preprocess Image
-#
-# Now let's load a test image:
-
-# %%
-# Load test image
-image_path = str(Path("test_imgs") / "640px-Aedes_aegypti.jpg")
-
-# %% [markdown]
-# ## 3. Run Segmentation
-#
-# Now we can run the segmentation model on our image:
-
-# %%
-# Initialize detector
 detector = MosquitoDetector(settings=settings, load_model=True)
-# Load test image
-image_path = str(Path("test_imgs") / "640px-Aedes_aegypti.jpg")
 
+# %% [markdown]
+# ## 2. Inspect a Segmentation Sample
+#
+# Let's examine a sample from the segmentation dataset to understand its structure:
 
-# Run detection
-detections = detector.predict(image_path)
+# %%
+# Inspect a segmentation sample
+seg_sample = seg_data[0]
+seg_image = seg_sample["image"]
+seg_mask = np.array(seg_sample["label"])  # Convert mask to numpy array
+
+print(f"Image size: {seg_image.size}")
+print(f"Segmentation mask shape: {seg_mask.shape}")
+print(f"Unique values in mask: {np.unique(seg_mask)}")  # 0 is background, 1 and above is mosquito
+
+# Create a colored overlay for the mask
+# Where the mask is 1 and above (mosquito), we make it red
+overlay = np.zeros((*seg_mask.shape, 4), dtype=np.uint8)
+overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Red color with 50% opacity
+
+# %% [markdown]
+# ## 3. Run Segmentation on Dataset Image
+#
+# Now we can run the segmentation model on our dataset image:
+
+# %%
+# Run detection to get bounding boxes
+detections = detector.predict(seg_image)
 
 # Run segmentation with detection boxes
-mask = segmenter.predict(image_path, detection_boxes=np.array(detections))
-# Draw detections
-annotated_image = detector.visualize(image_path, detections)
-segmented_image = segmenter.visualize(annotated_image, mask)
+predicted_mask = segmenter.predict(seg_image, detection_boxes=np.array(detections))
+
+# Create visualizations
+annotated_image = detector.visualize(seg_image, detections)
+segmented_image = segmenter.visualize(annotated_image, predicted_mask)
 
 # %% [markdown]
-# ## 4. Visualize Results
+# ## 4. Visualize Results with Ground Truth Comparison
 #
-# Finally, let's visualize the segmentation results overlaid on the original image:
+# Let's visualize the segmentation results alongside the ground truth mask:
 
 # %%
-image = Image.open(image_path)
-plt.figure(figsize=(15, 5))
+plt.figure(figsize=(20, 10))
 
-plt.subplot(1, 3, 1)
-plt.imshow(image)
+# Original image
+plt.subplot(2, 4, 1)
+plt.imshow(seg_image)
 plt.axis("off")
 plt.title("Original Image")
 
-plt.subplot(1, 3, 2)
-plt.imshow(mask, cmap="gray")
+# Ground truth mask
+plt.subplot(2, 4, 2)
+plt.imshow(seg_mask, cmap="gray")
 plt.axis("off")
-plt.title("Segmentation Mask")
+plt.title("Ground Truth Mask")
 
-plt.subplot(1, 3, 3)
+# Ground truth overlay
+plt.subplot(2, 4, 3)
+plt.imshow(seg_image)
+plt.imshow(overlay, alpha=0.5)
+plt.axis("off")
+plt.title("Ground Truth Overlay")
+
+# Detections
+plt.subplot(2, 4, 4)
+plt.imshow(annotated_image)
+plt.axis("off")
+plt.title("Detected Mosquitoes")
+
+# Predicted mask
+plt.subplot(2, 4, 5)
+plt.imshow(predicted_mask, cmap="gray")
+plt.axis("off")
+plt.title("Predicted Mask")
+
+# Predicted overlay
+predicted_overlay = np.zeros((*predicted_mask.shape, 4), dtype=np.uint8)
+predicted_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Green for predictions
+plt.subplot(2, 4, 6)
+plt.imshow(seg_image)
+plt.imshow(predicted_overlay, alpha=0.5)
+plt.axis("off")
+plt.title("Predicted Overlay")
+
+# Combined overlay (ground truth + predictions)
+combined_overlay = np.zeros((*predicted_mask.shape, 4), dtype=np.uint8)
+combined_overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Red for ground truth
+combined_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Green for predictions
+plt.subplot(2, 4, 7)
+plt.imshow(seg_image)
+plt.imshow(combined_overlay, alpha=0.5)
+plt.axis("off")
+plt.title("Combined Overlay\n(Red: GT, Green: Pred)")
+
+# Final segmented image
+plt.subplot(2, 4, 8)
 plt.imshow(segmented_image)
 plt.axis("off")
-plt.title("Segmented Image")
+plt.title("Final Segmented Image")
 
 plt.tight_layout()
 plt.show()
 
 # %% [markdown]
-# ## 5. Evaluate results
+# ## 5. Evaluate Segmentation Performance
+#
+# Let's evaluate the segmentation results using the ground truth mask:
 
 # %%
-metrics = segmenter.evaluate(mask, input_data=image_path, detection_boxes=detections)
-print(metrics)
+metrics = segmenter.evaluate(
+    prediction=predicted_mask,
+    ground_truth=seg_mask,
+)
+print("Segmentation Evaluation Metrics:")
+for key, value in metrics.items():
+    if isinstance(value, float):
+        print(f"  {key}: {value:.4f}")
+    else:
+        print(f"  {key}: {value}")
