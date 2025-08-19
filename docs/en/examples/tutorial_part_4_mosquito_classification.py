@@ -171,7 +171,7 @@ annotated_image = classifier.visualize(image, predictions)
 # Display the final annotated image
 plt.figure(figsize=(10, 6))
 plt.imshow(annotated_image)
-plt.title("Formatted Classification Result")
+plt.title("Classification Result")
 plt.axis("off")
 plt.show()
 

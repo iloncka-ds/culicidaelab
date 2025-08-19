@@ -49,6 +49,7 @@ classes:
   - Culiseta_morsitans
   - Uranotaenia_unguiculata
 repository: "iloncka/mosquito_dataset_46_3139"
+config_name: "default"
 provider_name: "huggingface"
 derived_datasets:
   - "iloncka/mosquito-species-classification-dataset"

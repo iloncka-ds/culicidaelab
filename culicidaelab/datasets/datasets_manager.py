@@ -8,6 +8,8 @@ for use in the application.
 
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 from typing import Any
 
@@ -94,40 +96,81 @@ class DatasetsManager:
         """
         return list(self.loaded_datasets.keys())
 
-    def load_dataset(self, dataset_name: str, split: str | None = None, **kwargs: Any) -> Any:
-        """Loads a specific dataset, downloading it if not already cached.
-
-        This method first checks a local cache for the dataset path. If the
-        dataset is not cached, it resolves the path using the settings,
-        instructs the appropriate provider to download it, and caches the path.
-        Finally, it uses the provider to load the dataset into memory.
+    def load_dataset(
+        self,
+        name: str,
+        split: str | list[str] | None = None,
+        config_name: str | None = "default",
+    ) -> Any:
+        """
+        Loads a dataset, handling complex splits and caching automatically.
 
         Args:
-            dataset_name (str): The name of the dataset to load.
-            split (str, optional): The specific dataset split to load (e.g.,
-                'train', 'test'). Defaults to None.
-            **kwargs (Any): Additional keyword arguments to pass to the provider's
-                dataset loading function.
+            name (str): The name of the dataset to load.
+            split (str | list[str] | None, optional): The split(s) to load.
+                - str: A single split name (e.g., "train", "test").
+                - None: Loads ALL available splits into a `DatasetDict`.
+                - Advanced: Can be a slice ("train[:100]") or a list for
+                  cross-validation.
 
         Returns:
-            Any: The loaded dataset object, with its type depending on the provider.
-
-        Raises:
-            KeyError: If the dataset configuration does not exist.
+            The loaded dataset object.
         """
-        dataset_config = self.get_dataset_info(dataset_name)
-        provider = self.provider_service.get_provider(dataset_config.provider_name)
+        # 1. Get config and provider
+        config = self.get_dataset_info(name)
+        provider = self.provider_service.get_provider(config.provider_name)
 
-        if dataset_name in self.loaded_datasets:
-            dataset_path = self.loaded_datasets[dataset_name]
+        # If we've already loaded this dataset in this session, prefer the cached path
+        if name in self.loaded_datasets:
+            cached = self.loaded_datasets[name]
+            # Ensure a Path object when calling the provider
+            cached_path = Path(cached) if not isinstance(cached, Path) else cached
+            return provider.load_dataset(cached_path)
+
+        # 2. Determine paths using the hashed cache key (Manager's responsibility)
+        dataset_base_path = self.settings.dataset_dir / config.path
+        split_key = self._get_cache_key_for_split(split)
+        split_path = dataset_base_path / split_key
+
+        # 3. Check cache, otherwise download
+        downloaded_path = None
+        if not split_path.exists():
+            # Instruct the provider to download and save to the precise cache path
+            # Some providers may return the actual saved path; prefer that when present.
+            downloaded_path = provider.download_dataset(
+                dataset_name=name,
+                config_name=config_name,
+                save_dir=split_path,
+                split=split,
+            )
         else:
-            print(f"Dataset '{dataset_name}' not in cache. Downloading...")
-            dataset_path = provider.download_dataset(dataset_name, split=split, **kwargs)
-            self.loaded_datasets[dataset_name] = dataset_path
-            print(f"Dataset '{dataset_name}' downloaded and path cached.")
+            print(f"Cache hit for split config: {split} (key: {split_key})")
 
-        print(f"Loading '{dataset_name}' from path: {dataset_path}")
-        dataset = provider.load_dataset(dataset_path, split=split, **kwargs)
-        print(f"Dataset '{dataset_name}' loaded successfully.")
+        # 4. Instruct the provider to load from the appropriate path
+        load_from = None
+        if downloaded_path:
+            load_from = Path(downloaded_path) if not isinstance(downloaded_path, Path) else downloaded_path
+        else:
+            load_from = split_path
+
+        dataset = provider.load_dataset(load_from)
+
+        # 5. Update the session cache
+        self.loaded_datasets[name] = load_from
 
         return dataset
+
+    @staticmethod
+    def _get_cache_key_for_split(split: str | list[str] | None) -> str:
+        """
+        Generates a unique, deterministic hash for any valid split configuration.
+        Handles None, strings, and lists of strings.
+        """
+        if isinstance(split, list):
+            split.sort()
+
+        # json.dumps correctly handles None, converting it to the string "null"
+        split_str = json.dumps(split, sort_keys=True)
+
+        hasher = hashlib.sha256(split_str.encode("utf-8"))
+        return hasher.hexdigest()[:16]

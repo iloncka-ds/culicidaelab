@@ -224,6 +224,7 @@ class DatasetConfig(BaseModel):
     classes: list[str]
     provider_name: str
     repository: str
+    config_name: str | None = "default"
     derived_datasets: list[str] | None = None
     trained_models_repositories: list[str] | None = None
 

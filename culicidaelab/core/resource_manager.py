@@ -11,12 +11,12 @@ import platform
 import shutil
 import tempfile
 import time
+import toml
 from contextlib import contextmanager
 from pathlib import Path
 from threading import Lock
 
 import appdirs
-import toml
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,6 @@ class ResourceManager:
     ):
         """Initializes resource paths with cross-platform compatibility."""
         self._lock = Lock()
-        self._workspace_registry: dict[str, Path] = {}
         self.app_name = self._determine_app_name(app_name)
         self._initialize_paths(custom_base_dir)
         self._initialize_directories()
@@ -87,11 +86,20 @@ class ResourceManager:
             ...     (ws / "temp.txt").write_text("data")
             # The workspace is automatically removed here.
         """
-        workspace = self.create_temp_workspace(prefix, suffix)
         try:
-            yield workspace
+            # Create the temp directory inside our app's main temp_dir
+            workspace_path_str = tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=self.temp_dir)
+            workspace_path = Path(workspace_path_str)
+            logger.info(f"Created temporary workspace: {workspace_path}")
+            yield workspace_path
         finally:
-            self.clean_temp_workspace(workspace, force=True)
+            if "workspace_path" in locals() and workspace_path.exists():
+                try:
+                    shutil.rmtree(workspace_path)
+                    logger.info(f"Cleaned up temporary workspace: {workspace_path}")
+                except Exception as e:
+                    # Log error but don't prevent context exit
+                    logger.error(f"Failed to clean up workspace {workspace_path}: {e}")
 
     def clean_old_files(
         self,
@@ -133,36 +141,6 @@ class ResourceManager:
         logger.info(f"Cleanup completed: {cleanup_stats}")
         return cleanup_stats
 
-    def clean_temp_workspace(self, workspace_path: Path, force: bool = False) -> None:
-        """Cleans up a temporary workspace.
-
-        Args:
-            workspace_path (Path): The path to the workspace to clean.
-            force (bool): If True, force remove even if not in a temp directory.
-
-        Raises:
-            ResourceManagerError: If cleanup fails.
-            ValueError: If the workspace is outside the temp dir and `force=False`.
-        """
-        try:
-            if not force and not self._is_safe_to_delete(workspace_path):
-                raise ValueError(
-                    "Cannot clean workspace outside of temp directory without force=True",
-                )
-            if workspace_path.exists():
-                if workspace_path.is_dir():
-                    shutil.rmtree(workspace_path)
-                else:
-                    workspace_path.unlink()
-                logger.info(f"Cleaned workspace: {workspace_path}")
-
-            with self._lock:
-                self._workspace_registry.pop(workspace_path.name, None)
-        except Exception as e:
-            raise ResourceManagerError(
-                f"Failed to clean workspace {workspace_path}: {e}",
-            ) from e
-
     def create_checksum(self, file_path: str | Path, algorithm: str = "md5") -> str:
         """Creates a checksum for a file.
 
@@ -188,41 +166,6 @@ class ResourceManager:
         except Exception as e:
             raise ResourceManagerError(
                 f"Failed to create checksum for {file_path}: {e}",
-            ) from e
-
-    def create_temp_workspace(
-        self,
-        prefix: str = "workspace",
-        suffix: str = "",
-    ) -> Path:
-        """Creates a temporary workspace for runtime operations.
-
-        Args:
-            prefix (str): A prefix for the temporary directory name.
-            suffix (str): A suffix for the temporary directory name.
-
-        Returns:
-            Path: The path to the created temporary workspace.
-
-        Raises:
-            ResourceManagerError: If workspace creation fails.
-        """
-        try:
-            timestamp = str(int(time.time()))
-            pid = str(os.getpid())
-            workspace_name = f"{prefix}_{timestamp}_{pid}"
-            if suffix:
-                workspace_name += f"_{suffix}"
-
-            temp_workspace = self.temp_dir / workspace_name
-            temp_workspace.mkdir(parents=True, exist_ok=True)
-            with self._lock:
-                self._workspace_registry[workspace_name] = temp_workspace
-            logger.info(f"Created temporary workspace: {temp_workspace}")
-            return temp_workspace
-        except Exception as e:
-            raise ResourceManagerError(
-                f"Failed to create temporary workspace: {e}",
             ) from e
 
     def get_all_directories(self) -> dict[str, Path]:
@@ -378,30 +321,39 @@ class ResourceManager:
         if app_name:
             return app_name
         try:
-            project_root = self._find_project_root()
-            config_path = project_root / "pyproject.toml"
-            if config_path.exists():
-                config = toml.load(str(config_path))
-                name = config.get("project", {}).get("name") or config.get("tool", {}).get(
-                    "poetry",
-                    {},
-                ).get("name")
-                if name:
-                    return name
+            # Try to get the project name from pyproject.toml
+            app_name = self._get_project_name_from_pyproject()
+            if app_name:
+                return app_name
         except Exception as e:
-            logger.warning(f"Could not load app name from pyproject.toml: {e}")
+            logger.warning(
+                f"Could not find installed package metadata. {e}" "Falling back to default app name 'culicidaelab'.",
+            )
         return "culicidaelab"
 
-    def _find_project_root(self) -> Path:
-        """Finds the project root directory."""
-        current_path = Path(__file__).resolve()
-        indicators = ["pyproject.toml", "setup.py", ".git", "requirements.txt"]
-        while current_path.parent != current_path:
-            if any((current_path / i).exists() for i in indicators):
-                return current_path
-            current_path = current_path.parent
-        logger.warning("Could not find project root, using module directory")
-        return Path(__file__).parent.parent
+    def _get_project_name_from_pyproject(self) -> str | None:
+        """Gets the project name from the pyproject.toml file."""
+        try:
+            # Find the root of the project
+            root_dir = os.path.dirname(os.path.abspath(__file__))
+            while not os.path.exists(os.path.join(root_dir, "pyproject.toml")):
+                parent_dir = os.path.dirname(root_dir)
+                if parent_dir == root_dir:
+                    # We've reached the top, no pyproject.toml found
+                    return None
+                root_dir = parent_dir
+
+            # Read the pyproject.toml file
+            pyproject_path = os.path.join(root_dir, "pyproject.toml")
+            with open(pyproject_path, encoding="utf-8") as f:
+                pyproject_data = toml.load(f)
+
+            # Get the project name from the pyproject.toml data
+            project_name = pyproject_data.get("project", {}).get("name")
+            return project_name
+        except Exception as e:
+            logger.error(f"Failed to read project name from pyproject.toml: {e}")
+            return None
 
     def _format_bytes(self, bytes_count: int | float) -> str:
         """Formats bytes into a human-readable string."""

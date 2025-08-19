@@ -3,6 +3,7 @@ path: "mosquito_detection"
 format: "yolo"
 classes: ["mosquito"]
 repository: "iloncka/mosquito-species-detection-dataset"
+config_name: "default"
 provider_name: "huggingface"
 trained_models_repositories:
   - "iloncka/culico-net-det-v1"

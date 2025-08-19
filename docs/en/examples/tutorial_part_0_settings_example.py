@@ -8,7 +8,7 @@ and model parameters throughout the library.
 """
 # %%
 # Install the `culicidaelab` library if not already installed
-# !pip install -q culicidaelab
+# # !pip install -q culicidaelab
 
 # %%
 import yaml

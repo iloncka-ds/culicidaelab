@@ -1,5 +1,4 @@
 import pytest
-import tempfile
 
 import os
 import time
@@ -42,36 +41,6 @@ def test_get_dataset_path(resource_manager):
     assert dataset_path.parent == resource_manager.dataset_dir
 
 
-def test_create_temp_workspace(resource_manager):
-    """Test creating temporary workspace."""
-    workspace = resource_manager.create_temp_workspace(prefix="test_workspace")
-    assert workspace.exists()
-    assert workspace.is_dir()
-    assert str(workspace).startswith(str(resource_manager.temp_dir))
-    assert "test_workspace" in str(workspace)
-
-
-def test_clean_temp_workspace(resource_manager):
-    """Test cleaning temporary workspace."""
-    workspace = resource_manager.create_temp_workspace()
-    assert workspace.exists()
-
-    resource_manager.clean_temp_workspace(workspace)
-    assert not workspace.exists()
-
-
-def test_clean_temp_workspace_safety(resource_manager):
-    """Test that cleaning workspace outside temp directory raises error."""
-    with tempfile.TemporaryDirectory() as external_dir:
-        external_path = Path(external_dir)
-        from culicidaelab.core.resource_manager import ResourceManagerError
-
-        with pytest.raises(ResourceManagerError):
-            resource_manager.clean_temp_workspace(external_path)
-
-        resource_manager.clean_temp_workspace(external_path, force=True)
-
-
 def test_get_cache_path_and_sanitize(resource_manager):
     cache_name = "test:cache*name?"
     cache_path = resource_manager.get_cache_path(cache_name)
@@ -85,12 +54,6 @@ def test_temp_workspace_context(resource_manager):
     with resource_manager.temp_workspace(prefix="ctx") as ws:
         assert ws.exists()
     assert not ws.exists()
-
-
-def test_is_safe_to_delete(resource_manager):
-    temp = resource_manager.create_temp_workspace()
-    assert resource_manager._is_safe_to_delete(temp)
-    assert not resource_manager._is_safe_to_delete(Path("/"))
 
 
 def test_clean_old_files(resource_manager):

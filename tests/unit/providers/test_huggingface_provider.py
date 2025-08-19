@@ -14,6 +14,7 @@ def mock_settings():
     settings.get_dataset_path.return_value = Path("/fake/datasets/my_dataset")
     settings.get_model_weights_path.return_value = Path("/fake/models/classifier.pt")
     settings.get_api_key.return_value = "fake_api_key_from_env"
+    settings.cache_dir = Path("/fake/cache")
 
     def get_config_side_effect(path):
         if "datasets" in path:
@@ -94,6 +95,8 @@ def test_get_dataset_metadata_failure(mock_get, hf_provider):
 
 @patch("culicidaelab.providers.huggingface_provider.load_dataset")
 def test_download_dataset(mock_load_dataset, hf_provider, mock_settings):
+    from unittest.mock import ANY
+
     mock_hf_dataset = MagicMock()
     mock_load_dataset.return_value = mock_hf_dataset
     save_path = Path("/fake/datasets/my_dataset")
@@ -102,10 +105,12 @@ def test_download_dataset(mock_load_dataset, hf_provider, mock_settings):
 
     mock_load_dataset.assert_called_once_with(
         "culicidae/my_dataset_repo",
+        name="default",
         split="train",
         token="fake_api_key_from_env",
+        cache_dir=ANY,
     )
-    expected_save_path = save_path / "train"
+    expected_save_path = save_path
     mock_hf_dataset.save_to_disk.assert_called_once_with(str(expected_save_path))
     assert result_path == expected_save_path
 

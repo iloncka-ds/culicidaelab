@@ -24,10 +24,10 @@ to interact with the datasets defined in the library's configuration.
 #
 # ### Prerequisites
 #
-# Before you start, make sure you have `culicidaelab` and other necessary libraries installed.
+# Before you start, make sure you have `culicidaelab` and other necessary libraries installed with code:
 #
 # ```bash
-# pip install culicidaelab requests matplotlib numpy
+# %pip install culicidaelab requests matplotlib numpy
 # ```
 
 # %%
@@ -115,25 +115,25 @@ for name in dataset_names:
 
 # %%
 print("\n--- Loading Classification Dataset ---")
-class_data = manager.load_dataset("classification")
+class_data = manager.load_dataset("classification", split="test")
 
 # Let's inspect a single sample
 sample = class_data[10]
 image = sample["image"]
-label_id = sample["label"]
+label = sample["label"]
 
 # The dataset features contain the mapping from integer ID to class name
-class_names = class_data.features["label"].names
-species_name = class_names[label_id]
+class_name = class_data.features["label"]
+species_name = label.replace("_", " ").title()
 
 print(f"Sample image size: {image.size}")
-print(f"Sample label ID: {label_id}")
+print(f"Sample label: {label}")
 print(f"Corresponding species name: {species_name}")
 
 # Visualize the sample
 plt.figure(figsize=(6, 6))
 plt.imshow(image)
-plt.title(f"Classification Sample\nLabel: {label_id} ({species_name.replace('_', ' ').title()})")
+plt.title(f"Classification Sample\nLabel: {label} ({species_name})")
 plt.axis("off")
 plt.show()
 
@@ -150,7 +150,7 @@ print("\n--- Loading Detection Dataset ---")
 # Note: YOLO format may require special handling not covered here.
 # We will use the COCO-formatted segmentation dataset and treat its boxes as
 # detection boxes for this example.
-detect_data = manager.load_dataset("detection")
+detect_data = manager.load_dataset("detection", split="train[:20]")
 
 # Inspect a detection sample
 detect_sample = detect_data[5]
@@ -159,12 +159,11 @@ detect_image_pil = detect_sample["image"]
 detect_image_cv2 = cv2.cvtColor(np.array(detect_image_pil), cv2.COLOR_RGB2BGR)
 
 objects = detect_sample["objects"]
-print(f"Found {len(objects['bbox'])} object(s) in this image.")
+print(f"Found {len(objects['bboxes'])} object(s) in this image.")
 
 # Draw bounding boxes on the image
-for bbox in objects["bbox"]:
-    x_min, y_min, width, height = (int(v) for v in bbox)
-    x_max, y_max = x_min + width, y_min + height
+for bbox in objects["bboxes"]:
+    x_min, y_min, x_max, y_max = (int(v) for v in bbox)
     # Draw a green rectangle
     cv2.rectangle(detect_image_cv2, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
 
@@ -184,7 +183,7 @@ plt.show()
 
 # %%
 print("\n--- Loading Segmentation Dataset ---")
-seg_data = manager.load_dataset("segmentation")
+seg_data = manager.load_dataset("segmentation", split="train[:20]")
 
 # Inspect a segmentation sample
 seg_sample = seg_data[0]
@@ -198,7 +197,7 @@ print(f"Unique values in mask: {np.unique(seg_mask)}")  # 0 is background, 1 is 
 # Create a colored overlay for the mask
 # Where the mask is 1 (mosquito), we make it red
 overlay = np.zeros((*seg_mask.shape, 4), dtype=np.uint8)
-overlay[seg_mask == 1] = [255, 0, 0, 128]  # Red color with 50% opacity
+overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Red color with 50% opacity
 
 # Visualize the image with the mask overlay
 fig, ax = plt.subplots(figsize=(8, 8))
@@ -475,24 +474,23 @@ print(f"Created custom config directory at: ./{custom_config_dir.name}")
 # **Example**: Let's add a configuration for a hypothetical `culex-pipiens-complex` dataset.
 
 # %%
+# The file's stem will become the top-level key in the merged config.
+# To override the library's 'datasets' section, save the mapping directly
 custom_dataset_config = {
-    # This top-level key is required
-    "datasets": {
-        # The name of our custom dataset
-        "culex-pipiens-complex": {
-            # --- Fields from DatasetConfig ---
-            "name": "culex-pipiens-complex",
-            "path": "culex_pipiens_complex",
-            "format": "imagefolder",
-            "classes": ["culex_pipiens", "culex_torrentium"],
-            "provider_name": "huggingface",
-            "repository": "my-org/culex-pipiens-complex-dataset",
-            # Optional fields like 'trained_models_repositories' are omitted
-        },
+    # Note: do NOT add a top-level 'datasets' key here; the filename
+    # will be used as the key in the merged config.
+    "culex-pipiens-complex": {
+        "name": "culex-pipiens-complex",
+        "path": "culex_pipiens_complex",
+        "format": "imagefolder",
+        "classes": ["culex_pipiens", "culex_torrentium"],
+        "provider_name": "huggingface",
+        "repository": "my-org/culex-pipiens-complex-dataset",
     },
 }
 
-config_file_path = custom_config_dir / "my_datasets.yaml"
+
+config_file_path = custom_config_dir / "datasets.yaml"
 with open(config_file_path, "w") as f:
     yaml.safe_dump(custom_dataset_config, f)
 

@@ -69,8 +69,12 @@ plt.show()
 # Print the numerical detection results
 print("\nDetection Results:")
 if detections:
-    for i, (x, y, w, h, conf) in enumerate(detections):
-        print(f"  - Mosquito {i+1}: Confidence = {conf:.2f}, Box = (x={x:.1f}, y={y:.1f}, w={w:.1f}, h={h:.1f})")
+    for i, (x1, y1, x2, y2, conf) in enumerate(detections):
+        print(
+            f"  - Mosquito {i+1}: \
+            Confidence = {conf:.2f}, \
+            Box = (x1={x1:.1f}, y1={y1:.1f}, x2={x2:.1f}, y2={y2:.1f})",
+        )
 else:
     print("  No mosquitoes detected.")
 
@@ -84,7 +88,7 @@ else:
 # Here, we'll use the detection we just found as a mock ground truth to demonstrate the process.
 
 # %%
-# A ground truth is a list of boxes without the confidence score: [(x, y, w, h), ...]
+# A ground truth is a list of boxes without the confidence score: [(x1, y1, x2, y2), ...]
 if detections:
     test_ground_truth = [detections[0][:4]]  # Use the first detected box as our ground truth
 
@@ -113,16 +117,8 @@ image_dir = Path("test_imgs")
 pattern = re.compile(r"\.(jpg|jpeg|png)$", re.IGNORECASE)
 image_paths = [path for path in image_dir.iterdir() if path.is_file() and pattern.search(str(path))]
 
-# Load all images into a list (our "batch")
-try:
-    batch = [cv2.cvtColor(cv2.imread(str(path)), cv2.COLOR_BGR2RGB) for path in image_paths]
-    print(f"\n--- Processing a batch of {len(batch)} images ---")
-except Exception as e:
-    print(f"An error occurred while reading images: {e}")
-    batch = []
-
 # Run batch prediction
-detections_batch = detector.predict_batch(batch)
+detections_batch = detector.predict_batch(image_paths)
 print("Batch prediction complete.")
 for i, dets in enumerate(detections_batch):
     print(f"  - Image {i+1} ({image_paths[i].name}): Found {len(dets)} detection(s).")
@@ -135,7 +131,7 @@ for i, dets in enumerate(detections_batch):
 
 # %%
 # Create a mock ground truth batch from our batch prediction results
-batch_test_gt = [[(x, y, w, h) for (x, y, w, h, conf) in detections] for detections in detections_batch]
+batch_test_gt = [[(x1, y1, x2, y2) for (x1, y1, x2, y2, conf) in detections] for detections in detections_batch]
 
 # Call evaluate_batch. We provide the predictions directly.
 print("\n--- Evaluating the entire batch ---")

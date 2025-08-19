@@ -17,7 +17,7 @@ class BaseProvider(ABC):
     def download_dataset(
         self,
         dataset_name: str,
-        save_dir: str | None = None,
+        save_dir: Path | None = None,
         *args: Any,
         **kwargs: Any,
     ) -> Path:
@@ -25,7 +25,7 @@ class BaseProvider(ABC):
 
         Args:
             dataset_name (str): The name of the dataset to download.
-            save_dir (str, optional): The directory to save the dataset.
+            save_dir (Path | None, optional): The directory to save the dataset.
                 Defaults to None.
             *args: Additional positional arguments.
             **kwargs: Additional keyword arguments to pass to the download method.
