@@ -6,16 +6,17 @@ This tutorial shows how to use the `MosquitoDetector` from the CulicidaeLab
 library to perform object detection on images. We will cover:
 
 - Loading the detector model
-- Preparing an image
+- Preparing an image from the dataset
 - Running the model to get bounding boxes
 - Visualizing the results
 - Evaluating prediction accuracy
 - Running predictions on a batch of images
 
 """
+
 # %%
 # Install the `culicidaelab` library if not already installed
-# !pip install -q culicidaelab
+# # !pip install -q culicidaelab
 
 # %% [markdown]
 # ## 1. Initialization
@@ -25,16 +26,21 @@ library to perform object detection on images. We will cover:
 # If the model file doesn't exist locally, it will be downloaded automatically.
 
 # %%
-import re
 import cv2
+import numpy as np
 import matplotlib.pyplot as plt
-from pathlib import Path
 
 from culicidaelab import get_settings
-from culicidaelab import MosquitoDetector
+from culicidaelab import MosquitoDetector, DatasetsManager
 
 # Get settings instance
 settings = get_settings()
+
+# Initialize the datasets manager
+manager = DatasetsManager(settings)
+
+# Load detection dataset
+detect_data = manager.load_dataset("detection", split="train[:20]")
 
 # Instantiate the detector and load the model
 print("Initializing MosquitoDetector and loading model...")
@@ -42,22 +48,25 @@ detector = MosquitoDetector(settings=settings, load_model=True)
 print("Model loaded successfully.")
 
 # %% [markdown]
-# ## 2. Detecting Mosquitoes in a Single Image
+# ## 2. Detecting Mosquitoes in a Dataset Image
 #
-# Now let's load a test image and run the detector on it.
+# Now let's use an image from the detection dataset and run the detector on it.
 
 # %%
-# Load a test image from the local 'test_imgs' directory
-image_path = Path("test_imgs") / "640px-Aedes_aegypti.jpg"
-image = cv2.imread(str(image_path))
-image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB for matplotlib
+# Inspect a detection sample
+detect_sample = detect_data[5]
+detect_image = detect_sample["image"]
+
+# Get ground truth objects
+objects = detect_sample["objects"]
+print(f"Found {len(objects['bboxes'])} object(s) in this image.")
 
 # The `predict` method returns a list of detections.
-# Each detection is a tuple: (center_x, center_y, width, height, confidence_score)
-detections = detector.predict(image_rgb)
+# Each detection is a tuple: (x1, y1, x2, y2, confidence_score)
+detections = detector.predict(detect_image)
 
 # The `visualize` method draws the bounding boxes onto the image for easy inspection.
-annotated_image = detector.visualize(image_rgb, detections)
+annotated_image = detector.visualize(detect_image, detections)
 
 # Display the result
 plt.figure(figsize=(12, 8))
@@ -79,67 +88,120 @@ else:
     print("  No mosquitoes detected.")
 
 # %% [markdown]
-# ## 3. Evaluating a Prediction
+# ## 3. Evaluating a Prediction with Ground Truth
 #
 # The `evaluate` method allows you to compare a prediction against a ground truth.
 # This is useful for measuring the model's accuracy. The method returns several metrics,
 # including Average Precision (AP), which is a standard for object detection.
-#
-# Here, we'll use the detection we just found as a mock ground truth to demonstrate the process.
+# Now let's evaluate the prediction against the actual ground truth from the dataset.
 
 # %%
-# A ground truth is a list of boxes without the confidence score: [(x1, y1, x2, y2), ...]
-if detections:
-    test_ground_truth = [detections[0][:4]]  # Use the first detected box as our ground truth
+# Extract ground truth boxes from the dataset sample
+ground_truth_boxes = []
+for bbox in objects["bboxes"]:
+    x_min, y_min, x_max, y_max = bbox
+    ground_truth_boxes.append((x_min, y_min, x_max, y_max))
 
-    # You can evaluate using a pre-computed prediction
-    print("--- Evaluating with a pre-computed prediction ---")
-    evaluation = detector.evaluate(ground_truth=test_ground_truth, prediction=detections)
-    print(evaluation)
+# Evaluate using the ground truth from the dataset
+print("--- Evaluating with dataset ground truth ---")
+evaluation = detector.evaluate(ground_truth=ground_truth_boxes, prediction=detections)
+print(evaluation)
 
-    # Or you can let the method run prediction internally by passing the raw image
-    print("\n--- Evaluating directly from an image ---")
-    evaluation_from_raw = detector.evaluate(ground_truth=test_ground_truth, input_data=image_rgb)
-    print(evaluation_from_raw)
-else:
-    print("Skipping evaluation as no detections were found.")
-
+# %%
+# You can let the method run prediction internally by passing the raw image
+print("\n--- Evaluating directly from an image ---")
+evaluation_from_raw = detector.evaluate(ground_truth=ground_truth_boxes, input_data=detect_image)
+print(evaluation_from_raw)
 
 # %% [markdown]
-# ## 4. Running Batch Predictions
+# ## 4. Running Batch Predictions on Dataset Images
 #
 # For efficiency, you can process multiple images at once using `predict_batch`.
-# This is much faster than looping and calling `predict` on each image individually.
 
 # %%
-# Find all image files in the 'test_imgs' directory
-image_dir = Path("test_imgs")
-pattern = re.compile(r"\.(jpg|jpeg|png)$", re.IGNORECASE)
-image_paths = [path for path in image_dir.iterdir() if path.is_file() and pattern.search(str(path))]
+# Extract images from the detection dataset
+image_batch = [sample["image"] for sample in detect_data]
 
 # Run batch prediction
-detections_batch = detector.predict_batch(image_paths)
+detections_batch = detector.predict_batch(image_batch)
 print("Batch prediction complete.")
-for i, dets in enumerate(detections_batch):
-    print(f"  - Image {i+1} ({image_paths[i].name}): Found {len(dets)} detection(s).")
 
+for i, dets in enumerate(detections_batch):
+    print(f"  - Image {i+1}: Found {len(dets)} detection(s).")
 
 # %% [markdown]
-# ## 5. Evaluating a Batch of Predictions
+# ## 5. Evaluating a Batch of Predictions with Dataset Ground Truth
 #
-# Similarly, `evaluate_batch` can be used to get aggregated metrics over an entire set of images.
+# Similarly, `evaluate_batch` can be used to get aggregated metrics over the entire dataset.
 
 # %%
-# Create a mock ground truth batch from our batch prediction results
-batch_test_gt = [[(x1, y1, x2, y2) for (x1, y1, x2, y2, conf) in detections] for detections in detections_batch]
+# Extract ground truth from the detection dataset
+ground_truth_batch = []
+for sample in detect_data:
+    boxes = []
+    for bbox in sample["objects"]["bboxes"]:
+        x_min, y_min, x_max, y_max = bbox
+        boxes.append((x_min, y_min, x_max, y_max))
+    ground_truth_batch.append(boxes)
 
-# Call evaluate_batch. We provide the predictions directly.
-print("\n--- Evaluating the entire batch ---")
+# Call evaluate_batch with dataset ground truth
+print("\n--- Evaluating the entire batch with dataset ground truth ---")
 batch_evaluation = detector.evaluate_batch(
-    ground_truth_batch=batch_test_gt,
+    ground_truth_batch=ground_truth_batch,
     predictions_batch=detections_batch,
-    num_workers=1,
+    num_workers=2,  # Use multiple workers for faster processing
 )
 
 print("Aggregated batch evaluation metrics:")
 print(batch_evaluation)
+
+# %% [markdown]
+# ## 6. Visualizing Ground Truth vs Predictions
+#
+# Let's create a comparison visualization showing both ground truth and predictions.
+
+
+# %%
+# Create a function to visualize both ground truth and predictions
+def visualize_comparison(image_rgb, ground_truth_boxes, detection_boxes):
+    # Draw ground truth boxes in green
+    for bbox in ground_truth_boxes:
+        x_min, y_min, x_max, y_max = (int(v) for v in bbox)
+        cv2.rectangle(image_rgb, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+        cv2.putText(
+            image_rgb,
+            "GT",
+            (x_min, y_min - 5),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (0, 255, 0),
+            1,
+        )
+
+    # Draw detection boxes in blue with confidence
+    for x1, y1, x2, y2, conf in detection_boxes:
+        x_min, y_min, x_max, y_max = int(x1), int(y1), int(x2), int(y2)
+        cv2.rectangle(image_rgb, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)
+        cv2.putText(
+            image_rgb,
+            f"{conf:.2f}",
+            (x_min, y_min - 5),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (255, 0, 0),
+            1,
+        )
+
+    return image_rgb
+
+
+# Create comparison visualization
+comparison_image = visualize_comparison(np.array(detect_image), ground_truth_boxes, detections)
+
+# Display the comparison
+plt.figure(figsize=(12, 8))
+plt.imshow(comparison_image)
+plt.axis("off")
+plt.legend(["Green: Ground Truth", "Red: Predictions with Confidence"])
+plt.title("Ground Truth vs Predictions\nGreen: Ground Truth\nRed: Predictions with Confidence")
+plt.show()
