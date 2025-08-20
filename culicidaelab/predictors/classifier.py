@@ -50,9 +50,7 @@ from collections.abc import Sequence
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from fastai.callback.progress import ProgressCallback
 from fastai.vision.all import load_learner
-from fastprogress.fastprogress import progress_bar
 from sklearn.metrics import confusion_matrix, roc_auc_score
 from sklearn.preprocessing import label_binarize
 
@@ -200,85 +198,6 @@ class MosquitoClassifier(
 
         species_probs.sort(key=lambda x: x[1], reverse=True)
         return species_probs
-
-    def predict_batch(
-        self,
-        input_data_batch: Sequence[ImageInput],
-        show_progress: bool = False,
-        batch_size: int = 32,
-        **kwargs: Any,
-    ) -> list[ClassificationPredictionType]:
-        """Classifies mosquito species in a batch of images.
-
-        This method uses FastAI's test_dl for efficient batch processing and
-        the `ProgressCallback` system to display progress.
-
-        Args:
-            input_data_batch: A sequence of input images.
-            batch_size: Number of images per batch. Defaults to 32.
-            show_progress: If True, a progress bar is displayed. Defaults to False.
-            **kwargs: Additional arguments (not currently used).
-
-        Returns:
-            A list of prediction results for each image.
-        """
-        if not self.model_loaded:
-            raise RuntimeError(
-                "Model is not loaded. Call load_model() or use a context manager.",
-            )
-        if not input_data_batch:
-            return []
-
-        results: list[ClassificationPredictionType] = [[] for _ in input_data_batch]
-        valid_images, valid_indices = self._prepare_batch_images(input_data_batch)
-
-        if not valid_images:
-            self._logger.warning("No valid images found in the batch to process.")
-            return results
-        try:
-            with set_posix_windows():
-                test_dl = self.learner.dls.test_dl(
-                    valid_images,
-                    batch_size=batch_size,
-                    shuffle=False,
-                    drop_last=False,
-                )
-                cbs = [ProgressCallback()] if show_progress else None
-                probabilities, _ = self.learner.get_preds(dl=test_dl, cbs=cbs)
-
-                for pred_idx, original_idx in enumerate(valid_indices):
-                    probs = probabilities[pred_idx]
-                    species_probs = []
-                    for class_idx, prob in enumerate(probs):
-                        species_name = self.species_map.get(
-                            class_idx,
-                            f"unknown_{class_idx}",
-                        )
-                        species_probs.append((species_name, float(prob)))
-
-                    species_probs.sort(key=lambda x: x[1], reverse=True)
-                    results[original_idx] = species_probs
-
-        except Exception as e:
-            self._logger.error(
-                f"Error during FastAI batch processing: {e}",
-                exc_info=True,
-            )
-            self._logger.info("Falling back to individual predictions...")
-
-            fallback_iterable = zip(valid_images, valid_indices)
-            if show_progress:
-                fallback_iterable = progress_bar(list(fallback_iterable), total=len(valid_images))
-            for image, original_idx in fallback_iterable:
-                try:
-                    prediction = self.predict(image)
-                    results[original_idx] = prediction
-                except Exception as individual_error:
-                    self._logger.error(
-                        f"Failed to process image at original index {original_idx}: {individual_error}",
-                    )
-                    results[original_idx] = []
-        return results
 
     def visualize(
         self,

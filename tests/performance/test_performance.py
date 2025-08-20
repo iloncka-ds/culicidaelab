@@ -112,7 +112,7 @@ class PerformanceTester:
         self.image_size = image_size
         self.num_runs = num_runs
         self.warmup_runs = warmup_runs
-        self.output_path = output_dir / f"{model_name}_performance.json"
+        self.output_path = output_dir / f"{model_name}_{device}_performance.json"
         self.results: list[dict] = []
         self.settings = get_settings()
 
@@ -131,9 +131,17 @@ class PerformanceTester:
 
         return model_map[self.model_name](settings=self.settings, load_model=load)
 
-    def _generate_mock_data(self, batch_size: int) -> list[np.ndarray]:
+    def _generate_mock_data(self, batch_size: int) -> list[np.ndarray] | tuple[list[np.ndarray], list[np.ndarray]]:
         shape = (self.image_size, self.image_size, 3)
-        return [np.random.randint(0, 255, shape, dtype=np.uint8) for _ in range(batch_size)]
+        fake_images = [np.random.randint(0, 255, shape, dtype=np.uint8) for _ in range(batch_size)]
+        if self.model_name != "segmenter":
+            return fake_images
+        else:
+            detection_boxes_batch = [np.random.randint(0, 255, (1, 4), dtype=np.uint8) for _ in range(batch_size)]
+            return (
+                fake_images,
+                detection_boxes_batch,
+            )
 
     def _run_and_average(self, test_name: str, func: Any, *args, **kwargs) -> dict:
         print(f"\nRunning test: '{test_name}'...")
@@ -151,13 +159,17 @@ class PerformanceTester:
             last_run_metrics = metrics
 
             for key, value in metrics.items():
-                if not isinstance(value, dict):
+                if not isinstance(value, dict) and not isinstance(value, np.ndarray):
                     collected_metrics[key].append(value)
 
         averaged_metrics = {key: np.mean(val) for key, val in collected_metrics.items()}
         averaged_metrics.update({k: v for k, v in last_run_metrics.items() if isinstance(v, (dict, int))})
 
         result_log = {"test_name": test_name, **kwargs, **averaged_metrics}
+        if "detection_boxes" in result_log:
+            del result_log["detection_boxes"]
+        if "detection_boxes_batch" in result_log:
+            del result_log["detection_boxes_batch"]
         self.results.append(result_log)
         return result_log
 
@@ -170,11 +182,29 @@ class PerformanceTester:
         for bs in batch_sizes:
             input_data = self._generate_mock_data(bs)
             test_name = f"prediction_batch_{bs}"
-
-            if bs == 1:
-                self._run_and_average(test_name, model.predict, input_data[0], batch_size=bs)
+            if self.model_name != "segmenter":
+                if bs == 1:
+                    self._run_and_average(test_name, model.predict, input_data[0], batch_size=bs)
+                else:
+                    self._run_and_average(test_name, model.predict_batch, input_data, batch_size=bs)
             else:
-                self._run_and_average(test_name, model.predict_batch, input_data, batch_size=bs)
+                images, detection_boxes = input_data
+                if bs == 1:
+                    self._run_and_average(
+                        test_name,
+                        model.predict,
+                        images[0],
+                        detection_boxes=detection_boxes[0],
+                        batch_size=bs,
+                    )
+                else:
+                    self._run_and_average(
+                        test_name,
+                        model.predict_batch,
+                        images,
+                        detection_boxes_batch=detection_boxes,
+                        batch_size=bs,
+                    )
 
     def save_results(self):
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
