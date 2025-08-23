@@ -1,0 +1,2512 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="CulicidaeLab: A Python Library for Mosquito Analysis">
+      
+      
+        <meta name="author" content="Ilona Kovaleva">
+      
+      
+        <link rel="canonical" href="https://iloncka-ds.github.io/culicidaelab/en/dev_docs/architecture/">
+      
+      
+        <link rel="prev" href="../../generated/gallery/tutorial_part_4_mosquito_classification/">
+      
+      
+        <link rel="next" href="../contributing/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.46">
+    
+    
+      
+        <title>Developer guide - CulicidaeLab</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6f8fc17f.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Merriweather+Sans:300,300i,400,400i,700,700i%7CRed+Hat+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Merriweather Sans";--md-code-font:"Red Hat Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../sg_gallery-binder.css">
+    
+      <link rel="stylesheet" href="../../sg_gallery-dataframe.css">
+    
+      <link rel="stylesheet" href="../../sg_gallery-rendered-html.css">
+    
+      <link rel="stylesheet" href="../../sg_gallery.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#developer-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="CulicidaeLab" class="md-header__button md-logo" aria-label="CulicidaeLab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CulicidaeLab
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Developer guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label=""  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label=""  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="https://iloncka-ds.github.io/culicidaelab/en" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="https://iloncka-ds.github.io/culicidaelab/ru" hreflang="ru" class="md-select__link">
+              Русский
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/iloncka-ds/culicidaelab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  INTRODUCTION
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/" class="md-tabs__link">
+        
+  
+    
+  
+  INSTALLATION
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../quickstart/" class="md-tabs__link">
+        
+  
+    
+  
+  QUICK START
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../user_manual/user_manual/" class="md-tabs__link">
+        
+  
+    
+  
+  USER MANUAL
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../generated/gallery/" class="md-tabs__link">
+          
+  
+  USAGE EXAMPLES
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  DEVELOPER GUIDE
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api_docs/core/" class="md-tabs__link">
+          
+  
+  API REFERENCE
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CulicidaeLab" class="md-nav__button md-logo" aria-label="CulicidaeLab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CulicidaeLab
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/iloncka-ds/culicidaelab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    INTRODUCTION
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    INSTALLATION
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../quickstart/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    QUICK START
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_manual/user_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    USER MANUAL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    USAGE EXAMPLES
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            USAGE EXAMPLES
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Tutorials
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_1">
+            <span class="md-nav__icon md-icon"></span>
+            Tutorials
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../generated/gallery/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tutorials
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../generated/gallery/tutorial_part_0_settings_example/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Understanding and Using the Settings
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../generated/gallery/tutorial_part_1_datasets_example/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Managing and Loading Datasets
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../generated/gallery/tutorial_part_2_mosquito_detection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mosquito Detection Tutorial
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../generated/gallery/tutorial_part_3_mosquito_segmentation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mosquito Segmentation Tutorial
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../generated/gallery/tutorial_part_4_mosquito_classification/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Classifying Mosquito Species
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    DEVELOPER GUIDE
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            DEVELOPER GUIDE
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Developer guide
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Developer guide
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Introduction
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Introduction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1 Purpose
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2 Scope
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-definitions-acronyms-and-abbreviations-daa" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3 Definitions, Acronyms, and Abbreviations (DAA)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4 References
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-overview-of-the-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5 Overview of the Document
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-system-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. System Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. System Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-system-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 System Context
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-system-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 System Objectives
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-system-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 System Functions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-system-architectural-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. System Architectural Design
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. System Architectural Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-architectural-overview-and-design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1 Architectural Overview and Design Principles
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 Architectural Overview and Design Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311-architectural-layers-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.1 Architectural Layers Diagram
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312-layer-descriptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.2 Layer Descriptions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#313-guiding-design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.3 Guiding Design Principles
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-component-decomposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2 Component Decomposition
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-component-interfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3 Component Interfaces
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-conceptual-interaction-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4 Conceptual interaction flow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-data-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.5 Data Design
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-system-detailed-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. System Detailed Design
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. System Detailed Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-core-module-detailed-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 core Module Detailed Design
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 core Module Detailed Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#411-corebase_predictorbasepredictor" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.1 core.base_predictor.BasePredictor
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412-corebase_providerbaseprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.2 core.base_provider.BaseProvider
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#413-coreconfig_managerconfigmanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.3 core.config_manager.ConfigManager
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#414-coreconfig_modelspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.4 core.config_models.py
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#415-coreprovider_serviceproviderservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.5 core.provider_service.ProviderService
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#416-coreresource_managerresourcemanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.6 core.resource_manager.ResourceManager
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#417-coresettingssettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.7 core.settings.Settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#418-coresettingsget_settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.8 core.settings.get_settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#419-corespecies_configspeciesconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.9 core.species_config.SpeciesConfig
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4110-coreutils" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.10 core.utils
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4111-coreweights_manager_protocolweightsmanagerprotocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.11 core.weights_manager_protocol.WeightsManagerProtocol
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-datasets-module-detailed-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 datasets Module Detailed Design
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 datasets Module Detailed Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#421-datasetsdatasets_managerdatasetsmanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2.1 datasets.datasets_manager.DatasetsManager
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-providers-module-detailed-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 providers Module Detailed Design
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.3 providers Module Detailed Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#431-providershuggingface_providerhuggingfaceprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.1 providers.huggingface_provider.HuggingFaceProvider
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-predictors-module-detailed-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 predictors Module Detailed Design
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.4 predictors Module Detailed Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#441-predictorsclassifierset_posix_windows-context-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.1 predictors.classifier.set_posix_windows (Context Manager)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#442-predictorsclassifiermosquitoclassifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.2 predictors.classifier.MosquitoClassifier
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#443-predictorsdetectormosquitodetector" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.3 predictors.detector.MosquitoDetector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#444-predictorsmodel_weights_managermodelweightsmanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.4 predictors.model_weights_manager.ModelWeightsManager
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#445-predictorssegmentermosquitosegmenter" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.5 predictors.segmenter.MosquitoSegmenter
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-traceability" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Traceability
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Traceability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-requirements-to-components-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 Requirements-to-Components Mapping
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-architectural-objectives-traceability" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 Architectural Objectives Traceability
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.2 Architectural Objectives Traceability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#521-modularity-and-extensibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2.1 Modularity and Extensibility
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#522-configuration-driven-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2.2 Configuration-Driven Behavior
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#523-robust-error-handling-and-resource-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2.3 Robust Error Handling and Resource Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#524-performance-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2.4 Performance Optimization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#525-developer-experience-and-usability" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2.5 Developer Experience and Usability
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-cross-cutting-concerns-traceability" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 Cross-Cutting Concerns Traceability
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.3 Cross-Cutting Concerns Traceability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#531-data-flow-integrity" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3.1 Data Flow Integrity
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#532-scalability-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3.2 Scalability Considerations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#533-maintainability-and-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3.3 Maintainability and Testing
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-compliance-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.4 Compliance Verification
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    API REFERENCE
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            API REFERENCE
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api_docs/core/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Core
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api_docs/predictors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Predictors
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api_docs/datasets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Datasets
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api_docs/providers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Providers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="developer-guide">DEVELOPER GUIDE</h1>
+<h2 id="1-introduction">1. Introduction</h2>
+<h3 id="11-purpose">1.1 Purpose</h3>
+<p>This document provides a detailed design description for the CulicidaeLab library. The library is a Python-based system designed to facilitate the management of datasets, configuration, and machine learning models (predictors) for tasks related to mosquito image analysis, including detection, segmentation, and classification.</p>
+<h3 id="12-scope">1.2 Scope</h3>
+<p>The library provides:</p>
+<ul>
+<li>A type-safe, validated configuration system for model parameters, application settings, and species metadata.</li>
+<li>Cross-platform resource management for datasets, model weights, cache, and temporary files.</li>
+<li>A suite of predictors for classification, detection, and segmentation, built on a common base class.</li>
+<li>A provider-based architecture for integration with external data sources like Hugging Face.</li>
+<li>Utilities for dataset handling, file operations, and result visualization.</li>
+</ul>
+<h3 id="13-definitions-acronyms-and-abbreviations-daa">1.3 Definitions, Acronyms, and Abbreviations (DAA)</h3>
+<ul>
+<li><strong>YOLO</strong>: You Only Look Once (an object detection model architecture)</li>
+<li><strong>SAM</strong>: Segment Anything Model (a segmentation model architecture)</li>
+<li><strong>IoU</strong>: Intersection over Union (a metric for segmentation and detection)</li>
+<li><strong>AP</strong>: Average Precision (a metric for detection)</li>
+<li><strong>mAP</strong>: Mean Average Precision (detection metric)</li>
+<li><strong>Pydantic</strong>: A data validation and settings management library for Python.</li>
+</ul>
+<h3 id="14-references">1.4 References</h3>
+<ul>
+<li>IEEE Std 1016-1998, IEEE Recommended Practice for Software Design Descriptions.</li>
+<li>Python 3.x Language Reference.</li>
+<li>Pydantic Documentation.</li>
+<li>OmegaConf Documentation.</li>
+<li>FastAI Library Documentation.</li>
+<li>HuggingFace Hub and Datasets Documentation.</li>
+<li>YOLO (Ultralytics) Model Documentation.</li>
+<li>Segment Anything Model (SAM) Documentation.</li>
+<li>timm (PyTorch Image Models) Documentation.</li>
+</ul>
+<h3 id="15-overview-of-the-document">1.5 Overview of the Document</h3>
+<p>This document is organized into four main sections:</p>
+<ul>
+<li><strong>Section 1 (Introduction)</strong>: Provides the purpose, scope, definitions, references, and an overview of this document.</li>
+<li><strong>Section 2 (System Overview)</strong>: Describes the system's context, objectives, and overall functions.</li>
+<li><strong>Section 3 (System Architectural Design)</strong>: Outlines the high-level architecture, including component decomposition, their interfaces, and data design.</li>
+<li><strong>Section 4 (System Detailed Design)</strong>: Provides a detailed description of each module and its constituent classes, including their purpose, functions, interfaces, and data.</li>
+<li><strong>Section 5 (Traceability)</strong>: Briefly discusses how the design addresses the implicit requirements of the library.</li>
+</ul>
+<hr />
+<h2 id="2-system-overview">2. System Overview</h2>
+<h3 id="21-system-context">2.1 System Context</h3>
+<p>The CulicidaeLab library is intended to be used by researchers, developers, and data scientists working on projects involving mosquito image analysis. It can serve as a backend for more extensive applications or be used directly in scripts for batch processing, model evaluation, and dataset management. It operates within a Python environment and relies on several external libraries for its core functionalities (e.g., Pydantic, FastAI, Hugging Face libraries, PyTorch, Ultralytics).</p>
+<h3 id="22-system-objectives">2.2 System Objectives</h3>
+<p>The primary objectives of this library are:</p>
+<ol>
+<li>To provide a centralized, type-safe, and validated way to manage configurations for datasets, models, and application settings using Pydantic.</li>
+<li>To offer a flexible, provider-based system for managing and accessing diverse datasets and model weights from various sources (e.g., Hugging Face).</li>
+<li>To define a common, predictable interface (<code>BasePredictor</code>) for different types of predictors (detector, segmenter, classifier) and provide concrete implementations.</li>
+<li>To facilitate efficient model inference, clear result visualization, and standardized evaluation.</li>
+<li>To ensure robust, cross-platform resource management for models, datasets, cache, and temporary files.</li>
+</ol>
+<h3 id="23-system-functions">2.3 System Functions</h3>
+<p>The library provides the following key functions:</p>
+<ul>
+<li><strong>Configuration Management</strong>: Loads, merges, and validates hierarchical configurations from YAML files into Pydantic models.</li>
+<li><strong>Resource Management</strong>: Manages file system paths for models, datasets, cache, and temporary files in a cross-platform manner.</li>
+<li><strong>Provider Abstraction</strong>: Downloads datasets and model weights from external providers (e.g., Hugging Face) through a standardized interface.</li>
+<li><strong>Dataset Management</strong>: Lists and loads datasets as defined in the configuration, using the provider abstraction.</li>
+<li><strong>Model Prediction</strong>: Performs inference using detector, segmenter, and classifier models on single images or batches.</li>
+<li><strong>Result Visualization</strong>: Generates visual outputs of model predictions overlaid on input images.</li>
+<li><strong>Model Evaluation</strong>: Evaluates model performance against ground truth data using standard metrics for each task.</li>
+<li><strong>Model Weight Management</strong>: Ensures model weights are available locally, downloading them via providers when necessary.</li>
+</ul>
+<hr />
+<h2 id="3-system-architectural-design">3. System Architectural Design</h2>
+<h3 id="31-architectural-overview-and-design-principles">3.1 Architectural Overview and Design Principles</h3>
+<p>The architecture of the <code>culicidaelab</code> library is built on the principles of Clean Code and SOLID to provide users with a powerful and flexible tool that remains simple to use. The architecture is clearly divided into logical layers, each with its own area of responsibility. This separation simplifies understanding, testing, and extending the code.</p>
+<h4 id="311-architectural-layers-diagram">3.1.1 Architectural Layers Diagram</h4>
+<pre class="mermaid"><code>graph TD
+    %% -- Layers Definition --
+    classDef userLayer fill:#eaf4ff,stroke:#004085,stroke-width:2px,color:#004085
+    classDef productLayer fill:#e8f5e9,stroke:#155724,stroke-width:2px,color:#155724
+    classDef facadeLayer fill:#fff8e1,stroke:#856404,stroke-width:2px,color:#856404
+    classDef coreLayer fill:#fbe9e7,stroke:#721c24,stroke-width:2px,color:#721c24
+    classDef infraLayer fill:#eceff1,stroke:#383d41,stroke-width:2px,color:#383d41
+    classDef externalLayer fill:#f5f5f5,stroke:#6c757d,stroke-width:4px,stroke-dasharray: 5 5
+
+    %% -- User Layer --
+    subgraph "User"
+         LibraryUser[/"👤 Library User"/]
+    end
+
+    %% -- Products Layer --
+    subgraph "Main Library Functionality"
+        direction TB
+        Predictors["🔬 Predictors"]
+        style Predictors fill:#fff,stroke:none
+        MosquitoClassifier("🦟 MosquitoClassifier")
+        MosquitoDetector("🎯 MosquitoDetector")
+        MosquitoSegmenter("✂️ MosquitoSegmenter")
+    end
+
+    %% -- Facade Layer --
+    subgraph "Facade (Configuration Center)"
+        facade_spacer["&lt;br&gt;"]; style facade_spacer fill:none,stroke:none
+        facade_spacer ~~~ Settings
+        Settings["🎛️ Settings&lt;br/&gt;&lt;b&gt;(Facade)&lt;/b&gt;&lt;br/&gt;Provides unified access&lt;br/&gt;to services and parameters"]
+    end
+
+    %% -- Core Abstraction &amp; Logic Layer --
+    subgraph "Core (Abstractions &amp; Contracts)"
+        core_spacer["&lt;br&gt;"]; style core_spacer fill:none,stroke:none
+        core_spacer ~~~ BasePredictor
+        BasePredictor["🧩 BasePredictor&lt;br/&gt;Abstract class for&lt;br/&gt;all predictors"]
+        BaseProvider["🔌 BaseProvider&lt;br/&gt;Abstract class for&lt;br/&gt;external providers"]
+        WeightsManagerProtocol["⚖️ WeightsManagerProtocol&lt;br/&gt;Interface for managing weights"]
+        ProviderService["🔧 ProviderService&lt;br/&gt;Factory for creating&lt;br/&gt;provider objects"]
+        ConfigManager["⚙️ ConfigManager&lt;br/&gt;Manages configurations&lt;br/&gt;from YAML files"]
+    end
+
+    %% -- Infrastructure &amp; Adapters Layer --
+    subgraph "Infrastructure &amp; Adapters"
+        infra_spacer["&lt;br&gt;"]; style infra_spacer fill:none,stroke:none
+        infra_spacer ~~~ DatasetsManager
+        ModelWeightsManager["⚖️ ModelWeightsManager&lt;br/&gt;Implementation of the protocol&lt;br/&gt;for managing weights"]
+        ResourceManager["📁 ResourceManager&lt;br/&gt;Manages files&lt;br/&gt;and directories"]
+        HuggingFaceProvider["🤗 HuggingFaceProvider&lt;br/&gt;&lt;b&gt;(Adapter)&lt;/b&gt;&lt;br/&gt;Implementation for&lt;br/&gt;Hugging Face Hub"]
+        DatasetsManager["📊 DatasetsManager&lt;br/&gt;Manages the lifecycle&lt;br/&gt;of datasets"]
+    end
+
+    %% -- External Systems --
+    subgraph "External Systems"
+        direction LR
+        HuggingFaceHub[("🌐&lt;br/&gt;Hugging Face Hub")]
+        FileSystem[("💾&lt;br/&gt;Local&lt;br/&gt;File System")]
+    end
+
+    %% -- Relationships --
+    LibraryUser -- "Uses" --&gt; MosquitoClassifier
+    LibraryUser -- "Uses" --&gt; MosquitoDetector
+    LibraryUser -- "Uses" --&gt; MosquitoSegmenter
+    LibraryUser -- "Or manages data via" --&gt; DatasetsManager
+
+    MosquitoClassifier -- "Receives on creation" --&gt; Settings
+    MosquitoDetector -- "Receives on creation" --&gt; Settings
+    MosquitoSegmenter -- "Receives on creation" --&gt; Settings
+
+    Settings -- "Manages" --&gt; ProviderService
+    Settings -- "Manages" --&gt; ConfigManager
+    Settings -- "Manages" --&gt; ResourceManager
+
+    MosquitoClassifier -. "Implements" .-&gt; BasePredictor
+    MosquitoDetector -. "Implements" .-&gt; BasePredictor
+    MosquitoSegmenter -. "Implements" .-&gt; BasePredictor
+    Predictors --- MosquitoClassifier
+    Predictors --- MosquitoDetector
+    Predictors --- MosquitoSegmenter
+
+    BasePredictor -- "Requires" --&gt; WeightsManagerProtocol
+    ModelWeightsManager -. "Implements" .-&gt; WeightsManagerProtocol
+    ModelWeightsManager -- "Uses" --&gt; ProviderService
+
+    DatasetsManager -- "Uses" --&gt; ProviderService
+    ProviderService -- "Creates" --&gt; HuggingFaceProvider
+    HuggingFaceProvider -. "Implements" .-&gt; BaseProvider
+
+    HuggingFaceProvider -- "Downloads from" --&gt; HuggingFaceHub
+    ResourceManager -- "Works with" --&gt; FileSystem
+    HuggingFaceProvider -- "Saves to" --&gt; ResourceManager
+    ConfigManager -- "Reads from" --&gt; ResourceManager
+
+    %% -- Styling --
+    class LibraryUser userLayer
+    class MosquitoClassifier,MosquitoDetector,MosquitoSegmenter,Predictors productLayer
+    class Settings facadeLayer
+    class BasePredictor,BaseProvider,WeightsManagerProtocol,ProviderService,ConfigManager coreLayer
+    class ModelWeightsManager,ResourceManager,HuggingFaceProvider,DatasetsManager infraLayer
+    class HuggingFaceHub,FileSystem externalLayer</code></pre>
+<h4 id="312-layer-descriptions">3.1.2 Layer Descriptions</h4>
+<ol>
+<li><strong>Main Library Functionality</strong>: This is the highest level, representing the concrete, usable products of the library: <code>MosquitoClassifier</code>, <code>MosquitoDetector</code>, and <code>MosquitoSegmenter</code>.</li>
+<li><strong>Facade (Configuration Center)</strong>: The <code>Settings</code> class implements the <strong>Facade</strong> design pattern. It serves as a single, simplified entry point for configuring the entire library, hiding the internal complexity of managing configurations, resources, and services.</li>
+<li><strong>Core (Abstractions and Contracts)</strong>: This is the architectural core, defining the main abstract classes and interfaces (<code>BasePredictor</code>, <code>BaseProvider</code>, <code>WeightsManagerProtocol</code>). This layer is completely decoupled from concrete implementations.</li>
+<li><strong>Infrastructure and Adapters</strong>: This layer contains concrete implementations of the core abstractions. It acts as a bridge between the library's logic and the outside world.</li>
+<li><code>ModelWeightsManager</code> and <code>DatasetsManager</code> manage high-level resources.</li>
+<li><code>HuggingFaceProvider</code> implements the <strong>Adapter</strong> pattern, adapting the Hugging Face API to the internal <code>BaseProvider</code> interface.</li>
+<li><code>ResourceManager</code> works directly with the file system.</li>
+<li><strong>External Systems</strong>: Resources outside the library's direct control, such as the <code>Hugging Face Hub</code> and the local <code>File System</code>.</li>
+</ol>
+<h4 id="313-guiding-design-principles">3.1.3 Guiding Design Principles</h4>
+<ul>
+<li><strong>Extensibility</strong>: To add a new data source (e.g., AWS S3), a developer only needs to create a new <code>S3Provider</code> that implements the <code>BaseProvider</code> interface and register it in the configuration. No changes are needed in the high-level predictor modules.</li>
+<li><strong>Maintainability &amp; Testability</strong>: The single responsibility of each component simplifies debugging. The use of dependency inversion allows infrastructure components to be replaced with mocks during testing.</li>
+<li><strong>SOLID Principles</strong>:</li>
+<li><strong>Dependency Inversion Principle (DIP)</strong>: High-level modules (<code>MosquitoClassifier</code>) do not depend on low-level modules (<code>HuggingFaceProvider</code>). Both depend on abstractions (<code>BaseProvider</code>).</li>
+<li><strong>Factory Pattern (<code>ProviderService</code>)</strong>: Allows the system to dynamically decide which provider object to create based on configuration.</li>
+<li><strong>Facade Pattern (<code>Settings</code>)</strong>: Simplifies the user's interaction with the library by hiding the complexity of creating and wiring internal components.</li>
+</ul>
+<h3 id="32-component-decomposition">3.2 Component Decomposition</h3>
+<p>The library is decomposed into four main high-level modules:</p>
+<ol>
+<li><strong><code>core</code> Module</strong>:</li>
+<li><strong>Description</strong>: Forms the backbone of the library, providing essential services, base classes, protocols, and data models.</li>
+<li><strong>Sub-components</strong>: <code>Settings</code>, <code>ConfigManager</code>, <code>ResourceManager</code>, <code>BasePredictor</code>, <code>BaseProvider</code>, <code>ProviderService</code>, <code>WeightsManagerProtocol</code>, <code>config_models</code>, <code>species_config</code>, <code>utils</code>.</li>
+<li><strong><code>datasets</code> Module</strong>:</li>
+<li><strong>Description</strong>: Handles the high-level logic for managing and accessing datasets.</li>
+<li><strong>Sub-components</strong>: <code>DatasetsManager</code>.</li>
+<li><strong><code>providers</code> Module</strong>:</li>
+<li><strong>Description</strong>: Contains concrete implementations of <code>core.BaseProvider</code> for fetching data from various external sources.</li>
+<li><strong>Sub-components</strong>: <code>HuggingFaceProvider</code>.</li>
+<li><strong><code>predictors</code> Module</strong>:</li>
+<li><strong>Description</strong>: Contains concrete implementations of <code>BasePredictor</code> for specific machine learning tasks and concrete implementation of <code>WeightsManagerProtocol</code>.</li>
+<li><strong>Sub-components</strong>: <code>MosquitoClassifier</code>, <code>MosquitoDetector</code>, <code>MosquitoSegmenter</code>, <code>ModelWeightsManager</code>.</li>
+</ol>
+<h3 id="33-component-interfaces">3.3 Component Interfaces</h3>
+<ul>
+<li><strong><code>core.Settings</code></strong>: The primary user-facing class, accessed via <code>get_settings()</code>. It acts as a singleton facade, providing simple access to configuration values, resource paths (<code>.model_dir</code>), and helper objects. It initializes and holds instances of <code>ConfigManager</code> and <code>ResourceManager</code>.</li>
+<li><strong><code>core.ConfigManager</code></strong>: An internal component managed by <code>Settings</code>. It loads default and user YAML files, merges them, and validates the result against Pydantic models defined in <code>core.config_models</code>.</li>
+<li><strong><code>core.ResourceManager</code></strong>: Provides standardized paths for data storage (models, datasets, cache) used by <code>Settings</code>, <code>DatasetsManager</code>, and <code>ModelWeightsManager</code>.</li>
+<li><strong><code>core.BaseProvider</code></strong>: An abstract base class defining the contract for any component that provides data (datasets or model files), with methods like <code>download_dataset</code> and <code>download_model_weights</code>.</li>
+<li><strong><code>core.ProviderService</code></strong>: A factory and cache for provider instances. It uses <code>Settings</code> to look up a provider's configuration and instantiates the correct <code>BaseProvider</code> implementation (e.g., <code>providers.HuggingFaceProvider</code>).</li>
+<li><strong><code>datasets.DatasetsManager</code></strong>: Manages access to datasets. It uses <code>Settings</code> to get dataset configurations and the <code>ProviderService</code> to acquire the correct provider instance to download and load data.</li>
+<li><strong><code>core.WeightsManagerProtocol</code></strong>: A protocol defining the <code>ensure_weights</code> method. This decouples predictors from the specific weights management implementation.</li>
+<li><strong><code>predictors.ModelWeightsManager</code></strong>: The concrete implementation of <code>WeightsManagerProtocol</code>. It uses <code>Settings</code> to find model configurations and the <code>ProviderService</code> to download weight files if they are not available locally.</li>
+<li><strong><code>core.BasePredictor</code></strong>: The abstract base class for all predictors. It defines the standard interface (<code>predict</code>, <code>evaluate</code>, <code>visualize</code>). It requires a <code>Settings</code> object and an object conforming to <code>WeightsManagerProtocol</code> for initialization.</li>
+<li><strong><code>predictors.*</code> (e.g., <code>MosquitoClassifier</code>, <code>MosquitoDetector</code>)</strong>: Concrete implementations of <code>BasePredictor</code>. They are initialized with <code>Settings</code> and a <code>ModelWeightsManager</code> instance to ensure their model weights are available before use.</li>
+</ul>
+<h3 id="34-conceptual-interaction-flow">3.4 Conceptual interaction flow</h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant User
+    participant MosquitoClassifier
+    participant ModelWeightsManager
+    participant ProviderService
+    participant HuggingFaceProvider
+    participant ResourceManager
+    participant HuggingFaceHub
+    participant FastAI
+
+    Note over User, FastAI: Model initialization
+
+    User-&gt;&gt;MosquitoClassifier: MosquitoClassifier(settings, load_model=True)
+    activate MosquitoClassifier
+    MosquitoClassifier-&gt;&gt;ModelWeightsManager: ensure_weights()
+    activate ModelWeightsManager
+
+    ModelWeightsManager-&gt;&gt;ProviderService: get_provider("huggingface")
+    activate ProviderService
+    ProviderService--&gt;&gt;ModelWeightsManager: HuggingFaceProvider instance
+    deactivate ProviderService
+
+    ModelWeightsManager-&gt;&gt;HuggingFaceProvider: download_model_weights()
+    activate HuggingFaceProvider
+    HuggingFaceProvider-&gt;&gt;ResourceManager: get_save_location()
+    activate ResourceManager
+    ResourceManager--&gt;&gt;HuggingFaceProvider: Path/to/save
+    deactivate ResourceManager
+    HuggingFaceProvider-&gt;&gt;HuggingFaceHub: Download file
+    activate HuggingFaceHub
+    HuggingFaceHub--&gt;&gt;HuggingFaceProvider: Model weights file
+    deactivate HuggingFaceHub
+    HuggingFaceProvider--&gt;&gt;ModelWeightsManager: /path/to/model.pth
+    deactivate HuggingFaceProvider
+    ModelWeightsManager--&gt;&gt;MosquitoClassifier: /path/to/model.pth
+    deactivate ModelWeightsManager
+    MosquitoClassifier-&gt;&gt;FastAI: load_learner(/path/to/model.pth)
+    activate FastAI
+    FastAI--&gt;&gt;MosquitoClassifier: learner
+    deactivate FastAI
+    deactivate MosquitoClassifier
+
+    Note over User, FastAI: Prediction
+
+    User-&gt;&gt;MosquitoClassifier: predict(image)
+    activate MosquitoClassifier
+    MosquitoClassifier-&gt;&gt;FastAI: Perform Inference
+    activate FastAI
+    FastAI--&gt;&gt;MosquitoClassifier: Predictions
+    deactivate FastAI
+    MosquitoClassifier--&gt;&gt;User: Predictions
+    deactivate MosquitoClassifier
+</code></pre>
+<p>To illustrate how the components interact, consider the common scenario of classifying a mosquito image.</p>
+<ol>
+<li><strong>Initialization</strong>: The user's application calls <code>get_settings()</code> to retrieve the <code>Settings</code> facade instance. The <code>Settings</code> object loads all necessary configurations from YAML files. The user then creates an instance of <code>MosquitoClassifier</code>, passing it the <code>settings</code> object.</li>
+</ol>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">culicidaelab</span><span class="w"> </span><span class="kn">import</span> <span class="n">MosquitoClassifier</span><span class="p">,</span> <span class="n">get_settings</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">classifier</span> <span class="o">=</span> <span class="n">MosquitoClassifier</span><span class="p">(</span><span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">,</span> <span class="n">load_model</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+2. <strong>Request for Model Weights</strong>: Upon initialization (with <code>load_model=True</code>), the <code>MosquitoClassifier</code> (via its <code>BasePredictor</code> parent) determines it needs its model weights. It invokes the <code>ensure_weights</code> method on its <code>ModelWeightsManager</code>.
+3. <strong>Provider Resolution</strong>: The <code>ModelWeightsManager</code> inspects the predictor's configuration (via <code>Settings</code>) and finds that the weights are hosted on Hugging Face. It requests a "huggingface" provider from the <code>ProviderService</code>.
+4. <strong>Provider Instantiation</strong>: The <code>ProviderService</code>, acting as a factory, creates and returns an instance of <code>HuggingFaceProvider</code>.
+5. <strong>Data Download and Storage</strong>: The <code>ModelWeightsManager</code> calls <code>download_model_weights</code> on the <code>HuggingFaceProvider</code> instance. The provider communicates with the <code>Hugging Face Hub</code> to download the file. To determine the correct local save location (e.g., <code>~/.culicidae_lab/models/...</code>), it uses the <code>ResourceManager</code>.
+6. <strong>Model Loading</strong>: The verified local path to the weights file is returned up the call stack to the <code>MosquitoClassifier</code>. It can now load the model into memory (e.g., a PyTorch model) and becomes ready for inference.</p>
+<p>This entire complex process is orchestrated by the architecture and remains hidden from the end-user, who only needs to perform the initial creation step.</p>
+<h3 id="35-data-design">3.5 Data Design</h3>
+<ul>
+<li><strong>Configuration Data</strong>: Managed by <code>ConfigManager</code> and validated into a tree of <strong>Pydantic models</strong>, with <code>core.config_models.CulicidaeLabConfig</code> as the root. The original source is YAML files.</li>
+<li><strong>Image Data</strong>: Represented as <code>np.ndarray</code> (NumPy arrays).</li>
+<li><strong>Dataset Metadata</strong>: Formally defined by the <strong><code>core.config_models.DatasetConfig</code></strong> Pydantic model.</li>
+<li><strong>Model Predictions</strong>: Formats are standardized and often represented by a <code>typing.TypeAlias</code> for clarity (e.g., <code>DetectionPredictionType</code>).</li>
+<li><strong>Detector</strong>: <code>list[tuple[float, float, float, float, float]]</code> (center_x, center_y, width, height, confidence).</li>
+<li><strong>Segmenter</strong>: <code>np.ndarray</code> (binary mask of shape HxW).</li>
+<li><strong>Classifier</strong>: <code>list[tuple[str, float]]</code> (species_name, confidence_score).</li>
+<li><strong>Ground Truth Data</strong>: Similarly represented by a <code>typing.TypeAlias</code> (e.g., <code>DetectionGroundTruthType</code>) with formats matching the prediction types.</li>
+<li><strong>Evaluation Metrics</strong>: Dictionaries mapping metric names to float values (<code>dict[str, float]</code>).</li>
+<li><strong>Filesystem Paths</strong>: Managed as <code>pathlib.Path</code> objects by <code>ResourceManager</code> and <code>Settings</code>.</li>
+</ul>
+<h2 id="4-system-detailed-design">4. System Detailed Design</h2>
+<p>This section details each module and its components.</p>
+<h3 id="41-core-module-detailed-design">4.1 <code>core</code> Module Detailed Design</h3>
+<p>The <code>core</code> module provides foundational classes, protocols, and utilities essential for the functioning of the entire library. It handles configuration, resource management, and defines the basic contracts for predictors and data providers.</p>
+<p><strong>Project Structure:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>core
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── __init__.py
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>├── base_predictor.py
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>├── base_provider.py
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>├── config_manager.py
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>├── config_models.py
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>├── provider_service.py
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>├── resource_manager.py
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>├── settings.py
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>├── species_config.py
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>├── utils.py
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>└── weights_manager_protocol.py
+</code></pre></div>
+<h4 id="411-corebase_predictorbasepredictor">4.1.1 <code>core.base_predictor.BasePredictor</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>core.base_predictor.BasePredictor</code></li>
+<li><strong>Purpose</strong>: An abstract base class that defines a common interface for all predictors (e.g., detector, segmenter, classifier).</li>
+<li><strong>Inherits</strong>: <code>Generic[PredictionType, GroundTruthType]</code>, <code>ABC</code></li>
+<li><strong>Function</strong>: Enforces a standard structure for model loading, prediction, evaluation, and visualization. It relies on the main <code>Settings</code> object for configuration and a <code>WeightsManagerProtocol</code> for model file management. It provides a context manager for temporary model loading to manage memory efficiently.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, settings: Settings, predictor_type: str, weights_manager: WeightsManagerProtocol, load_model: bool = False)</code>: Initializes the predictor.</li>
+<li><code>load_model(self) -&gt; None</code>: A wrapper that loads the model if it's not already loaded.</li>
+<li><code>unload_model(self) -&gt; None</code>: Unloads the model to free memory.</li>
+<li><code>predict(self, input_data: np.ndarray, **kwargs: Any) -&gt; PredictionType</code> (abstract): Makes a prediction on a single input.</li>
+<li><code>predict_batch(self, input_data_batch: list[np.ndarray], show_progress: bool = True, **kwargs: Any) -&gt; list[PredictionType]</code>: Makes predictions on a batch of inputs.</li>
+<li><code>evaluate(self, ground_truth: GroundTruthType, prediction: PredictionType | None = None, input_data: np.ndarray | None = None, **predict_kwargs: Any) -&gt; dict[str, float]</code>: Evaluates a single prediction against a ground truth.</li>
+<li><code>evaluate_batch(self, ground_truth_batch: list[GroundTruthType], predictions_batch: list[PredictionType] | None = None, input_data_batch: list[np.ndarray] | None = None, num_workers: int = 4, show_progress: bool = True, **predict_kwargs) -&gt; dict[str, float]</code>: Evaluates on a batch of items using parallel processing.</li>
+<li><code>visualize(self, input_data: np.ndarray, predictions: PredictionType, save_path: str | Path | None = None) -&gt; np.ndarray</code> (abstract): Visualizes predictions on the input data.</li>
+<li><code>get_model_info(self) -&gt; dict[str, Any]</code>: Gets information about the loaded model.</li>
+<li><code>model_context(self)</code> (context manager): Temporarily loads the model for a block of code.</li>
+<li><code>config</code> (property) <code>-&gt; PredictorConfig</code>: Gets the predictor's Pydantic configuration model.</li>
+<li><code>model_loaded</code> (property) <code>-&gt; bool</code>: Checks if the model is loaded.</li>
+<li><code>model_path</code> (property) <code>-&gt; Path</code>: Gets the path to the model weights file.</li>
+<li><code>__call__(self, input_data: np.ndarray, **kwargs: Any) -&gt; Any</code>: Convenience method for <code>predict()</code>.</li>
+<li><code>_load_model(self) -&gt; None</code> (abstract): Child-class specific model loading logic.</li>
+<li><code>_evaluate_from_prediction(self, prediction: PredictionType, ground_truth: GroundTruthType) -&gt; dict[str, float]</code> (abstract): Core metric calculation logic.</li>
+<li><strong>Interfaces (Used)</strong>:</li>
+<li><code>core.settings.Settings</code></li>
+<li><code>core.weights_manager_protocol.WeightsManagerProtocol</code></li>
+<li><code>core.config_models.PredictorConfig</code></li>
+<li><strong>Data</strong>: <code>settings</code>, <code>predictor_type</code>, <code>weights_manager</code>.</li>
+</ul>
+<h4 id="412-corebase_providerbaseprovider">4.1.2 <code>core.base_provider.BaseProvider</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>core.base_provider.BaseProvider</code></li>
+<li><strong>Purpose</strong>: Abstract base class for all data and model providers.</li>
+<li><strong>Inherits</strong>: <code>ABC</code></li>
+<li><strong>Function</strong>: Defines a standard contract for downloading datasets and model weights from external or internal sources.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>download_dataset(self, dataset_name: str, save_dir: str | None = None, *args: Any, **kwargs: Any) -&gt; Path</code> (abstract): Downloads a dataset.</li>
+<li><code>download_model_weights(self, model_type: str, *args: Any, **kwargs: Any) -&gt; Path</code> (abstract): Downloads model weights.</li>
+<li><code>get_provider_name(self) -&gt; str</code> (abstract): Gets the unique name of the provider.</li>
+<li><code>load_dataset(self, dataset_path: str | Path, **kwargs: Any) -&gt; Any</code> (abstract): Loads a dataset from a local path.</li>
+<li><strong>Data</strong>: N/A (abstract class).</li>
+</ul>
+<h4 id="413-coreconfig_managerconfigmanager">4.1.3 <code>core.config_manager.ConfigManager</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>core.config_manager.ConfigManager</code></li>
+<li><strong>Purpose</strong>: Handles loading, merging, and validating configurations for the library.</li>
+<li><strong>Function</strong>: Implements a robust loading strategy: 1. Loads default YAML configurations bundled with the library. 2. Loads user-provided YAML configurations. 3. Merges the user's configuration on top of the defaults. 4. Validates the final merged configuration against the <code>CulicidaeLabConfig</code> Pydantic model. It also provides a utility to instantiate objects from their configuration definitions.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, user_config_dir: str | Path | None = None)</code>: Initializes the manager.</li>
+<li><code>get_config(self) -&gt; CulicidaeLabConfig</code>: Returns the fully validated Pydantic configuration object.</li>
+<li><code>instantiate_from_config(self, config_obj: Any, **kwargs: Any) -&gt; Any</code>: Instantiates a Python object from its Pydantic config model, which must contain a <code>target</code> field.</li>
+<li><code>save_config(self, file_path: str | Path) -&gt; None</code>: Saves the current configuration state to a YAML file.</li>
+<li><strong>Interfaces (Used)</strong>:</li>
+<li><code>core.config_models.CulicidaeLabConfig</code> and other Pydantic models.</li>
+<li><code>PyYAML</code> library (implicitly).</li>
+<li><strong>Data</strong>: <code>user_config_dir</code>, <code>default_config_path</code>, <code>config</code> (a <code>CulicidaeLabConfig</code> instance).</li>
+</ul>
+<h4 id="414-coreconfig_modelspy">4.1.4 <code>core.config_models.py</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>core.config_models.py</code></li>
+<li><strong>Purpose</strong>: Defines the Pydantic models that represent the entire application's configuration structure.</li>
+<li><strong>Function</strong>: Provides data validation, type safety, and a clear structure for all configuration sections, ensuring robustness and predictability.</li>
+<li><strong>Key Models (Provided)</strong>:</li>
+<li><code>CulicidaeLabConfig</code>: The root model for the entire configuration.</li>
+<li><code>PredictorConfig</code>: Defines the configuration for a single predictor, including its class (<code>target</code>), model path, and other parameters.</li>
+<li><code>ProviderConfig</code>: Defines the configuration for a data provider (e.g., Hugging Face, Roboflow).</li>
+<li><code>DatasetConfig</code>: Defines the configuration for a specific dataset.</li>
+<li><code>SpeciesModel</code>: Defines the configuration for species data, including class mappings and metadata.</li>
+<li><code>AppSettings</code>: Core application settings (e.g., environment, log level).</li>
+<li><code>ProcessingConfig</code>: General processing parameters (e.g., batch size, device).</li>
+<li><code>VisualizationConfig</code>: Settings for visualizing model outputs.</li>
+</ul>
+<h4 id="415-coreprovider_serviceproviderservice">4.1.5 <code>core.provider_service.ProviderService</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>core.provider_service.ProviderService</code></li>
+<li><strong>Purpose</strong>: Manages the instantiation and lifecycle of data providers.</li>
+<li><strong>Function</strong>: Acts as a factory and cache for provider instances. It uses the application <code>Settings</code> to find the configuration for a requested provider, instantiates it using <code>ConfigManager</code>, and stores it for reuse.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, settings: Settings)</code>: Initializes the service.</li>
+<li><code>get_provider(self, provider_name: str) -&gt; BaseProvider</code>: Retrieves an instantiated provider by its name.</li>
+<li><strong>Interfaces (Used)</strong>:</li>
+<li><code>core.settings.Settings</code></li>
+<li><code>core.base_provider.BaseProvider</code></li>
+<li><strong>Data</strong>: <code>_settings</code>, <code>_providers</code> (as a cache).</li>
+</ul>
+<h4 id="416-coreresource_managerresourcemanager">4.1.6 <code>core.resource_manager.ResourceManager</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>core.resource_manager.ResourceManager</code></li>
+<li><strong>Purpose</strong>: Centralized resource management for models, datasets, and temporary files, with cross-platform compatibility.</li>
+<li><strong>Function</strong>: Manages application resource directories (models, datasets, cache, temp), provides standardized path generation, temporary workspace management (including an auto-cleaning context manager), file cleanup utilities, checksum creation/verification, and disk usage reporting.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, app_name: str | None = None, custom_base_dir: str | Path | None = None)</code>: Initializes resource paths.</li>
+<li><code>get_model_path(self, model_name: str, create_if_missing: bool = True) -&gt; Path</code>: Gets a standardized path for a specific model.</li>
+<li><code>get_dataset_path(self, dataset_name: str, create_if_missing: bool = True) -&gt; Path</code>: Gets a standardized path for a specific dataset.</li>
+<li><code>get_cache_path(self, cache_name: str, create_if_missing: bool = True) -&gt; Path</code>: Gets a path for cache files.</li>
+<li><code>create_temp_workspace(self, prefix: str = "workspace", suffix: str = "") -&gt; Path</code>: Creates a temporary workspace directory.</li>
+<li><code>temp_workspace(self, prefix: str = "workspace", suffix: str = "")</code> (context manager): Creates a temporary workspace that is automatically deleted on exit.</li>
+<li><code>clean_temp_workspace(self, workspace_path: Path, force: bool = False) -&gt; None</code>: Manually cleans a temporary workspace.</li>
+<li><code>clean_old_files(self, days: int = 5, include_cache: bool = True) -&gt; dict[str, int]</code>: Cleans up old download and temporary files.</li>
+<li><code>get_disk_usage(self) -&gt; dict[str, dict[str, int | str]]</code>: Gets disk usage statistics for all managed directories.</li>
+<li><code>create_checksum(self, file_path: str | Path, algorithm: str = "md5") -&gt; str</code>: Creates a checksum for a file.</li>
+<li><code>verify_checksum(self, file_path: str | Path, expected_checksum: str, algorithm: str = "md5") -&gt; bool</code>: Verifies a file's checksum.</li>
+<li><code>get_all_directories(self) -&gt; dict[str, Path]</code>: Gets all managed directories.</li>
+<li><strong>Data</strong>: <code>app_name</code>, <code>user_data_dir</code>, <code>user_cache_dir</code>, <code>temp_dir</code>, <code>model_dir</code>, <code>dataset_dir</code>, <code>downloads_dir</code>.</li>
+</ul>
+<h4 id="417-coresettingssettings">4.1.7 <code>core.settings.Settings</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>core.settings.Settings</code></li>
+<li><strong>Purpose</strong>: A user-friendly facade for all configuration management, providing a simple and stable interface to access configuration values, resource directories, and application settings.</li>
+<li><strong>Function</strong>: This class acts as a high-level interface that delegates complex operations to <code>ConfigManager</code> and <code>ResourceManager</code>. It is designed as a singleton, accessible via the <code>get_settings</code> function, ensuring a single, consistent source of configuration throughout the application.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, config_dir: str | Path | None = None)</code>: Initializes the Settings facade by setting up the underlying managers.</li>
+<li><code>get_config(self, path: str | None = None, default: Any = None) -&gt; Any</code>: Gets a configuration value using a dot-separated path.</li>
+<li><code>set_config(self, path: str, value: Any) -&gt; None</code>: Sets a configuration value in memory.</li>
+<li><code>save_config(self, file_path: str | Path | None = None) -&gt; None</code>: Saves the current in-memory configuration to a YAML file.</li>
+<li><code>instantiate_from_config(self, config_path: str, **kwargs: Any) -&gt; Any</code>: A convenience method to instantiate an object from its configuration path.</li>
+<li><code>get_dataset_path(self, dataset_type: str) -&gt; Path</code>: Gets the path for a specific dataset directory.</li>
+<li><code>get_model_weights_path(self, model_type: str) -&gt; Path</code>: Gets the configured path to a model's weights file.</li>
+<li><code>get_api_key(self, provider: str) -&gt; str | None</code>: Gets an API key for a specified provider.</li>
+<li><code>temp_workspace(self, prefix: str = "workspace")</code> (context manager): Provides a temporary workspace via the <code>ResourceManager</code>.</li>
+<li><code>model_dir</code> / <code>weights_dir</code> (property) <code>-&gt; Path</code>: The directory for model weights.</li>
+<li><code>dataset_dir</code> (property) <code>-&gt; Path</code>: The directory for datasets.</li>
+<li><code>cache_dir</code> (property) <code>-&gt; Path</code>: The cache directory.</li>
+<li><code>config_dir</code> (property) <code>-&gt; Path</code>: The active user configuration directory.</li>
+<li><code>species_config</code> (property) <code>-&gt; SpeciesConfig</code>: Provides lazy-loaded access to the <code>SpeciesConfig</code> helper.</li>
+<li><strong>Interfaces (Used)</strong>:</li>
+<li><code>core.config_manager.ConfigManager</code></li>
+<li><code>core.resource_manager.ResourceManager</code></li>
+<li><code>core.species_config.SpeciesConfig</code></li>
+<li><strong>Data</strong>: <code>_instance</code>, <code>_lock</code>, <code>_initialized</code>.</li>
+</ul>
+<h4 id="418-coresettingsget_settings">4.1.8 <code>core.settings.get_settings</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>core.settings.get_settings</code></li>
+<li><strong>Purpose</strong>: Factory function to get the singleton <code>Settings</code> instance.</li>
+<li><strong>Function</strong>: This is the primary entry point for accessing all application settings. It ensures that the <code>Settings</code> class is initialized only once.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>get_settings(config_dir: str | Path | None = None) -&gt; Settings</code>: Returns the <code>Settings</code> singleton instance.</li>
+</ul>
+<h4 id="419-corespecies_configspeciesconfig">4.1.9 <code>core.species_config.SpeciesConfig</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>core.species_config.SpeciesConfig</code></li>
+<li><strong>Purpose</strong>: A user-friendly facade for accessing species-specific configuration.</li>
+<li><strong>Function</strong>: This class acts as an adapter, taking the validated <code>SpeciesModel</code> Pydantic object from the main configuration and providing simple, direct methods for querying species data, such as mapping between class indices and names or retrieving detailed metadata.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, config: SpeciesModel)</code>: Initializes with a validated <code>SpeciesModel</code> Pydantic object.</li>
+<li><code>species_map</code> (property) <code>-&gt; dict[int, str]</code>: Gets the mapping of class indices to full species names.</li>
+<li><code>get_species_metadata(self, species_name: str) -&gt; dict[str, Any] | None</code>: Gets detailed metadata for a specific species.</li>
+<li><code>get_species_by_index(self, index: int) -&gt; str | None</code>: Gets the full species name by its class index.</li>
+<li><code>get_index_by_species(self, species_name: str) -&gt; int | None</code>: Gets the class index for a given species name.</li>
+<li><code>list_species_names(self) -&gt; list[str]</code>: Returns a list of all configured species names.</li>
+<li><strong>Interfaces (Used)</strong>:</li>
+<li><code>core.config_models.SpeciesModel</code></li>
+<li><strong>Data</strong>: <code>_config</code>, <code>_species_map</code>, <code>_reverse_species_map</code>, <code>_metadata_store</code>.</li>
+</ul>
+<h4 id="4110-coreutils">4.1.10 <code>core.utils</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>core.utils</code></li>
+<li><strong>Purpose</strong>: A collection of standalone utility functions used throughout the library.</li>
+<li><strong>Functions (Provided)</strong>:</li>
+<li><code>download_file(url: str, destination: str | Path | None = None, downloads_dir: str | Path | None = None, progress_callback: Callable | None = None, chunk_size: int = 8192, timeout: int = 30, desc: str | None = None) -&gt; Path</code>: Downloads a file from a URL with options for progress tracking, chunking, and timeout, returning the path to the downloaded file.</li>
+<li><code>str_to_bgr(str_color: str) -&gt; tuple[int, int, int]</code>: Converts a hexadecimal color string (e.g., '#RRGGBB') into a BGR integer tuple suitable for use with libraries like OpenCV.</li>
+</ul>
+<h4 id="4111-coreweights_manager_protocolweightsmanagerprotocol">4.1.11 <code>core.weights_manager_protocol.WeightsManagerProtocol</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>core.weights_manager_protocol.WeightsManagerProtocol</code></li>
+<li><strong>Purpose</strong>: Defines the protocol (interface) for any class that manages model weights.</li>
+<li><strong>Type</strong>: <code>typing.Protocol</code></li>
+<li><strong>Function</strong>: Ensures that core components like <code>BasePredictor</code> can work with any weights manager without depending on its concrete implementation. This promotes loose coupling and allows for different weight management strategies (e.g., local file system, cloud storage).</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>ensure_weights(self, predictor_type: str) -&gt; Path</code>: Ensures weights for a given predictor type are available locally, potentially downloading them if missing, and returns the local path to the weights file.</li>
+</ul>
+<h3 id="42-datasets-module-detailed-design">4.2 <code>datasets</code> Module Detailed Design</h3>
+<p>The <code>datasets</code> module is responsible for managing access to and loading of datasets based on the central application configuration. It acts as an intermediary between the user code and the underlying data providers.</p>
+<p><strong>Project Structure:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>datasets
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>├── __init__.py
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>└── datasets_manager.py
+</code></pre></div>
+<h4 id="421-datasetsdatasets_managerdatasetsmanager">4.2.1 <code>datasets.datasets_manager.DatasetsManager</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>datasets.datasets_manager.DatasetsManager</code></li>
+<li><strong>Purpose</strong>: Manages access, loading, and caching of configured datasets.</li>
+<li><strong>Function</strong>: Provides a high-level interface that uses the global <code>Settings</code> for configuration and a <code>ProviderService</code> for the actual data loading. This decouples the logic of <em>what</em> datasets are available (defined in config) from <em>how</em> they are loaded and sourced (handled by providers). It maintains a session-local cache of downloaded dataset paths to avoid repeated downloads.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, settings: Settings, provider_service: ProviderService)</code>: Initializes the manager with its dependencies.</li>
+<li><code>get_dataset_info(self, dataset_name: str) -&gt; DatasetConfig</code>: Retrieves the Pydantic configuration model for a specific dataset.</li>
+<li><code>list_datasets(self) -&gt; list[str]</code>: Lists all available dataset names from the global configuration.</li>
+<li><code>list_loaded_datasets(self) -&gt; list[str]</code>: Lists all datasets that have been loaded (downloaded and cached) during the current session.</li>
+<li><code>load_dataset(self, dataset_name: str, split: str | None = None, **kwargs: Any) -&gt; Any</code>: Loads a specific dataset split. It uses the configured provider to download the dataset if it's not already cached, and then loads it into memory. The return type depends on the provider's implementation.</li>
+<li><strong>Interfaces (Used)</strong>:</li>
+<li><code>core.settings.Settings</code>: To access dataset configurations.</li>
+<li><code>core.provider_service.ProviderService</code>: To get the correct provider instance for downloading and loading data.</li>
+<li><code>core.config_models.DatasetConfig</code>: As a return type for <code>get_dataset_info</code>.</li>
+<li><strong>Data</strong>: <code>settings</code>, <code>provider_service</code>, <code>loaded_datasets</code> (internal cache).</li>
+</ul>
+<h3 id="43-providers-module-detailed-design">4.3 <code>providers</code> Module Detailed Design</h3>
+<p>The <code>providers</code> module contains concrete implementations of the <code>BaseProvider</code> interface. Each class in this module is responsible for interacting with a specific external data source (like Hugging Face) to download datasets or model weights.</p>
+<p><strong>Project Structure:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>providers
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>├── __init__.py
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>└── huggingface_provider.py
+</code></pre></div>
+<h4 id="431-providershuggingface_providerhuggingfaceprovider">4.3.1 <code>providers.huggingface_provider.HuggingFaceProvider</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>providers.huggingface_provider.HuggingFaceProvider</code></li>
+<li><strong>Inherits</strong>: <code>core.base_provider.BaseProvider</code></li>
+<li><strong>Purpose</strong>: Provider for downloading and managing HuggingFace datasets and models.</li>
+<li><strong>Function</strong>: This class implements the <code>BaseProvider</code> interface to interact with the Hugging Face Hub. It fetches dataset metadata, downloads full datasets or specific splits, and downloads model weights. It is designed to be instantiated by the <code>ProviderService</code>, which injects the main <code>Settings</code> object and provider-specific configuration (like <code>dataset_url</code> and <code>api_key</code>).</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, settings: Settings, dataset_url: str, **kwargs: Any) -&gt; None</code>: Initializes the provider with the global settings and its specific configuration.</li>
+<li><code>download_dataset(self, dataset_name: str, save_dir: str | None = None, split: str | None = None, *args: Any, **kwargs: Any) -&gt; Path</code>: Downloads a dataset from the Hugging Face Hub to a local directory.</li>
+<li><code>download_model_weights(self, model_type: str, *args: Any, **kwargs: Any) -&gt; Path</code>: Downloads and caches model weights from the Hugging Face Hub based on configuration.</li>
+<li><code>get_dataset_metadata(self, dataset_name: str) -&gt; dict[str, Any]</code>: Fetches metadata for a specific dataset from the Hub.</li>
+<li><code>get_provider_name(self) -&gt; str</code>: Returns the provider's name: <code>"huggingface"</code>.</li>
+<li><code>load_dataset(self, dataset_path: str | Path, split: str | None = None, **kwargs) -&gt; Any</code>: Loads a Hugging Face dataset from a local disk path, which is typically the output of <code>download_dataset</code>.</li>
+<li><strong>Interfaces (Used)</strong>:</li>
+<li><code>core.base_provider.BaseProvider</code> (inheritance).</li>
+<li><code>core.settings.Settings</code> (for configuration, resource paths, and API keys).</li>
+<li><code>huggingface_hub</code> library (for downloading models and datasets).</li>
+<li><code>datasets</code> library (for loading datasets from disk).</li>
+<li><code>requests</code> library (for fetching metadata).</li>
+<li><strong>Data</strong>: <code>provider_name</code>, <code>settings</code>, <code>dataset_url</code>, <code>api_key</code>.</li>
+</ul>
+<h3 id="44-predictors-module-detailed-design">4.4 <code>predictors</code> Module Detailed Design</h3>
+<p>The <code>predictors</code> module contains concrete implementations of machine learning models for various mosquito analysis tasks, inheriting from <code>core.base_predictor.BasePredictor</code>. It also includes a manager for handling the download and local caching of model weights.</p>
+<p><strong>Project Structure:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>predictors
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>├── __init__.py
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>├── classifier.py
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>├── detector.py
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>├── model_weights_manager.py
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>└── segmenter.py
+</code></pre></div>
+<h4 id="441-predictorsclassifierset_posix_windows-context-manager">4.4.1 <code>predictors.classifier.set_posix_windows</code> (Context Manager)</h4>
+<ul>
+<li><strong>Identification</strong>: <code>predictors.classifier.set_posix_windows</code></li>
+<li><strong>Purpose</strong>: A context manager to handle path compatibility issues when loading FastAI models trained on POSIX systems (Linux/macOS) onto a Windows system.</li>
+<li><strong>Function</strong>: It temporarily patches <code>pathlib.PosixPath</code> to behave like <code>pathlib.WindowsPath</code> on Windows systems, allowing the model's pickled path objects to be deserialized correctly.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>@contextmanager def set_posix_windows()</code></li>
+<li><strong>Data</strong>: N/A (functional).</li>
+</ul>
+<h4 id="442-predictorsclassifiermosquitoclassifier">4.4.2 <code>predictors.classifier.MosquitoClassifier</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>predictors.classifier.MosquitoClassifier</code></li>
+<li><strong>Inherits</strong>: <code>core.base_predictor.BasePredictor[ClassificationPredictionType, ClassificationGroundTruthType]</code></li>
+<li><strong>Purpose</strong>: Classifies mosquito species from an image using a pre-trained FastAI model.</li>
+<li><strong>Function</strong>: Implements the full prediction lifecycle for classification: loading a FastAI learner, predicting species from single or batches of images, evaluating model performance with detailed metrics (accuracy, confusion matrix, ROC-AUC), and visualizing the top predictions on an image.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, settings: Settings, load_model: bool = False) -&gt; None</code>: Initializes the classifier using global settings.</li>
+<li><code>predict(self, input_data: np.ndarray, **kwargs: Any) -&gt; ClassificationPredictionType</code>: Classifies a single image, returning a list of <code>(species_name, confidence)</code> tuples.</li>
+<li><code>predict_batch(self, input_data_batch: list[Any], show_progress: bool = False, **kwargs: Any) -&gt; list[ClassificationPredictionType]</code>: Classifies a batch of images.</li>
+<li><code>visualize(self, input_data: np.ndarray, predictions: ClassificationPredictionType, save_path: str | Path | None = None) -&gt; np.ndarray</code>: Overlays top classification results onto an image.</li>
+<li><code>get_species_names(self) -&gt; list[str]</code>: Gets a sorted list of all species names known to the classifier.</li>
+<li><code>get_class_index(self, species_name: str) -&gt; int | None</code>: Retrieves the class index for a given species name.</li>
+<li><strong>Interfaces (Used)</strong>:</li>
+<li><code>core.base_predictor.BasePredictor</code> (inheritance).</li>
+<li><code>core.settings.Settings</code> (for configuration).</li>
+<li>FastAI and PyTorch libraries.</li>
+<li><code>numpy</code>, <code>PIL</code> (Pillow).</li>
+<li><code>sklearn.metrics</code> for advanced evaluation metrics like confusion matrix and ROC-AUC.</li>
+<li><strong>Data</strong>: <code>arch</code>, <code>data_dir</code>, <code>species_map</code>, <code>num_classes</code>, <code>learner</code> (the FastAI learner object).</li>
+</ul>
+<h4 id="443-predictorsdetectormosquitodetector">4.4.3 <code>predictors.detector.MosquitoDetector</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>predictors.detector.MosquitoDetector</code></li>
+<li><strong>Inherits</strong>: <code>core.base_predictor.BasePredictor[DetectionPredictionType, DetectionGroundTruthType]</code></li>
+<li><strong>Purpose</strong>: Detects mosquitos in images using a YOLO model.</li>
+<li><strong>Function</strong>: Loads a YOLO model and implements the full prediction lifecycle for object detection. It predicts bounding boxes on single or batches of images (leveraging YOLO's native batching), visualizes the results, and evaluates detection performance (precision, recall, AP, mean IoU).</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, settings: Settings, load_model: bool = False) -&gt; None</code>: Initializes the detector.</li>
+<li><code>predict(self, input_data: np.ndarray, **kwargs: Any) -&gt; DetectionPredictionType</code>: Detects mosquitos in a single image, returning a list of bounding boxes <code>(cx, cy, w, h, conf)</code>.</li>
+<li><code>predict_batch(self, input_data_batch: list[np.ndarray], show_progress: bool = True, **kwargs: Any) -&gt; list[DetectionPredictionType]</code>: Detects mosquitos in a batch of images.</li>
+<li><code>visualize(self, input_data: np.ndarray, predictions: DetectionPredictionType, save_path: str | Path | None = None) -&gt; np.ndarray</code>: Draws predicted bounding boxes on an image.</li>
+<li><strong>Interfaces (Used)</strong>:</li>
+<li><code>core.base_predictor.BasePredictor</code> (inheritance).</li>
+<li><code>core.settings.Settings</code> (for configuration).</li>
+<li>Ultralytics YOLO library.</li>
+<li><code>numpy</code>, <code>cv2</code> (OpenCV for visualization).</li>
+<li><strong>Data</strong>: <code>confidence_threshold</code>, <code>iou_threshold</code>, <code>max_detections</code>, <code>model</code> (YOLO model instance).</li>
+</ul>
+<h4 id="444-predictorsmodel_weights_managermodelweightsmanager">4.4.4 <code>predictors.model_weights_manager.ModelWeightsManager</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>predictors.model_weights_manager.ModelWeightsManager</code></li>
+<li><strong>Implements</strong>: <code>core.weights_manager_protocol.WeightsManagerProtocol</code></li>
+<li><strong>Purpose</strong>: Manages the download and local availability of model weights.</li>
+<li><strong>Function</strong>: Acts as the bridge between a predictor needing its weights and the <code>ProviderService</code> that can download them. When a predictor requests its weights, this manager checks if the file already exists locally. If not, it uses the configured provider to download the weights and returns the final, verified local path.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, settings: Settings, provider_service: ProviderService)</code>: Initializes with dependencies.</li>
+<li><code>ensure_weights(self, model_type: str) -&gt; Path</code>: Ensures model weights exist locally, downloading them if needed, and returns the path.</li>
+<li><strong>Interfaces (Used)</strong>:</li>
+<li><code>core.settings.Settings</code> (to get predictor configurations).</li>
+<li><code>core.provider_service.ProviderService</code> (to get a provider instance for downloading).</li>
+<li><code>core.base_provider.BaseProvider</code> (via the provider service).</li>
+<li><strong>Data</strong>: <code>settings</code>, <code>provider_service</code>.</li>
+</ul>
+<h4 id="445-predictorssegmentermosquitosegmenter">4.4.5 <code>predictors.segmenter.MosquitoSegmenter</code></h4>
+<ul>
+<li><strong>Identification</strong>: <code>predictors.segmenter.MosquitoSegmenter</code></li>
+<li><strong>Inherits</strong>: <code>core.base_predictor.BasePredictor[SegmentationPredictionType, SegmentationGroundTruthType]</code></li>
+<li><strong>Purpose</strong>: Segments mosquitos in images using the SAM2 model.</li>
+<li><strong>Function</strong>: Loads a SAM2 model and provides methods to generate segmentation masks. It can perform whole-image segmentation or be guided by bounding boxes from a detector. It also implements visualization of masks and evaluation based on metrics like IoU.</li>
+<li><strong>Interfaces (Provided)</strong>:</li>
+<li><code>__init__(self, settings: Settings, load_model: bool = False) -&gt; None</code>: Initializes the segmenter.</li>
+<li><code>predict(self, input_data: np.ndarray, **kwargs: Any) -&gt; np.ndarray</code>: Generates a binary segmentation mask. Can be guided by <code>detection_boxes</code> provided in kwargs.</li>
+<li><code>visualize(self, input_data: np.ndarray, predictions: SegmentationPredictionType, save_path: str | Path | None = None) -&gt; np.ndarray</code>: Overlays the segmentation mask as a colored layer on the original image.</li>
+<li><strong>Interfaces (Used)</strong>:</li>
+<li><code>core.base_predictor.BasePredictor</code> (inheritance).</li>
+<li><code>core.settings.Settings</code> (for configuration).</li>
+<li><code>segment_anything</code> (SAM2) library and PyTorch.</li>
+<li><code>numpy</code>.</li>
+<li><strong>Data</strong>: <code>model</code> (SAM2 model instance/predictor).</li>
+</ul>
+<h2 id="5-traceability">5. Traceability</h2>
+<p>This section establishes comprehensive traceability between the system's functional requirements, architectural objectives, and their corresponding implementation components. The traceability matrix demonstrates how each design decision directly addresses specific requirements and ensures complete coverage of the system's intended functionality.</p>
+<h3 id="51-requirements-to-components-mapping">5.1 Requirements-to-Components Mapping</h3>
+<p>The following table maps each functional requirement to its implementing components, providing clear visibility into how the architecture fulfills the system's objectives:</p>
+<table>
+<thead>
+<tr>
+<th>Functional Requirement</th>
+<th>Primary Component(s)</th>
+<th>Supporting Components</th>
+<th>Implementation Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Centralized Configuration Management</strong></td>
+<td><code>core.ConfigManager</code></td>
+<td><code>core.settings.Settings</code>, Pydantic models in <code>core.config_models</code></td>
+<td>ConfigManager provides singleton access to configuration, while Settings handles environment-specific parameters and Pydantic models ensure type safety and validation</td>
+</tr>
+<tr>
+<td><strong>Flexible Dataset Access &amp; Management</strong></td>
+<td><code>datasets.DatasetsManager</code></td>
+<td><code>providers</code> module, <code>core.BaseProvider</code>, <code>core.ProviderService</code></td>
+<td>DatasetsManager orchestrates dataset operations, BaseProvider defines provider interface, concrete providers handle specific data sources</td>
+</tr>
+<tr>
+<td><strong>Standardized Predictor Interface</strong></td>
+<td><code>core.BasePredictor</code></td>
+<td>All predictor implementations</td>
+<td>Abstract base class ensures consistent API across all prediction models with standardized methods for predict, visualize, and evaluate</td>
+</tr>
+<tr>
+<td><strong>Species Classification</strong></td>
+<td><code>predictors.MosquitoClassifier</code></td>
+<td><code>core.BasePredictor</code>, <code>core.ModelWeightsManager</code></td>
+<td>Implements species-specific classification logic with support for multiple model architectures and weight management</td>
+</tr>
+<tr>
+<td><strong>Object Detection</strong></td>
+<td><code>predictors.MosquitoDetector</code></td>
+<td><code>core.BasePredictor</code>, visualization utilities</td>
+<td>Provides bounding box detection with batch processing capabilities and integrated visualization</td>
+</tr>
+<tr>
+<td><strong>Image Segmentation</strong></td>
+<td><code>predictors.MosquitoSegmenter</code></td>
+<td><code>core.BasePredictor</code>, post-processing utilities</td>
+<td>Implements pixel-level segmentation with support for multiple output formats and mask processing</td>
+</tr>
+<tr>
+<td><strong>Efficient Batch Processing</strong></td>
+<td><code>predict_batch()</code> methods</td>
+<td><code>core.BasePredictor</code>, resource management</td>
+<td>Optimized batch processing with memory management and progress tracking across all predictor types</td>
+</tr>
+<tr>
+<td><strong>Result Visualization</strong></td>
+<td><code>visualize()</code> methods</td>
+<td>Plotting libraries,<code>core.BasePredictor</code></td>
+<td>Consistent visualization interface with customizable output formats and annotation overlays</td>
+</tr>
+<tr>
+<td><strong>Model Performance Evaluation</strong></td>
+<td><code>evaluate()</code> and <code>evaluate_batch()</code></td>
+<td>Metrics calculation, validation utilities</td>
+<td>Comprehensive evaluation framework with standard metrics and custom evaluation protocols</td>
+</tr>
+<tr>
+<td><strong>Resource Management</strong></td>
+<td><code>core.ResourceManager</code></td>
+<td>File system utilities, path management</td>
+<td>Cross-platform resource handling with automatic directory creation and cleanup</td>
+</tr>
+<tr>
+<td><strong>Model Weight Management</strong></td>
+<td><code>predictors.ModelWeightsManager</code></td>
+<td><code>core.WeightsManagerProtocol</code>, download utilities</td>
+<td>Automated model weight downloading, caching, and version management with integrity verification</td>
+</tr>
+<tr>
+<td><strong>External Data Source Integration</strong></td>
+<td><code>core.BaseProvider</code></td>
+<td><code>providers.HuggingFaceProvider</code>, <code>core.ProviderService</code></td>
+<td>Extensible provider system supporting multiple data sources with unified access patterns</td>
+</tr>
+<tr>
+<td><strong>Species Metadata Handling</strong></td>
+<td><code>core.SpeciesConfig</code></td>
+<td>Configuration system, validation</td>
+<td>Structured species information management with taxonomic validation and metadata enrichment</td>
+</tr>
+<tr>
+<td><strong>Cross-Platform Compatibility</strong></td>
+<td>All core modules</td>
+<td>Platform-specific utilities</td>
+<td>Consistent behavior across operating systems with platform-aware file handling</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-architectural-objectives-traceability">5.2 Architectural Objectives Traceability</h3>
+<p>The architecture addresses several implicit but critical objectives that ensure the system's long-term viability and usability:</p>
+<h4 id="521-modularity-and-extensibility">5.2.1 Modularity and Extensibility</h4>
+<p><strong>Objective</strong>: Enable easy addition of new predictors, data sources, and functionality without modifying existing code.</p>
+<p><strong>Implementation</strong>:</p>
+<ul>
+<li><strong>Core Abstractions</strong>: <code>BasePredictor</code>, <code>BaseProvider</code>, and protocol classes define clear contracts</li>
+<li><strong>Module Separation</strong>: Distinct <code>core</code>, <code>datasets</code>, <code>providers</code>, and <code>predictors</code> modules with minimal interdependencies</li>
+<li><strong>Plugin Architecture</strong>: Provider system allows new data sources through simple interface implementation</li>
+<li><strong>Inheritance Hierarchy</strong>: Well-defined base classes enable new predictor types with minimal boilerplate</li>
+</ul>
+<p><strong>Verification</strong>: New mosquito species predictors can be added by subclassing <code>BasePredictor</code> without modifying existing components.</p>
+<h4 id="522-configuration-driven-behavior">5.2.2 Configuration-Driven Behavior</h4>
+<p><strong>Objective</strong>: Maximize system flexibility through external configuration rather than hard-coded values.</p>
+<p><strong>Implementation</strong>:</p>
+<ul>
+<li><strong>Centralized Settings</strong>: <code>core.ConfigManager</code> provides single source of configuration truth</li>
+<li><strong>Environment Awareness</strong>: <code>core.Settings</code> adapts to different deployment environments</li>
+<li><strong>Type Safety</strong>: Pydantic models in <code>core.config_models</code> ensure configuration validation</li>
+<li><strong>Hierarchical Configuration</strong>: Support for global, module-specific, and instance-specific settings</li>
+</ul>
+<p><strong>Verification</strong>: Users can modify system behavior through configuration files without code changes.</p>
+<h4 id="523-robust-error-handling-and-resource-management">5.2.3 Robust Error Handling and Resource Management</h4>
+<p><strong>Objective</strong>: Ensure system stability and proper resource cleanup under all conditions.</p>
+<p><strong>Implementation</strong>:</p>
+<ul>
+<li><strong>Resource Management</strong>: <code>core.ResourceManager</code> handles file system operations with proper cleanup</li>
+<li><strong>Weight Management</strong>: <code>ModelWeightsManager</code> manages model files with integrity checking</li>
+<li><strong>Provider Resilience</strong>: Data source failures are handled gracefully with fallback mechanisms</li>
+<li><strong>Memory Management</strong>: Batch processing includes memory optimization and cleanup procedures</li>
+</ul>
+<p><strong>Verification</strong>: System continues operating and properly cleans up resources even when individual components fail.</p>
+<h4 id="524-performance-optimization">5.2.4 Performance Optimization</h4>
+<p><strong>Objective</strong>: Provide efficient processing capabilities for both single predictions and batch operations.</p>
+<p><strong>Implementation</strong>:</p>
+<ul>
+<li><strong>Batch Processing</strong>: All predictors implement optimized batch methods with memory management</li>
+<li><strong>Lazy Loading</strong>: Models and datasets are loaded only when needed to minimize memory footprint</li>
+<li><strong>Caching Strategy</strong>: Frequently accessed data is cached appropriately to reduce redundant operations</li>
+<li><strong>Resource Pooling</strong>: Shared resources are managed efficiently across multiple operations</li>
+</ul>
+<p><strong>Verification</strong>: Batch operations scale efficiently with dataset size while maintaining reasonable memory usage.</p>
+<h4 id="525-developer-experience-and-usability">5.2.5 Developer Experience and Usability</h4>
+<p><strong>Objective</strong>: Provide intuitive APIs and comprehensive functionality for researchers and developers.</p>
+<p><strong>Implementation</strong>:</p>
+<ul>
+<li><strong>Consistent Interface</strong>: All predictors share common method signatures (predict, visualize, evaluate)</li>
+<li><strong>Rich Visualization</strong>: Built-in visualization capabilities with customizable output formats</li>
+<li><strong>Comprehensive Evaluation</strong>: Standard metrics and custom evaluation protocols</li>
+<li><strong>Documentation Integration</strong>: Code structure supports comprehensive documentation generation</li>
+</ul>
+<p><strong>Verification</strong>: New users can accomplish common tasks with minimal learning curve and clear API patterns.</p>
+<h3 id="53-cross-cutting-concerns-traceability">5.3 Cross-Cutting Concerns Traceability</h3>
+<p>Several system-wide concerns are addressed through coordinated implementation across multiple components:</p>
+<h4 id="531-data-flow-integrity">5.3.1 Data Flow Integrity</h4>
+<ul>
+<li><strong>Source</strong>: <code>providers</code> module ensures data authenticity</li>
+<li><strong>Processing</strong>: <code>predictors</code> maintain data lineage through processing pipeline</li>
+<li><strong>Storage</strong>: <code>ResourceManager</code> handles data persistence with integrity checks</li>
+<li><strong>Validation</strong>: Configuration system validates data formats and parameters</li>
+</ul>
+<h4 id="532-scalability-considerations">5.3.2 Scalability Considerations</h4>
+<ul>
+<li><strong>Horizontal Scaling</strong>: Provider system supports distributed data sources</li>
+<li><strong>Vertical Scaling</strong>: Batch processing optimizes memory and compute usage</li>
+<li><strong>Caching Strategy</strong>: Multi-level caching reduces redundant operations</li>
+<li><strong>Resource Management</strong>: Efficient cleanup prevents resource leaks</li>
+</ul>
+<h4 id="533-maintainability-and-testing">5.3.3 Maintainability and Testing</h4>
+<ul>
+<li><strong>Clear Separation</strong>: Modular design enables focused testing of individual components</li>
+<li><strong>Dependency Injection</strong>: Configuration-driven dependencies support test isolation</li>
+<li><strong>Protocol Compliance</strong>: Abstract base classes define testable contracts</li>
+<li><strong>Mock Support</strong>: Provider abstraction enables comprehensive unit testing</li>
+</ul>
+<h3 id="54-compliance-verification">5.4 Compliance Verification</h3>
+<p>Each requirement can be verified through specific implementation artifacts:</p>
+<ol>
+<li><strong>Interface Compliance</strong>: Abstract base classes define contracts that concrete implementations must fulfill</li>
+<li><strong>Configuration Coverage</strong>: All configurable behavior is exposed through the settings system</li>
+<li><strong>Error Handling</strong>: Each component includes appropriate exception handling and resource cleanup</li>
+<li><strong>Performance Metrics</strong>: Batch processing methods include performance monitoring and optimization</li>
+<li><strong>Extension Points</strong>: New functionality can be added through well-defined extension mechanisms</li>
+</ol>
+<p>This traceability matrix ensures that every aspect of the system design directly addresses identified requirements while maintaining architectural integrity and supporting future enhancements.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../../generated/gallery/tutorial_part_4_mosquito_classification/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Classifying Mosquito Species">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Classifying Mosquito Species
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../contributing/" class="md-footer__link md-footer__link--next" aria-label="Next: Contributing">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Contributing
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Kovaleva Ilona
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["search.suggest", "search.highlight", "navigation.path", "navigation.footer", "navigation.tabs", "navigation.tabs.sticky", "navigation.tracking", "navigation.sections", "navigation.expand", "toc.follow", "toc.integrate", "content.code.annotate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.83f73b43.min.js"></script>
+      
+    
+  </body>
+</html>

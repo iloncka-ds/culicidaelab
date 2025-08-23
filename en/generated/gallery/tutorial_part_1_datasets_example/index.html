@@ -1,0 +1,2066 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="CulicidaeLab: A Python Library for Mosquito Analysis">
+      
+      
+        <meta name="author" content="Ilona Kovaleva">
+      
+      
+        <link rel="canonical" href="https://iloncka-ds.github.io/culicidaelab/en/generated/gallery/tutorial_part_1_datasets_example/">
+      
+      
+        <link rel="prev" href="../tutorial_part_0_settings_example/">
+      
+      
+        <link rel="next" href="../tutorial_part_2_mosquito_detection/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.46">
+    
+    
+      
+        <title>Managing and Loading Datasets - CulicidaeLab</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.6f8fc17f.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Merriweather+Sans:300,300i,400,400i,700,700i%7CRed+Hat+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Merriweather Sans";--md-code-font:"Red Hat Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../sg_gallery-binder.css">
+    
+      <link rel="stylesheet" href="../../../sg_gallery-dataframe.css">
+    
+      <link rel="stylesheet" href="../../../sg_gallery-rendered-html.css">
+    
+      <link rel="stylesheet" href="../../../sg_gallery.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#managing-and-loading-datasets" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="CulicidaeLab" class="md-header__button md-logo" aria-label="CulicidaeLab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CulicidaeLab
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Managing and Loading Datasets
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label=""  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label=""  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="https://iloncka-ds.github.io/culicidaelab/en" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="https://iloncka-ds.github.io/culicidaelab/ru" hreflang="ru" class="md-select__link">
+              Русский
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/iloncka-ds/culicidaelab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+    
+  
+  INTRODUCTION
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../installation/" class="md-tabs__link">
+        
+  
+    
+  
+  INSTALLATION
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../quickstart/" class="md-tabs__link">
+        
+  
+    
+  
+  QUICK START
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../user_manual/user_manual/" class="md-tabs__link">
+        
+  
+    
+  
+  USER MANUAL
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  USAGE EXAMPLES
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../dev_docs/architecture/" class="md-tabs__link">
+          
+  
+  DEVELOPER GUIDE
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../api_docs/core/" class="md-tabs__link">
+          
+  
+  API REFERENCE
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="CulicidaeLab" class="md-nav__button md-logo" aria-label="CulicidaeLab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CulicidaeLab
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/iloncka-ds/culicidaelab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    INTRODUCTION
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    INSTALLATION
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../quickstart/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    QUICK START
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_manual/user_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    USER MANUAL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    USAGE EXAMPLES
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            USAGE EXAMPLES
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Tutorials
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5_1">
+            <span class="md-nav__icon md-icon"></span>
+            Tutorials
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tutorials
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_part_0_settings_example/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Understanding and Using the Settings
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Managing and Loading Datasets
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Managing and Loading Datasets
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#who-is-this-guide-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      Who is this guide for?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-you-will-learn" class="md-nav__link">
+    <span class="md-ellipsis">
+      What you will learn:
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-quick-start-load-a-dataset-in-3-lines" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Quick Start: Load a Dataset in 3 Lines
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-initializing-and-exploring-available-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Initializing and Exploring Available Datasets
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Initializing and Exploring Available Datasets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#listing-datasets-and-their-statistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Listing Datasets and Their Statistics
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-loading-and-visualizing-each-dataset-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Loading and Visualizing Each Dataset Type
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Loading and Visualizing Each Dataset Type">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#use-case-1-species-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Case 1: Species Classification
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-case-2-mosquito-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Case 2: Mosquito Detection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-case-3-image-segmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Use Case 3: Image Segmentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-advanced-exploratory-data-analysis-eda" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Advanced: Exploratory Data Analysis (EDA)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Advanced: Exploratory Data Analysis (EDA)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exploring-the-mosquito-species-diversity-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Exploring the mosquito species diversity dataset
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualizing-class-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visualizing Class Distribution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualizing-taxonomic-distribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Visualizing Taxonomic Distribution
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-advanced-adding-a-custom-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Advanced: Adding a Custom Dataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Advanced: Adding a Custom Dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-understanding-the-required-structure-with-datasetconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Understanding the Required Structure with DatasetConfig
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-create-a-custom-configuration-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Create a Custom Configuration File
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-load-culicidaelab-with-your-custom-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Load culicidaelab with Your Custom Configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-next-steps-further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Next Steps &amp; Further Reading
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_part_2_mosquito_detection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mosquito Detection Tutorial
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_part_3_mosquito_segmentation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mosquito Segmentation Tutorial
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_part_4_mosquito_classification/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Classifying Mosquito Species
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    DEVELOPER GUIDE
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            DEVELOPER GUIDE
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev_docs/architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Developer guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev_docs/contributing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    API REFERENCE
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            API REFERENCE
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api_docs/core/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Core
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api_docs/predictors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Predictors
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api_docs/datasets/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Datasets
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api_docs/providers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Providers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<!--
+ DO NOT EDIT.
+ THIS FILE WAS AUTOMATICALLY GENERATED BY mkdocs-gallery.
+ TO MAKE CHANGES, EDIT THE SOURCE PYTHON FILE:
+ "docs/en/examples/tutorial_part_1_datasets_example.py"
+ LINE NUMBERS ARE GIVEN BELOW.
+-->
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a href="#download_links">here</a>
+to download the full example code</p>
+</div>
+<h1 id="managing-and-loading-datasets">Managing and Loading Datasets</h1>
+<p>This tutorial demonstrates how to use the <code>DatasetsManager</code> in CulicidaeLab
+to interact with the datasets defined in the library's configuration.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 11-32 -->
+
+<h3 id="who-is-this-guide-for">Who is this guide for?</h3>
+<p>This tutorial is for researchers, developers, and students working on entomology,
+epidemiology, and computer vision. Whether you're training a new AI model,
+benchmarking an algorithm, or exploring mosquito biodiversity,
+this guide will help you get up and running quickly with available mosquito datasets.</p>
+<h3 id="what-you-will-learn">What you will learn:</h3>
+<ul>
+<li>How to initialize the <code>DatasetsManager</code>.</li>
+<li>To list available mosquito datasets and view their specific details.</li>
+<li>How to load classification, detection, and segmentation datasets.</li>
+<li>How to perform exploratory data analysis (EDA) on a mosquito diversity dataset.</li>
+</ul>
+<h3 id="prerequisites">Prerequisites</h3>
+<p>Before you start, make sure you have <code>culicidaelab</code> and other necessary libraries installed with code:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>%pip<span class="w"> </span>install<span class="w"> </span>culicidaelab<span class="w"> </span>requests<span class="w"> </span>matplotlib<span class="w"> </span>numpy
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 34-35 -->
+
+<p>Standard library imports</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 35-49 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># Third-party imports</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># CulicidaeLab imports</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="kn">from</span><span class="w"> </span><span class="nn">culicidaelab</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_settings</span><span class="p">,</span> <span class="n">DatasetsManager</span><span class="p">,</span> <span class="n">DatasetConfig</span>
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 50-54 -->
+
+<h2 id="1-quick-start-load-a-dataset-in-3-lines">1. Quick Start: Load a Dataset in 3 Lines</h2>
+<p>For those who want to get data immediately. This snippet initializes the library and loads the test
+split of the mosquito species classification dataset.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 56-65 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Quick Start: Loading Classification Dataset ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># Initialize settings and datasets manager</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">manager</span> <span class="o">=</span> <span class="n">DatasetsManager</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Load the classification dataset</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">classification_dataset</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;classification&quot;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🚀 Quick Start successful! Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">classification_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> classification samples.&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>---<span class="w"> </span>Quick<span class="w"> </span>Start:<span class="w"> </span>Loading<span class="w"> </span>Classification<span class="w"> </span>Dataset<span class="w"> </span>---
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>Cache<span class="w"> </span>hit<span class="w"> </span><span class="k">for</span><span class="w"> </span>split<span class="w"> </span>config:<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="o">(</span>key:<span class="w"> </span>4d967a30111bf29f<span class="o">)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>🚀<span class="w"> </span>Quick<span class="w"> </span>Start<span class="w"> </span>successful!<span class="w"> </span>Loaded<span class="w"> </span><span class="m">328</span><span class="w"> </span>classification<span class="w"> </span>samples.
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 66-69 -->
+
+<h2 id="2-initializing-and-exploring-available-datasets">2. Initializing and Exploring Available Datasets</h2>
+<p>Now, let's dive deeper with each component.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 71-80 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Initializing Core Components ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1"># The get_settings() function is a singleton, so it will return the</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># already loaded instance</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># The `DatasetsManager` is your central hub for all dataset-related</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1"># tasks. It handles downloading, caching, and loading.</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">manager</span> <span class="o">=</span> <span class="n">DatasetsManager</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Core components initialized.&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>---<span class="w"> </span>Initializing<span class="w"> </span>Core<span class="w"> </span>Components<span class="w"> </span>---
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>✅<span class="w"> </span>Core<span class="w"> </span>components<span class="w"> </span>initialized.
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 81-85 -->
+
+<h3 id="listing-datasets-and-their-statistics">Listing Datasets and Their Statistics</h3>
+<p>You can easily see all datasets configured in the library and get a quick overview
+of their contents.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 87-103 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Available Datasets ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">dataset_names</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">list_datasets</span><span class="p">()</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">dataset_names</span><span class="p">:</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="c1"># Access the dataset&#39;s configuration directly from settings</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="n">config</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;datasets.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="n">class_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">📋 Dataset: &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Provider: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">provider_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Repository: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">repository</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Format: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   - Classes: </span><span class="si">{</span><span class="n">class_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Could not find configuration for dataset: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>---<span class="w"> </span>Available<span class="w"> </span>Datasets<span class="w"> </span>---
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>📋<span class="w"> </span>Dataset:<span class="w"> </span><span class="s1">&#39;classification&#39;</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">   </span>-<span class="w"> </span>Provider:<span class="w"> </span>huggingface
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">   </span>-<span class="w"> </span>Repository:<span class="w"> </span>iloncka/mosquito-species-classification-dataset
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">   </span>-<span class="w"> </span>Format:<span class="w"> </span>imagefolder
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">   </span>-<span class="w"> </span>Classes:<span class="w"> </span><span class="m">18</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>📋<span class="w"> </span>Dataset:<span class="w"> </span><span class="s1">&#39;detection&#39;</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">   </span>-<span class="w"> </span>Provider:<span class="w"> </span>huggingface
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">   </span>-<span class="w"> </span>Repository:<span class="w"> </span>iloncka/mosquito-species-detection-dataset
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">   </span>-<span class="w"> </span>Format:<span class="w"> </span>yolo
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">   </span>-<span class="w"> </span>Classes:<span class="w"> </span><span class="m">1</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>📋<span class="w"> </span>Dataset:<span class="w"> </span><span class="s1">&#39;segmentation&#39;</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">   </span>-<span class="w"> </span>Provider:<span class="w"> </span>huggingface
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">   </span>-<span class="w"> </span>Repository:<span class="w"> </span>iloncka/mosquito-species-segmentation-dataset
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">   </span>-<span class="w"> </span>Format:<span class="w"> </span>coco
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">   </span>-<span class="w"> </span>Classes:<span class="w"> </span><span class="m">1</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>📋<span class="w"> </span>Dataset:<span class="w"> </span><span class="s1">&#39;species_diversity&#39;</span>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">   </span>-<span class="w"> </span>Provider:<span class="w"> </span>huggingface
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">   </span>-<span class="w"> </span>Repository:<span class="w"> </span>iloncka/mosquito_dataset_46_3139
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="w">   </span>-<span class="w"> </span>Format:<span class="w"> </span>imagefolder
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="w">   </span>-<span class="w"> </span>Classes:<span class="w"> </span><span class="m">46</span>
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 104-115 -->
+
+<h2 id="3-loading-and-visualizing-each-dataset-type">3. Loading and Visualizing Each Dataset Type</h2>
+<p><code>culicidaelab</code> supports three main task types: classification, detection, and segmentation.
+Let's load a sample from each and visualize the data to understand its structure.</p>
+<h3 id="use-case-1-species-classification">Use Case 1: Species Classification</h3>
+<p><strong>Goal</strong>: Identify the species of a mosquito from an image.</p>
+<p><strong>Data Structure</strong>: The dataset returns a dictionary containing a PIL <code>Image</code>
+and an string <code>label</code>.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 117-140 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Loading Classification Dataset ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">class_data</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;classification&quot;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Let&#39;s inspect a single sample</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">sample</span> <span class="o">=</span> <span class="n">class_data</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">image</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="n">label</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="c1"># The dataset features contain the mapping from integer ID to class name</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="n">class_name</span> <span class="o">=</span> <span class="n">class_data</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="n">species_name</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sample image size: </span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Sample label: </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Corresponding species name: </span><span class="si">{</span><span class="n">species_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="c1"># Visualize the sample</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Classification Sample</span><span class="se">\n</span><span class="s2">Label: </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">species_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<p><img alt="Classification Sample Label: aedes_triseriatus (Aedes Triseriatus)" class="mkd-glr-single-img" src="../images/mkd_glr_tutorial_part_1_datasets_example_001.png" srcset="../images/mkd_glr_tutorial_part_1_datasets_example_001.png, ../images/mkd_glr_tutorial_part_1_datasets_example_001_2_0x.png 2.0x" /></p>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>---<span class="w"> </span>Loading<span class="w"> </span>Classification<span class="w"> </span>Dataset<span class="w"> </span>---
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>Cache<span class="w"> </span>hit<span class="w"> </span><span class="k">for</span><span class="w"> </span>split<span class="w"> </span>config:<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="o">(</span>key:<span class="w"> </span>4d967a30111bf29f<span class="o">)</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>Sample<span class="w"> </span>image<span class="w"> </span>size:<span class="w"> </span><span class="o">(</span><span class="m">224</span>,<span class="w"> </span><span class="m">224</span><span class="o">)</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>Sample<span class="w"> </span>label:<span class="w"> </span>aedes_triseriatus
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>Corresponding<span class="w"> </span>species<span class="w"> </span>name:<span class="w"> </span>Aedes<span class="w"> </span>Triseriatus
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/en/examples/tutorial_part_1_datasets_example.py:138:<span class="w"> </span>UserWarning:<span class="w"> </span>FigureCanvasAgg<span class="w"> </span>is<span class="w"> </span>non-interactive,<span class="w"> </span>and<span class="w"> </span>thus<span class="w"> </span>cannot<span class="w"> </span>be<span class="w"> </span>shown
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">  </span>plt.show<span class="o">()</span>
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 141-147 -->
+
+<h3 id="use-case-2-mosquito-detection">Use Case 2: Mosquito Detection</h3>
+<p><strong>Goal</strong>: Draw a bounding box around each mosquito in an image.</p>
+<p><strong>Data Structure</strong>: The dataset provides bounding boxes in <code>[x_min, y_min, x_max, y_max]</code>
+format and corresponding labels for each object.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 149-177 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Loading Detection Dataset ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="c1"># Note: YOLO format may require special handling not covered here.</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="c1"># We will use the COCO-formatted segmentation dataset and treat its boxes as</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># detection boxes for this example.</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">detect_data</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;detection&quot;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train[:20]&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># Inspect a detection sample</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="n">detect_sample</span> <span class="o">=</span> <span class="n">detect_data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="n">detect_image_pil</span> <span class="o">=</span> <span class="n">detect_sample</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="c1"># Convert PIL image to OpenCV format for drawing</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="n">detect_image_cv2</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detect_image_pil</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_RGB2BGR</span><span class="p">)</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="n">objects</span> <span class="o">=</span> <span class="n">detect_sample</span><span class="p">[</span><span class="s2">&quot;objects&quot;</span><span class="p">]</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">objects</span><span class="p">[</span><span class="s1">&#39;bboxes&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> object(s) in this image.&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="c1"># Draw bounding boxes on the image</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">[</span><span class="s2">&quot;bboxes&quot;</span><span class="p">]:</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>    <span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">bbox</span><span class="p">)</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>    <span class="c1"># Draw a green rectangle</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>    <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">detect_image_cv2</span><span class="p">,</span> <span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">),</span> <span class="p">(</span><span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="c1"># Visualize the sample</span>
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">detect_image_cv2</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">))</span>
+<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Detection Sample with Bounding Boxes&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a><span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<p><img alt="Detection Sample with Bounding Boxes" class="mkd-glr-single-img" src="../images/mkd_glr_tutorial_part_1_datasets_example_002.png" srcset="../images/mkd_glr_tutorial_part_1_datasets_example_002.png, ../images/mkd_glr_tutorial_part_1_datasets_example_002_2_0x.png 2.0x" /></p>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>---<span class="w"> </span>Loading<span class="w"> </span>Detection<span class="w"> </span>Dataset<span class="w"> </span>---
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>Cache<span class="w"> </span>hit<span class="w"> </span><span class="k">for</span><span class="w"> </span>split<span class="w"> </span>config:<span class="w"> </span>train<span class="o">[</span>:20<span class="o">]</span><span class="w"> </span><span class="o">(</span>key:<span class="w"> </span>9e9940e1c673b6f0<span class="o">)</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>object<span class="o">(</span>s<span class="o">)</span><span class="w"> </span><span class="k">in</span><span class="w"> </span>this<span class="w"> </span>image.
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/en/examples/tutorial_part_1_datasets_example.py:175:<span class="w"> </span>UserWarning:<span class="w"> </span>FigureCanvasAgg<span class="w"> </span>is<span class="w"> </span>non-interactive,<span class="w"> </span>and<span class="w"> </span>thus<span class="w"> </span>cannot<span class="w"> </span>be<span class="w"> </span>shown
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span>plt.show<span class="o">()</span>
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 178-183 -->
+
+<h3 id="use-case-3-image-segmentation">Use Case 3: Image Segmentation</h3>
+<p><strong>Goal</strong>: Isolate the exact pixels of a mosquito's body from the background.</p>
+<p><strong>Data Structure</strong>: The dataset provides a <code>label</code> which is a 2D array (mask) where pixel values indicate the class.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 185-211 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Loading Segmentation Dataset ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">seg_data</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;segmentation&quot;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train[:20]&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Inspect a segmentation sample</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="n">seg_sample</span> <span class="o">=</span> <span class="n">seg_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="n">seg_image</span> <span class="o">=</span> <span class="n">seg_sample</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">seg_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">seg_sample</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">])</span>  <span class="c1"># Convert mask to numpy array</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Image size: </span><span class="si">{</span><span class="n">seg_image</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Segmentation mask shape: </span><span class="si">{</span><span class="n">seg_mask</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unique values in mask: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">seg_mask</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># 0 is background, 1 is mosquito</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="c1"># Create a colored overlay for the mask</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="c1"># Where the mask is 1 (mosquito), we make it red</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="n">overlay</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="o">*</span><span class="n">seg_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="n">overlay</span><span class="p">[</span><span class="n">seg_mask</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">]</span>  <span class="c1"># Red color with 50% opacity</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="c1"># Visualize the image with the mask overlay</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">seg_image</span><span class="p">)</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a><span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">overlay</span><span class="p">)</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Segmentation Sample with Mask Overlay&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a><span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<p><img alt="Segmentation Sample with Mask Overlay" class="mkd-glr-single-img" src="../images/mkd_glr_tutorial_part_1_datasets_example_003.png" srcset="../images/mkd_glr_tutorial_part_1_datasets_example_003.png, ../images/mkd_glr_tutorial_part_1_datasets_example_003_2_0x.png 2.0x" /></p>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>---<span class="w"> </span>Loading<span class="w"> </span>Segmentation<span class="w"> </span>Dataset<span class="w"> </span>---
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>Cache<span class="w"> </span>hit<span class="w"> </span><span class="k">for</span><span class="w"> </span>split<span class="w"> </span>config:<span class="w"> </span>train<span class="o">[</span>:20<span class="o">]</span><span class="w"> </span><span class="o">(</span>key:<span class="w"> </span>9e9940e1c673b6f0<span class="o">)</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>Image<span class="w"> </span>size:<span class="w"> </span><span class="o">(</span><span class="m">224</span>,<span class="w"> </span><span class="m">224</span><span class="o">)</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>Segmentation<span class="w"> </span>mask<span class="w"> </span>shape:<span class="w"> </span><span class="o">(</span><span class="m">224</span>,<span class="w"> </span><span class="m">224</span><span class="o">)</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>Unique<span class="w"> </span>values<span class="w"> </span><span class="k">in</span><span class="w"> </span>mask:<span class="w"> </span><span class="o">[</span><span class="w">  </span><span class="m">0</span><span class="w">   </span><span class="m">1</span><span class="w">   </span><span class="m">2</span><span class="w">   </span><span class="m">3</span><span class="w">   </span><span class="m">4</span><span class="w">   </span><span class="m">5</span><span class="w">   </span><span class="m">6</span><span class="w">   </span><span class="m">7</span><span class="w">   </span><span class="m">8</span><span class="w">   </span><span class="m">9</span><span class="w">  </span><span class="m">10</span><span class="w">  </span><span class="m">11</span><span class="w">  </span><span class="m">12</span><span class="w">  </span><span class="m">13</span><span class="w">  </span><span class="m">14</span><span class="w">  </span><span class="m">15</span><span class="w">  </span><span class="m">16</span><span class="w">  </span><span class="m">17</span><span class="w">  </span><span class="m">18</span><span class="w">  </span><span class="m">19</span><span class="w">  </span><span class="m">20</span><span class="w">  </span><span class="m">21</span><span class="w">  </span><span class="m">22</span><span class="w">  </span><span class="m">23</span><span class="w">  </span><span class="m">24</span><span class="w">  </span><span class="m">25</span><span class="w">  </span><span class="m">26</span><span class="w">  </span><span class="m">27</span><span class="w">  </span><span class="m">28</span><span class="w">  </span><span class="m">29</span><span class="w">  </span><span class="m">30</span><span class="w">  </span><span class="m">31</span><span class="w">  </span><span class="m">32</span><span class="w">  </span><span class="m">33</span><span class="w">  </span><span class="m">34</span><span class="w">  </span><span class="m">35</span><span class="w">  </span><span class="m">36</span><span class="w">  </span><span class="m">37</span><span class="w">  </span><span class="m">38</span><span class="w">  </span><span class="m">39</span><span class="w">  </span><span class="m">40</span><span class="w">  </span><span class="m">41</span><span class="w">  </span><span class="m">42</span><span class="w">  </span><span class="m">43</span><span class="w">  </span><span class="m">44</span><span class="w">  </span><span class="m">45</span><span class="w">  </span><span class="m">46</span><span class="w">  </span><span class="m">47</span><span class="w">  </span><span class="m">48</span><span class="w">  </span><span class="m">49</span><span class="w">  </span><span class="m">50</span><span class="w">  </span><span class="m">51</span><span class="w">  </span><span class="m">52</span><span class="w">  </span><span class="m">53</span><span class="w">  </span><span class="m">54</span><span class="w">  </span><span class="m">55</span><span class="w">  </span><span class="m">56</span><span class="w">  </span><span class="m">57</span><span class="w">  </span><span class="m">58</span><span class="w">  </span><span class="m">59</span><span class="w">  </span><span class="m">60</span><span class="w">  </span><span class="m">61</span><span class="w">  </span><span class="m">62</span><span class="w">  </span><span class="m">63</span><span class="w">  </span><span class="m">64</span><span class="w">  </span><span class="m">65</span><span class="w">  </span><span class="m">66</span><span class="w">  </span><span class="m">67</span><span class="w">  </span><span class="m">68</span><span class="w">  </span><span class="m">69</span><span class="w">  </span><span class="m">70</span><span class="w">  </span><span class="m">71</span><span class="w">  </span><span class="m">72</span><span class="w">  </span><span class="m">73</span><span class="w">  </span><span class="m">74</span><span class="w">  </span><span class="m">75</span><span class="w">  </span><span class="m">76</span><span class="w">  </span><span class="m">77</span><span class="w">  </span><span class="m">78</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">  </span><span class="m">79</span><span class="w">  </span><span class="m">80</span><span class="w">  </span><span class="m">81</span><span class="w">  </span><span class="m">82</span><span class="w">  </span><span class="m">83</span><span class="w">  </span><span class="m">84</span><span class="w">  </span><span class="m">85</span><span class="w">  </span><span class="m">86</span><span class="w">  </span><span class="m">87</span><span class="w">  </span><span class="m">88</span><span class="w">  </span><span class="m">89</span><span class="w">  </span><span class="m">90</span><span class="w">  </span><span class="m">91</span><span class="w">  </span><span class="m">92</span><span class="w">  </span><span class="m">93</span><span class="w">  </span><span class="m">94</span><span class="w">  </span><span class="m">95</span><span class="w">  </span><span class="m">96</span><span class="w">  </span><span class="m">97</span><span class="w">  </span><span class="m">98</span><span class="w">  </span><span class="m">99</span><span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="m">101</span><span class="w"> </span><span class="m">102</span><span class="w"> </span><span class="m">103</span><span class="w"> </span><span class="m">104</span><span class="w"> </span><span class="m">105</span><span class="w"> </span><span class="m">106</span><span class="w"> </span><span class="m">107</span><span class="w"> </span><span class="m">108</span><span class="w"> </span><span class="m">109</span><span class="w"> </span><span class="m">110</span><span class="w"> </span><span class="m">111</span><span class="w"> </span><span class="m">112</span><span class="w"> </span><span class="m">113</span><span class="w"> </span><span class="m">114</span><span class="w"> </span><span class="m">115</span><span class="w"> </span><span class="m">116</span><span class="w"> </span><span class="m">117</span><span class="w"> </span><span class="m">118</span><span class="w"> </span><span class="m">119</span><span class="w"> </span><span class="m">120</span><span class="w"> </span><span class="m">121</span><span class="w"> </span><span class="m">122</span><span class="w"> </span><span class="m">123</span><span class="w"> </span><span class="m">124</span><span class="w"> </span><span class="m">125</span><span class="w"> </span><span class="m">126</span><span class="w"> </span><span class="m">127</span><span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="m">129</span><span class="w"> </span><span class="m">130</span><span class="w"> </span><span class="m">131</span><span class="w"> </span><span class="m">132</span><span class="w"> </span><span class="m">133</span><span class="w"> </span><span class="m">134</span><span class="w"> </span><span class="m">135</span><span class="w"> </span><span class="m">136</span><span class="w"> </span><span class="m">137</span><span class="w"> </span><span class="m">138</span><span class="w"> </span><span class="m">139</span><span class="w"> </span><span class="m">140</span><span class="w"> </span><span class="m">141</span><span class="w"> </span><span class="m">142</span><span class="w"> </span><span class="m">143</span><span class="w"> </span><span class="m">144</span><span class="w"> </span><span class="m">145</span><span class="w"> </span><span class="m">146</span><span class="w"> </span><span class="m">147</span><span class="w"> </span><span class="m">148</span><span class="w"> </span><span class="m">149</span><span class="w"> </span><span class="m">150</span><span class="w"> </span><span class="m">151</span><span class="w"> </span><span class="m">152</span><span class="w"> </span><span class="m">153</span><span class="w"> </span><span class="m">154</span><span class="w"> </span><span class="m">155</span><span class="w"> </span><span class="m">156</span><span class="w"> </span><span class="m">157</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w"> </span><span class="m">158</span><span class="w"> </span><span class="m">160</span><span class="w"> </span><span class="m">161</span><span class="w"> </span><span class="m">162</span><span class="w"> </span><span class="m">163</span><span class="w"> </span><span class="m">164</span><span class="w"> </span><span class="m">165</span><span class="w"> </span><span class="m">166</span><span class="w"> </span><span class="m">167</span><span class="w"> </span><span class="m">168</span><span class="w"> </span><span class="m">169</span><span class="w"> </span><span class="m">170</span><span class="w"> </span><span class="m">171</span><span class="w"> </span><span class="m">172</span><span class="w"> </span><span class="m">173</span><span class="w"> </span><span class="m">174</span><span class="w"> </span><span class="m">175</span><span class="w"> </span><span class="m">176</span><span class="w"> </span><span class="m">177</span><span class="w"> </span><span class="m">178</span><span class="w"> </span><span class="m">179</span><span class="w"> </span><span class="m">180</span><span class="w"> </span><span class="m">181</span><span class="w"> </span><span class="m">182</span><span class="w"> </span><span class="m">183</span><span class="w"> </span><span class="m">184</span><span class="w"> </span><span class="m">185</span><span class="w"> </span><span class="m">186</span><span class="w"> </span><span class="m">187</span><span class="w"> </span><span class="m">188</span><span class="w"> </span><span class="m">189</span><span class="w"> </span><span class="m">190</span><span class="w"> </span><span class="m">191</span><span class="w"> </span><span class="m">192</span><span class="w"> </span><span class="m">193</span><span class="w"> </span><span class="m">194</span><span class="w"> </span><span class="m">195</span><span class="w"> </span><span class="m">196</span><span class="w"> </span><span class="m">197</span><span class="w"> </span><span class="m">198</span><span class="w"> </span><span class="m">199</span><span class="w"> </span><span class="m">200</span><span class="w"> </span><span class="m">201</span><span class="w"> </span><span class="m">202</span><span class="w"> </span><span class="m">203</span><span class="w"> </span><span class="m">204</span><span class="w"> </span><span class="m">205</span><span class="w"> </span><span class="m">206</span><span class="w"> </span><span class="m">207</span><span class="w"> </span><span class="m">208</span><span class="w"> </span><span class="m">209</span><span class="w"> </span><span class="m">210</span><span class="w"> </span><span class="m">211</span><span class="w"> </span><span class="m">212</span><span class="w"> </span><span class="m">213</span><span class="w"> </span><span class="m">214</span><span class="w"> </span><span class="m">215</span><span class="w"> </span><span class="m">216</span><span class="w"> </span><span class="m">217</span><span class="w"> </span><span class="m">218</span><span class="w"> </span><span class="m">219</span><span class="w"> </span><span class="m">220</span><span class="w"> </span><span class="m">221</span><span class="w"> </span><span class="m">222</span><span class="w"> </span><span class="m">223</span><span class="w"> </span><span class="m">224</span><span class="w"> </span><span class="m">225</span><span class="w"> </span><span class="m">226</span><span class="w"> </span><span class="m">227</span><span class="w"> </span><span class="m">228</span><span class="w"> </span><span class="m">229</span><span class="w"> </span><span class="m">230</span><span class="w"> </span><span class="m">231</span><span class="w"> </span><span class="m">232</span><span class="w"> </span><span class="m">233</span><span class="w"> </span><span class="m">234</span><span class="w"> </span><span class="m">235</span><span class="w"> </span><span class="m">236</span><span class="w"> </span><span class="m">237</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w"> </span><span class="m">238</span><span class="w"> </span><span class="m">239</span><span class="w"> </span><span class="m">240</span><span class="w"> </span><span class="m">241</span><span class="w"> </span><span class="m">242</span><span class="w"> </span><span class="m">243</span><span class="w"> </span><span class="m">244</span><span class="w"> </span><span class="m">245</span><span class="w"> </span><span class="m">246</span><span class="w"> </span><span class="m">247</span><span class="w"> </span><span class="m">248</span><span class="w"> </span><span class="m">249</span><span class="w"> </span><span class="m">250</span><span class="w"> </span><span class="m">251</span><span class="w"> </span><span class="m">252</span><span class="w"> </span><span class="m">253</span><span class="w"> </span><span class="m">254</span><span class="o">]</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/en/examples/tutorial_part_1_datasets_example.py:208:<span class="w"> </span>UserWarning:<span class="w"> </span>FigureCanvasAgg<span class="w"> </span>is<span class="w"> </span>non-interactive,<span class="w"> </span>and<span class="w"> </span>thus<span class="w"> </span>cannot<span class="w"> </span>be<span class="w"> </span>shown
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">  </span>plt.show<span class="o">()</span>
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 212-218 -->
+
+<h2 id="4-advanced-exploratory-data-analysis-eda">4. Advanced: Exploratory Data Analysis (EDA)</h2>
+<p>Understanding your data's distribution is vital. Here, we'll analyze the foundational
+<code>mosquito-species-diversity</code> dataset.</p>
+<p>We will fetch the <code>repository_id</code> using datasets manager, making the code robust and reusable.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 220-221 -->
+
+<p>Get the repository ID from the dataset config.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 221-229 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="n">diversity_config</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_dataset_info</span><span class="p">(</span><span class="s2">&quot;species_diversity&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">repo_id</span> <span class="o">=</span> <span class="n">diversity_config</span><span class="o">.</span><span class="n">repository</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Successfully found repository ID from settings: </span><span class="si">{</span><span class="n">repo_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;❌ Could not find &#39;mosquito-species-diversity&#39; dataset in settings.&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    <span class="n">repo_id</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>✅<span class="w"> </span>Successfully<span class="w"> </span>found<span class="w"> </span>repository<span class="w"> </span>ID<span class="w"> </span>from<span class="w"> </span>settings:<span class="w"> </span>iloncka/mosquito_dataset_46_3139
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 230-237 -->
+
+<h4 id="exploring-the-mosquito-species-diversity-dataset"><strong>Exploring the mosquito species diversity dataset</strong></h4>
+<p>This dataset serves as the foundational source for the classification, detection, and
+segmentation datasets. It contains a rich collection of images with corresponding
+labels and bounding box information.</p>
+<p>Let's start by defining the repository ID and fetching some basic statistics.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 239-240 -->
+
+<p>The repository ID for our source dataset on Hugging Face</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 240-263 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">repo_id</span> <span class="o">=</span> <span class="s2">&quot;iloncka/mosquito_dataset_46_3139&quot;</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_dataset_statistics</span><span class="p">(</span><span class="n">repo_id</span><span class="p">,</span> <span class="n">config_name</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">split_name</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">):</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch detailed column statistics for a dataset split from the Hugging Face API.&quot;&quot;&quot;</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="n">api_url</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>        <span class="sa">f</span><span class="s2">&quot;https://datasets-server.huggingface.co/statistics?dataset=</span><span class="si">{</span><span class="n">repo_id</span><span class="si">}</span><span class="s2">&amp;config=</span><span class="si">{</span><span class="n">config_name</span><span class="si">}</span><span class="s2">&amp;split=</span><span class="si">{</span><span class="n">split_name</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>    <span class="p">)</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Querying API: </span><span class="si">{</span><span class="n">api_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">api_url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>  <span class="c1"># Will raise an error for bad responses</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="c1"># Fetch the statistics</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;--- Fetching statistics for &#39;</span><span class="si">{</span><span class="n">repo_id</span><span class="si">}</span><span class="s2">&#39; ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>    <span class="n">dataset_info</span> <span class="o">=</span> <span class="n">get_dataset_statistics</span><span class="p">(</span><span class="n">repo_id</span><span class="p">)</span>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Statistics fetched successfully.&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;❌ Failed to fetch statistics: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a>    <span class="n">dataset_info</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>---<span class="w"> </span>Fetching<span class="w"> </span>statistics<span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="s1">&#39;iloncka/mosquito_dataset_46_3139&#39;</span><span class="w"> </span>---
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>Querying<span class="w"> </span>API:<span class="w"> </span>https://datasets-server.huggingface.co/statistics?dataset<span class="o">=</span>iloncka/mosquito_dataset_46_3139<span class="p">&amp;</span><span class="nv">config</span><span class="o">=</span>default<span class="p">&amp;</span><span class="nv">split</span><span class="o">=</span>train
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>✅<span class="w"> </span>Statistics<span class="w"> </span>fetched<span class="w"> </span>successfully.
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 264-269 -->
+
+<h4 id="visualizing-class-distribution"><strong>Visualizing Class Distribution</strong></h4>
+<p>A balanced dataset is crucial for training a robust model.
+Let's write a function to visualize the number of samples for
+each mosquito species to check for any significant imbalances.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 272-328 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_label_stats</span><span class="p">(</span><span class="n">dataset_info</span><span class="p">):</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract label frequencies from the fetched dataset statistics.&quot;&quot;&quot;</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset_info</span><span class="p">:</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">dataset_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;statistics&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>        <span class="k">if</span> <span class="n">column</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;column_name&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;label&quot;</span> <span class="ow">and</span> <span class="n">column</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;column_type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;string_label&quot;</span><span class="p">:</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>            <span class="k">return</span> <span class="n">column</span><span class="p">[</span><span class="s2">&quot;column_statistics&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;frequencies&quot;</span><span class="p">,</span> <span class="p">{})</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: &#39;label&#39; statistics not found.&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="k">def</span><span class="w"> </span><span class="nf">create_distribution_plot</span><span class="p">(</span>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>    <span class="n">dataset_info</span><span class="p">,</span>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>    <span class="n">repo_id</span><span class="p">,</span>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;teal&quot;</span><span class="p">,</span>
+<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span>
+<a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>    <span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;class_distribution.png&quot;</span><span class="p">,</span>
+<a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a><span class="p">):</span>
+<a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates and saves a bar chart of the class distribution.&quot;&quot;&quot;</span>
+<a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a>    <span class="n">label_stats</span> <span class="o">=</span> <span class="n">get_label_stats</span><span class="p">(</span><span class="n">dataset_info</span><span class="p">)</span>
+<a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">label_stats</span><span class="p">:</span>
+<a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cannot create plot: No label statistics available.&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a>        <span class="k">return</span>
+<a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a>
+<a id="__codelineno-18-27" name="__codelineno-18-27" href="#__codelineno-18-27"></a>    <span class="c1"># Sort classes by the number of samples for better visualization</span>
+<a id="__codelineno-18-28" name="__codelineno-18-28" href="#__codelineno-18-28"></a>    <span class="n">sorted_items</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">label_stats</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-18-29" name="__codelineno-18-29" href="#__codelineno-18-29"></a>    <span class="n">classes</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">sorted_items</span><span class="p">)</span>
+<a id="__codelineno-18-30" name="__codelineno-18-30" href="#__codelineno-18-30"></a>
+<a id="__codelineno-18-31" name="__codelineno-18-31" href="#__codelineno-18-31"></a>    <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+<a id="__codelineno-18-32" name="__codelineno-18-32" href="#__codelineno-18-32"></a>    <span class="n">y_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">))</span>
+<a id="__codelineno-18-33" name="__codelineno-18-33" href="#__codelineno-18-33"></a>    <span class="n">ax</span><span class="o">.</span><span class="n">barh</span><span class="p">(</span><span class="n">y_pos</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<a id="__codelineno-18-34" name="__codelineno-18-34" href="#__codelineno-18-34"></a>
+<a id="__codelineno-18-35" name="__codelineno-18-35" href="#__codelineno-18-35"></a>    <span class="c1"># Format plot for clarity</span>
+<a id="__codelineno-18-36" name="__codelineno-18-36" href="#__codelineno-18-36"></a>    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">y_pos</span><span class="p">)</span>
+<a id="__codelineno-18-37" name="__codelineno-18-37" href="#__codelineno-18-37"></a>    <span class="n">formatted_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">]</span>
+<a id="__codelineno-18-38" name="__codelineno-18-38" href="#__codelineno-18-38"></a>    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">formatted_classes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<a id="__codelineno-18-39" name="__codelineno-18-39" href="#__codelineno-18-39"></a>    <span class="n">ax</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>  <span class="c1"># Display the class with the most samples at the top</span>
+<a id="__codelineno-18-40" name="__codelineno-18-40" href="#__codelineno-18-40"></a>    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Number of Samples&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<a id="__codelineno-18-41" name="__codelineno-18-41" href="#__codelineno-18-41"></a>    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Distribution of Mosquito Species in </span><span class="si">{</span><span class="n">repo_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+<a id="__codelineno-18-42" name="__codelineno-18-42" href="#__codelineno-18-42"></a>
+<a id="__codelineno-18-43" name="__codelineno-18-43" href="#__codelineno-18-43"></a>    <span class="c1"># Add count labels to each bar</span>
+<a id="__codelineno-18-44" name="__codelineno-18-44" href="#__codelineno-18-44"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">counts</span><span class="p">):</span>
+<a id="__codelineno-18-45" name="__codelineno-18-45" href="#__codelineno-18-45"></a>        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">v</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a id="__codelineno-18-46" name="__codelineno-18-46" href="#__codelineno-18-46"></a>
+<a id="__codelineno-18-47" name="__codelineno-18-47" href="#__codelineno-18-47"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<a id="__codelineno-18-48" name="__codelineno-18-48" href="#__codelineno-18-48"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-49" name="__codelineno-18-49" href="#__codelineno-18-49"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Distribution plot saved as </span><span class="si">{</span><span class="n">output_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-18-50" name="__codelineno-18-50" href="#__codelineno-18-50"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<a id="__codelineno-18-51" name="__codelineno-18-51" href="#__codelineno-18-51"></a>
+<a id="__codelineno-18-52" name="__codelineno-18-52" href="#__codelineno-18-52"></a>
+<a id="__codelineno-18-53" name="__codelineno-18-53" href="#__codelineno-18-53"></a><span class="c1"># Generate and display the plot</span>
+<a id="__codelineno-18-54" name="__codelineno-18-54" href="#__codelineno-18-54"></a><span class="k">if</span> <span class="n">dataset_info</span><span class="p">:</span>
+<a id="__codelineno-18-55" name="__codelineno-18-55" href="#__codelineno-18-55"></a>    <span class="n">create_distribution_plot</span><span class="p">(</span><span class="n">dataset_info</span><span class="p">,</span> <span class="n">repo_id</span><span class="p">)</span>
+</code></pre></div>
+<p><img alt="Distribution of Mosquito Species in iloncka/mosquito_dataset_46_3139" class="mkd-glr-single-img" src="../images/mkd_glr_tutorial_part_1_datasets_example_004.png" srcset="../images/mkd_glr_tutorial_part_1_datasets_example_004.png, ../images/mkd_glr_tutorial_part_1_datasets_example_004_2_0x.png 2.0x" /></p>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>✅<span class="w"> </span>Distribution<span class="w"> </span>plot<span class="w"> </span>saved<span class="w"> </span>as<span class="w"> </span>class_distribution.png
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/en/examples/tutorial_part_1_datasets_example.py:321:<span class="w"> </span>UserWarning:<span class="w"> </span>FigureCanvasAgg<span class="w"> </span>is<span class="w"> </span>non-interactive,<span class="w"> </span>and<span class="w"> </span>thus<span class="w"> </span>cannot<span class="w"> </span>be<span class="w"> </span>shown
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>plt.show<span class="o">()</span>
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 329-332 -->
+
+<p>This chart gives you an immediate understanding of which species
+are well-represented and which might require techniques
+like data augmentation or weighted loss functions during model training.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 334-339 -->
+
+<h4 id="visualizing-taxonomic-distribution"><strong>Visualizing Taxonomic Distribution</strong></h4>
+<p>To better understand the relationships between species, we can visualize the dataset
+in a hierarchical tree structure, grouping species by their genus.
+This provides insight into the taxonomic diversity of the data.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 342-425 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">create_tree_visualization</span><span class="p">(</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>    <span class="n">dataset_info</span><span class="p">,</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">output_file</span><span class="o">=</span><span class="s2">&quot;taxonomic_tree.png&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="p">):</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a tree-like visualization of species grouped by genus.&quot;&quot;&quot;</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>    <span class="n">label_stats</span> <span class="o">=</span> <span class="n">get_label_stats</span><span class="p">(</span><span class="n">dataset_info</span><span class="p">)</span>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">label_stats</span><span class="p">:</span>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cannot create visualization: No label statistics available.&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>        <span class="k">return</span>
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>    <span class="c1"># Group species by genus and calculate totals</span>
+<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>    <span class="n">genus_groups</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>    <span class="n">genus_totals</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a>    <span class="k">for</span> <span class="n">species</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">label_stats</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>        <span class="n">genus</span> <span class="o">=</span> <span class="n">species</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a>        <span class="n">genus_groups</span><span class="p">[</span><span class="n">genus</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">species</span><span class="p">,</span> <span class="n">count</span><span class="p">))</span>
+<a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a>        <span class="n">genus_totals</span><span class="p">[</span><span class="n">genus</span><span class="p">]</span> <span class="o">+=</span> <span class="n">count</span>
+<a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a>
+<a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a>    <span class="c1"># Sort genera by the total number of samples</span>
+<a id="__codelineno-20-21" name="__codelineno-20-21" href="#__codelineno-20-21"></a>    <span class="n">sorted_genera</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">genus_totals</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-20-22" name="__codelineno-20-22" href="#__codelineno-20-22"></a>
+<a id="__codelineno-20-23" name="__codelineno-20-23" href="#__codelineno-20-23"></a>    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+<a id="__codelineno-20-24" name="__codelineno-20-24" href="#__codelineno-20-24"></a>
+<a id="__codelineno-20-25" name="__codelineno-20-25" href="#__codelineno-20-25"></a>    <span class="c1"># --- Plotting Logic ---</span>
+<a id="__codelineno-20-26" name="__codelineno-20-26" href="#__codelineno-20-26"></a>    <span class="n">total_species_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">label_stats</span><span class="p">)</span>
+<a id="__codelineno-20-27" name="__codelineno-20-27" href="#__codelineno-20-27"></a>    <span class="n">y_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">total_species_count</span><span class="p">)</span>
+<a id="__codelineno-20-28" name="__codelineno-20-28" href="#__codelineno-20-28"></a>    <span class="n">current_y_idx</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-20-29" name="__codelineno-20-29" href="#__codelineno-20-29"></a>
+<a id="__codelineno-20-30" name="__codelineno-20-30" href="#__codelineno-20-30"></a>    <span class="c1"># Use a color map for different genera</span>
+<a id="__codelineno-20-31" name="__codelineno-20-31" href="#__codelineno-20-31"></a>    <span class="n">colors</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;tab20&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_genera</span><span class="p">))</span>
+<a id="__codelineno-20-32" name="__codelineno-20-32" href="#__codelineno-20-32"></a>
+<a id="__codelineno-20-33" name="__codelineno-20-33" href="#__codelineno-20-33"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">genus</span><span class="p">,</span> <span class="n">total_count</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sorted_genera</span><span class="p">):</span>
+<a id="__codelineno-20-34" name="__codelineno-20-34" href="#__codelineno-20-34"></a>        <span class="n">species_in_genus</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">genus_groups</span><span class="p">[</span><span class="n">genus</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-20-35" name="__codelineno-20-35" href="#__codelineno-20-35"></a>        <span class="n">num_species</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">species_in_genus</span><span class="p">)</span>
+<a id="__codelineno-20-36" name="__codelineno-20-36" href="#__codelineno-20-36"></a>
+<a id="__codelineno-20-37" name="__codelineno-20-37" href="#__codelineno-20-37"></a>        <span class="c1"># Define y-coordinates for this genus block</span>
+<a id="__codelineno-20-38" name="__codelineno-20-38" href="#__codelineno-20-38"></a>        <span class="n">y_start</span> <span class="o">=</span> <span class="n">y_positions</span><span class="p">[</span><span class="n">current_y_idx</span><span class="p">]</span>
+<a id="__codelineno-20-39" name="__codelineno-20-39" href="#__codelineno-20-39"></a>        <span class="n">y_end</span> <span class="o">=</span> <span class="n">y_positions</span><span class="p">[</span><span class="n">current_y_idx</span> <span class="o">+</span> <span class="n">num_species</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-20-40" name="__codelineno-20-40" href="#__codelineno-20-40"></a>        <span class="n">y_genus_mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_start</span> <span class="o">+</span> <span class="n">y_end</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+<a id="__codelineno-20-41" name="__codelineno-20-41" href="#__codelineno-20-41"></a>
+<a id="__codelineno-20-42" name="__codelineno-20-42" href="#__codelineno-20-42"></a>        <span class="c1"># Draw genus branch and label</span>
+<a id="__codelineno-20-43" name="__codelineno-20-43" href="#__codelineno-20-43"></a>        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="n">y_genus_mid</span><span class="p">,</span> <span class="n">y_genus_mid</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-20-44" name="__codelineno-20-44" href="#__codelineno-20-44"></a>        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+<a id="__codelineno-20-45" name="__codelineno-20-45" href="#__codelineno-20-45"></a>            <span class="mf">0.08</span><span class="p">,</span>
+<a id="__codelineno-20-46" name="__codelineno-20-46" href="#__codelineno-20-46"></a>            <span class="n">y_genus_mid</span><span class="p">,</span>
+<a id="__codelineno-20-47" name="__codelineno-20-47" href="#__codelineno-20-47"></a>            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">genus</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">(</span><span class="si">{</span><span class="n">total_count</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-48" name="__codelineno-20-48" href="#__codelineno-20-48"></a>            <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-49" name="__codelineno-20-49" href="#__codelineno-20-49"></a>            <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-50" name="__codelineno-20-50" href="#__codelineno-20-50"></a>            <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span>
+<a id="__codelineno-20-51" name="__codelineno-20-51" href="#__codelineno-20-51"></a>            <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-52" name="__codelineno-20-52" href="#__codelineno-20-52"></a>        <span class="p">)</span>
+<a id="__codelineno-20-53" name="__codelineno-20-53" href="#__codelineno-20-53"></a>
+<a id="__codelineno-20-54" name="__codelineno-20-54" href="#__codelineno-20-54"></a>        <span class="c1"># Draw vertical connector for species in this genus</span>
+<a id="__codelineno-20-55" name="__codelineno-20-55" href="#__codelineno-20-55"></a>        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="n">y_start</span><span class="p">,</span> <span class="n">y_end</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-20-56" name="__codelineno-20-56" href="#__codelineno-20-56"></a>
+<a id="__codelineno-20-57" name="__codelineno-20-57" href="#__codelineno-20-57"></a>        <span class="c1"># Draw branches for each species</span>
+<a id="__codelineno-20-58" name="__codelineno-20-58" href="#__codelineno-20-58"></a>        <span class="k">for</span> <span class="n">species_name</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">species_in_genus</span><span class="p">:</span>
+<a id="__codelineno-20-59" name="__codelineno-20-59" href="#__codelineno-20-59"></a>            <span class="n">y_species</span> <span class="o">=</span> <span class="n">y_positions</span><span class="p">[</span><span class="n">current_y_idx</span><span class="p">]</span>
+<a id="__codelineno-20-60" name="__codelineno-20-60" href="#__codelineno-20-60"></a>            <span class="n">branch_length</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">count</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">label_stats</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+<a id="__codelineno-20-61" name="__codelineno-20-61" href="#__codelineno-20-61"></a>
+<a id="__codelineno-20-62" name="__codelineno-20-62" href="#__codelineno-20-62"></a>            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span> <span class="o">+</span> <span class="n">branch_length</span><span class="p">],</span> <span class="p">[</span><span class="n">y_species</span><span class="p">,</span> <span class="n">y_species</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<a id="__codelineno-20-63" name="__codelineno-20-63" href="#__codelineno-20-63"></a>            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+<a id="__codelineno-20-64" name="__codelineno-20-64" href="#__codelineno-20-64"></a>                <span class="mf">0.22</span> <span class="o">+</span> <span class="n">branch_length</span><span class="p">,</span>
+<a id="__codelineno-20-65" name="__codelineno-20-65" href="#__codelineno-20-65"></a>                <span class="n">y_species</span><span class="p">,</span>
+<a id="__codelineno-20-66" name="__codelineno-20-66" href="#__codelineno-20-66"></a>                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">species_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-67" name="__codelineno-20-67" href="#__codelineno-20-67"></a>                <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-68" name="__codelineno-20-68" href="#__codelineno-20-68"></a>                <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+<a id="__codelineno-20-69" name="__codelineno-20-69" href="#__codelineno-20-69"></a>            <span class="p">)</span>
+<a id="__codelineno-20-70" name="__codelineno-20-70" href="#__codelineno-20-70"></a>            <span class="n">current_y_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-20-71" name="__codelineno-20-71" href="#__codelineno-20-71"></a>
+<a id="__codelineno-20-72" name="__codelineno-20-72" href="#__codelineno-20-72"></a>    <span class="c1"># --- Final Plot Customization ---</span>
+<a id="__codelineno-20-73" name="__codelineno-20-73" href="#__codelineno-20-73"></a>    <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-74" name="__codelineno-20-74" href="#__codelineno-20-74"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Taxonomic Distribution of Mosquito Species&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<a id="__codelineno-20-75" name="__codelineno-20-75" href="#__codelineno-20-75"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-76" name="__codelineno-20-76" href="#__codelineno-20-76"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Tree visualization saved as </span><span class="si">{</span><span class="n">output_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-20-77" name="__codelineno-20-77" href="#__codelineno-20-77"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<a id="__codelineno-20-78" name="__codelineno-20-78" href="#__codelineno-20-78"></a>
+<a id="__codelineno-20-79" name="__codelineno-20-79" href="#__codelineno-20-79"></a>
+<a id="__codelineno-20-80" name="__codelineno-20-80" href="#__codelineno-20-80"></a><span class="c1"># Generate and display the tree visualization</span>
+<a id="__codelineno-20-81" name="__codelineno-20-81" href="#__codelineno-20-81"></a><span class="k">if</span> <span class="n">dataset_info</span><span class="p">:</span>
+<a id="__codelineno-20-82" name="__codelineno-20-82" href="#__codelineno-20-82"></a>    <span class="n">create_tree_visualization</span><span class="p">(</span><span class="n">dataset_info</span><span class="p">)</span>
+</code></pre></div>
+<p><img alt="Taxonomic Distribution of Mosquito Species" class="mkd-glr-single-img" src="../images/mkd_glr_tutorial_part_1_datasets_example_005.png" srcset="../images/mkd_glr_tutorial_part_1_datasets_example_005.png, ../images/mkd_glr_tutorial_part_1_datasets_example_005_2_0x.png 2.0x" /></p>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/en/examples/tutorial_part_1_datasets_example.py:372:<span class="w"> </span>MatplotlibDeprecationWarning:<span class="w"> </span>The<span class="w"> </span>get_cmap<span class="w"> </span><span class="k">function</span><span class="w"> </span>was<span class="w"> </span>deprecated<span class="w"> </span><span class="k">in</span><span class="w"> </span>Matplotlib<span class="w"> </span><span class="m">3</span>.7<span class="w"> </span>and<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>removed<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">3</span>.11.<span class="w"> </span>Use<span class="w"> </span><span class="sb">``</span>matplotlib.colormaps<span class="o">[</span>name<span class="o">]</span><span class="sb">``</span><span class="w"> </span>or<span class="w"> </span><span class="sb">``</span>matplotlib.colormaps.get_cmap<span class="o">()</span><span class="sb">``</span><span class="w"> </span>or<span class="w"> </span><span class="sb">``</span>pyplot.get_cmap<span class="o">()</span><span class="sb">``</span><span class="w"> </span>instead.
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">  </span><span class="nv">colors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>plt.cm.get_cmap<span class="o">(</span><span class="s2">&quot;tab20&quot;</span>,<span class="w"> </span>len<span class="o">(</span>sorted_genera<span class="o">))</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>✅<span class="w"> </span>Tree<span class="w"> </span>visualization<span class="w"> </span>saved<span class="w"> </span>as<span class="w"> </span>taxonomic_tree.png
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/en/examples/tutorial_part_1_datasets_example.py:418:<span class="w"> </span>UserWarning:<span class="w"> </span>FigureCanvasAgg<span class="w"> </span>is<span class="w"> </span>non-interactive,<span class="w"> </span>and<span class="w"> </span>thus<span class="w"> </span>cannot<span class="w"> </span>be<span class="w"> </span>shown
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">  </span>plt.show<span class="o">()</span>
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 426-430 -->
+
+<p>This plot provides a clear visual summary of the dataset's structure,
+showing which genera are most prevalent and how the samples are distributed
+among their respective species. It's an invaluable tool for both educational
+purposes and for guiding research that may focus on specific genera.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 432-442 -->
+
+<h2 id="5-advanced-adding-a-custom-dataset">5. Advanced: Adding a Custom Dataset</h2>
+<p><code>culicidaelab</code> is designed to be extensible. You can easily add your own Hugging Face
+datasets by creating a simple YAML configuration file.</p>
+<h3 id="step-1-understanding-the-required-structure-with-datasetconfig">Step 1: Understanding the Required Structure with <code>DatasetConfig</code></h3>
+<p>Before writing a configuration, you need to know what fields are required.
+All dataset configurations are validated against the <code>DatasetConfig</code> Pydantic model.
+We can inspect this model directly to get a perfect template.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 444-456 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># Let&#39;s print the model&#39;s docstring for a human-readable explanation.</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- DatasetConfig Model Documentation ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">DatasetConfig</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">)</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="c1"># For a precise, technical blueprint, we can generate its JSON Schema.</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="c1"># This shows all fields, their types, and which ones are required.</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- DatasetConfig JSON Schema ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="n">schema</span> <span class="o">=</span> <span class="n">DatasetConfig</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>---<span class="w"> </span>DatasetConfig<span class="w"> </span>Model<span class="w"> </span>Documentation<span class="w"> </span>---
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>Configuration<span class="w"> </span><span class="k">for</span><span class="w"> </span>a<span class="w"> </span>single<span class="w"> </span>dataset.
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span>Args:
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">        </span>name<span class="w"> </span><span class="o">(</span>str<span class="o">)</span>:<span class="w"> </span>The<span class="w"> </span>unique<span class="w"> </span>internal<span class="w"> </span>name<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>dataset.
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">        </span>path<span class="w"> </span><span class="o">(</span>str<span class="o">)</span>:<span class="w"> </span>The<span class="w"> </span><span class="nb">local</span><span class="w"> </span>directory<span class="w"> </span>path<span class="w"> </span><span class="k">for</span><span class="w"> </span>storing<span class="w"> </span>the<span class="w"> </span>dataset.
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">        </span>format<span class="w"> </span><span class="o">(</span>str<span class="o">)</span>:<span class="w"> </span>The<span class="w"> </span>dataset<span class="w"> </span>format<span class="w"> </span><span class="o">(</span>e.g.,<span class="w"> </span><span class="s2">&quot;imagefolder&quot;</span>,<span class="w"> </span><span class="s2">&quot;coco&quot;</span>,<span class="w"> </span><span class="s2">&quot;yolo&quot;</span><span class="o">)</span>.
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="w">        </span>classes<span class="w"> </span><span class="o">(</span>list<span class="o">[</span>str<span class="o">])</span>:<span class="w"> </span>A<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>class<span class="w"> </span>names<span class="w"> </span>present<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>dataset.
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="w">        </span>provider_name<span class="w"> </span><span class="o">(</span>str<span class="o">)</span>:<span class="w"> </span>The<span class="w"> </span>name<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>data<span class="w"> </span>provider<span class="w"> </span><span class="o">(</span>e.g.,<span class="w"> </span><span class="s2">&quot;huggingface&quot;</span><span class="o">)</span>.
+<a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="w">        </span>repository<span class="w"> </span><span class="o">(</span>str<span class="o">)</span>:<span class="w"> </span>The<span class="w"> </span>repository<span class="w"> </span>ID<span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span>provider<span class="s1">&#39;s platform.</span>
+<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="s1">        derived_datasets (list[str] | None): A list of Hugging Face repository IDs</span>
+<a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a><span class="s1">            for datasets that were derived from this one. Defaults to None.</span>
+<a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="s1">        trained_models_repositories (list[str] | None): A list of Hugging Face</span>
+<a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a><span class="s1">            repository IDs for models trained on this dataset. Defaults to None.</span>
+<a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a>
+<a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a>
+<a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a><span class="s1">--- DatasetConfig JSON Schema ---</span>
+<a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a><span class="s1">{</span>
+<a id="__codelineno-23-19" name="__codelineno-23-19" href="#__codelineno-23-19"></a><span class="s1">  &quot;additionalProperties&quot;: true,</span>
+<a id="__codelineno-23-20" name="__codelineno-23-20" href="#__codelineno-23-20"></a><span class="s1">  &quot;description&quot;: &quot;Configuration for a single dataset.\n\nArgs:\n    name (str): The unique internal name for the dataset.\n    path (str): The local directory path for storing the dataset.\n    format (str): The dataset format (e.g., \&quot;imagefolder\&quot;, \&quot;coco\&quot;, \&quot;yolo\&quot;).\n    classes (list[str]): A list of class names present in the dataset.\n    provider_name (str): The name of the data provider (e.g., \&quot;huggingface\&quot;).\n    repository (str): The repository ID on the provider&#39;</span>s<span class="w"> </span>platform.<span class="se">\n</span><span class="w">    </span>derived_datasets<span class="w"> </span><span class="o">(</span>list<span class="o">[</span>str<span class="o">]</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>None<span class="o">)</span>:<span class="w"> </span>A<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>Hugging<span class="w"> </span>Face<span class="w"> </span>repository<span class="w"> </span>IDs<span class="se">\n</span><span class="w">        </span><span class="k">for</span><span class="w"> </span>datasets<span class="w"> </span>that<span class="w"> </span>were<span class="w"> </span>derived<span class="w"> </span>from<span class="w"> </span>this<span class="w"> </span>one.<span class="w"> </span>Defaults<span class="w"> </span>to<span class="w"> </span>None.<span class="se">\n</span><span class="w">    </span>trained_models_repositories<span class="w"> </span><span class="o">(</span>list<span class="o">[</span>str<span class="o">]</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>None<span class="o">)</span>:<span class="w"> </span>A<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>Hugging<span class="w"> </span>Face<span class="se">\n</span><span class="w">        </span>repository<span class="w"> </span>IDs<span class="w"> </span><span class="k">for</span><span class="w"> </span>models<span class="w"> </span>trained<span class="w"> </span>on<span class="w"> </span>this<span class="w"> </span>dataset.<span class="w"> </span>Defaults<span class="w"> </span>to<span class="w"> </span>None.<span class="s2">&quot;,</span>
+<a id="__codelineno-23-21" name="__codelineno-23-21" href="#__codelineno-23-21"></a><span class="s2">  &quot;</span>properties<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-22" name="__codelineno-23-22" href="#__codelineno-23-22"></a><span class="s2">    &quot;</span>name<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-23" name="__codelineno-23-23" href="#__codelineno-23-23"></a><span class="s2">      &quot;</span>title<span class="s2">&quot;: &quot;</span>Name<span class="s2">&quot;,</span>
+<a id="__codelineno-23-24" name="__codelineno-23-24" href="#__codelineno-23-24"></a><span class="s2">      &quot;</span>type<span class="s2">&quot;: &quot;</span>string<span class="s2">&quot;</span>
+<a id="__codelineno-23-25" name="__codelineno-23-25" href="#__codelineno-23-25"></a><span class="s2">    },</span>
+<a id="__codelineno-23-26" name="__codelineno-23-26" href="#__codelineno-23-26"></a><span class="s2">    &quot;</span>path<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-27" name="__codelineno-23-27" href="#__codelineno-23-27"></a><span class="s2">      &quot;</span>title<span class="s2">&quot;: &quot;</span>Path<span class="s2">&quot;,</span>
+<a id="__codelineno-23-28" name="__codelineno-23-28" href="#__codelineno-23-28"></a><span class="s2">      &quot;</span>type<span class="s2">&quot;: &quot;</span>string<span class="s2">&quot;</span>
+<a id="__codelineno-23-29" name="__codelineno-23-29" href="#__codelineno-23-29"></a><span class="s2">    },</span>
+<a id="__codelineno-23-30" name="__codelineno-23-30" href="#__codelineno-23-30"></a><span class="s2">    &quot;</span>format<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-31" name="__codelineno-23-31" href="#__codelineno-23-31"></a><span class="s2">      &quot;</span>title<span class="s2">&quot;: &quot;</span>Format<span class="s2">&quot;,</span>
+<a id="__codelineno-23-32" name="__codelineno-23-32" href="#__codelineno-23-32"></a><span class="s2">      &quot;</span>type<span class="s2">&quot;: &quot;</span>string<span class="s2">&quot;</span>
+<a id="__codelineno-23-33" name="__codelineno-23-33" href="#__codelineno-23-33"></a><span class="s2">    },</span>
+<a id="__codelineno-23-34" name="__codelineno-23-34" href="#__codelineno-23-34"></a><span class="s2">    &quot;</span>classes<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-35" name="__codelineno-23-35" href="#__codelineno-23-35"></a><span class="s2">      &quot;</span>items<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-36" name="__codelineno-23-36" href="#__codelineno-23-36"></a><span class="s2">        &quot;</span>type<span class="s2">&quot;: &quot;</span>string<span class="s2">&quot;</span>
+<a id="__codelineno-23-37" name="__codelineno-23-37" href="#__codelineno-23-37"></a><span class="s2">      },</span>
+<a id="__codelineno-23-38" name="__codelineno-23-38" href="#__codelineno-23-38"></a><span class="s2">      &quot;</span>title<span class="s2">&quot;: &quot;</span>Classes<span class="s2">&quot;,</span>
+<a id="__codelineno-23-39" name="__codelineno-23-39" href="#__codelineno-23-39"></a><span class="s2">      &quot;</span>type<span class="s2">&quot;: &quot;</span>array<span class="s2">&quot;</span>
+<a id="__codelineno-23-40" name="__codelineno-23-40" href="#__codelineno-23-40"></a><span class="s2">    },</span>
+<a id="__codelineno-23-41" name="__codelineno-23-41" href="#__codelineno-23-41"></a><span class="s2">    &quot;</span>provider_name<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-42" name="__codelineno-23-42" href="#__codelineno-23-42"></a><span class="s2">      &quot;</span>title<span class="s2">&quot;: &quot;</span>Provider<span class="w"> </span>Name<span class="s2">&quot;,</span>
+<a id="__codelineno-23-43" name="__codelineno-23-43" href="#__codelineno-23-43"></a><span class="s2">      &quot;</span>type<span class="s2">&quot;: &quot;</span>string<span class="s2">&quot;</span>
+<a id="__codelineno-23-44" name="__codelineno-23-44" href="#__codelineno-23-44"></a><span class="s2">    },</span>
+<a id="__codelineno-23-45" name="__codelineno-23-45" href="#__codelineno-23-45"></a><span class="s2">    &quot;</span>repository<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-46" name="__codelineno-23-46" href="#__codelineno-23-46"></a><span class="s2">      &quot;</span>title<span class="s2">&quot;: &quot;</span>Repository<span class="s2">&quot;,</span>
+<a id="__codelineno-23-47" name="__codelineno-23-47" href="#__codelineno-23-47"></a><span class="s2">      &quot;</span>type<span class="s2">&quot;: &quot;</span>string<span class="s2">&quot;</span>
+<a id="__codelineno-23-48" name="__codelineno-23-48" href="#__codelineno-23-48"></a><span class="s2">    },</span>
+<a id="__codelineno-23-49" name="__codelineno-23-49" href="#__codelineno-23-49"></a><span class="s2">    &quot;</span>config_name<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-50" name="__codelineno-23-50" href="#__codelineno-23-50"></a><span class="s2">      &quot;</span>anyOf<span class="s2">&quot;: [</span>
+<a id="__codelineno-23-51" name="__codelineno-23-51" href="#__codelineno-23-51"></a><span class="s2">        {</span>
+<a id="__codelineno-23-52" name="__codelineno-23-52" href="#__codelineno-23-52"></a><span class="s2">          &quot;</span>type<span class="s2">&quot;: &quot;</span>string<span class="s2">&quot;</span>
+<a id="__codelineno-23-53" name="__codelineno-23-53" href="#__codelineno-23-53"></a><span class="s2">        },</span>
+<a id="__codelineno-23-54" name="__codelineno-23-54" href="#__codelineno-23-54"></a><span class="s2">        {</span>
+<a id="__codelineno-23-55" name="__codelineno-23-55" href="#__codelineno-23-55"></a><span class="s2">          &quot;</span>type<span class="s2">&quot;: &quot;</span>null<span class="s2">&quot;</span>
+<a id="__codelineno-23-56" name="__codelineno-23-56" href="#__codelineno-23-56"></a><span class="s2">        }</span>
+<a id="__codelineno-23-57" name="__codelineno-23-57" href="#__codelineno-23-57"></a><span class="s2">      ],</span>
+<a id="__codelineno-23-58" name="__codelineno-23-58" href="#__codelineno-23-58"></a><span class="s2">      &quot;</span>default<span class="s2">&quot;: &quot;</span>default<span class="s2">&quot;,</span>
+<a id="__codelineno-23-59" name="__codelineno-23-59" href="#__codelineno-23-59"></a><span class="s2">      &quot;</span>title<span class="s2">&quot;: &quot;</span>Config<span class="w"> </span>Name<span class="s2">&quot;</span>
+<a id="__codelineno-23-60" name="__codelineno-23-60" href="#__codelineno-23-60"></a><span class="s2">    },</span>
+<a id="__codelineno-23-61" name="__codelineno-23-61" href="#__codelineno-23-61"></a><span class="s2">    &quot;</span>derived_datasets<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-62" name="__codelineno-23-62" href="#__codelineno-23-62"></a><span class="s2">      &quot;</span>anyOf<span class="s2">&quot;: [</span>
+<a id="__codelineno-23-63" name="__codelineno-23-63" href="#__codelineno-23-63"></a><span class="s2">        {</span>
+<a id="__codelineno-23-64" name="__codelineno-23-64" href="#__codelineno-23-64"></a><span class="s2">          &quot;</span>items<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-65" name="__codelineno-23-65" href="#__codelineno-23-65"></a><span class="s2">            &quot;</span>type<span class="s2">&quot;: &quot;</span>string<span class="s2">&quot;</span>
+<a id="__codelineno-23-66" name="__codelineno-23-66" href="#__codelineno-23-66"></a><span class="s2">          },</span>
+<a id="__codelineno-23-67" name="__codelineno-23-67" href="#__codelineno-23-67"></a><span class="s2">          &quot;</span>type<span class="s2">&quot;: &quot;</span>array<span class="s2">&quot;</span>
+<a id="__codelineno-23-68" name="__codelineno-23-68" href="#__codelineno-23-68"></a><span class="s2">        },</span>
+<a id="__codelineno-23-69" name="__codelineno-23-69" href="#__codelineno-23-69"></a><span class="s2">        {</span>
+<a id="__codelineno-23-70" name="__codelineno-23-70" href="#__codelineno-23-70"></a><span class="s2">          &quot;</span>type<span class="s2">&quot;: &quot;</span>null<span class="s2">&quot;</span>
+<a id="__codelineno-23-71" name="__codelineno-23-71" href="#__codelineno-23-71"></a><span class="s2">        }</span>
+<a id="__codelineno-23-72" name="__codelineno-23-72" href="#__codelineno-23-72"></a><span class="s2">      ],</span>
+<a id="__codelineno-23-73" name="__codelineno-23-73" href="#__codelineno-23-73"></a><span class="s2">      &quot;</span>default<span class="s2">&quot;: null,</span>
+<a id="__codelineno-23-74" name="__codelineno-23-74" href="#__codelineno-23-74"></a><span class="s2">      &quot;</span>title<span class="s2">&quot;: &quot;</span>Derived<span class="w"> </span>Datasets<span class="s2">&quot;</span>
+<a id="__codelineno-23-75" name="__codelineno-23-75" href="#__codelineno-23-75"></a><span class="s2">    },</span>
+<a id="__codelineno-23-76" name="__codelineno-23-76" href="#__codelineno-23-76"></a><span class="s2">    &quot;</span>trained_models_repositories<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-77" name="__codelineno-23-77" href="#__codelineno-23-77"></a><span class="s2">      &quot;</span>anyOf<span class="s2">&quot;: [</span>
+<a id="__codelineno-23-78" name="__codelineno-23-78" href="#__codelineno-23-78"></a><span class="s2">        {</span>
+<a id="__codelineno-23-79" name="__codelineno-23-79" href="#__codelineno-23-79"></a><span class="s2">          &quot;</span>items<span class="s2">&quot;: {</span>
+<a id="__codelineno-23-80" name="__codelineno-23-80" href="#__codelineno-23-80"></a><span class="s2">            &quot;</span>type<span class="s2">&quot;: &quot;</span>string<span class="s2">&quot;</span>
+<a id="__codelineno-23-81" name="__codelineno-23-81" href="#__codelineno-23-81"></a><span class="s2">          },</span>
+<a id="__codelineno-23-82" name="__codelineno-23-82" href="#__codelineno-23-82"></a><span class="s2">          &quot;</span>type<span class="s2">&quot;: &quot;</span>array<span class="s2">&quot;</span>
+<a id="__codelineno-23-83" name="__codelineno-23-83" href="#__codelineno-23-83"></a><span class="s2">        },</span>
+<a id="__codelineno-23-84" name="__codelineno-23-84" href="#__codelineno-23-84"></a><span class="s2">        {</span>
+<a id="__codelineno-23-85" name="__codelineno-23-85" href="#__codelineno-23-85"></a><span class="s2">          &quot;</span>type<span class="s2">&quot;: &quot;</span>null<span class="s2">&quot;</span>
+<a id="__codelineno-23-86" name="__codelineno-23-86" href="#__codelineno-23-86"></a><span class="s2">        }</span>
+<a id="__codelineno-23-87" name="__codelineno-23-87" href="#__codelineno-23-87"></a><span class="s2">      ],</span>
+<a id="__codelineno-23-88" name="__codelineno-23-88" href="#__codelineno-23-88"></a><span class="s2">      &quot;</span>default<span class="s2">&quot;: null,</span>
+<a id="__codelineno-23-89" name="__codelineno-23-89" href="#__codelineno-23-89"></a><span class="s2">      &quot;</span>title<span class="s2">&quot;: &quot;</span>Trained<span class="w"> </span>Models<span class="w"> </span>Repositories<span class="s2">&quot;</span>
+<a id="__codelineno-23-90" name="__codelineno-23-90" href="#__codelineno-23-90"></a><span class="s2">    }</span>
+<a id="__codelineno-23-91" name="__codelineno-23-91" href="#__codelineno-23-91"></a><span class="s2">  },</span>
+<a id="__codelineno-23-92" name="__codelineno-23-92" href="#__codelineno-23-92"></a><span class="s2">  &quot;</span>required<span class="s2">&quot;: [</span>
+<a id="__codelineno-23-93" name="__codelineno-23-93" href="#__codelineno-23-93"></a><span class="s2">    &quot;</span>name<span class="s2">&quot;,</span>
+<a id="__codelineno-23-94" name="__codelineno-23-94" href="#__codelineno-23-94"></a><span class="s2">    &quot;</span>path<span class="s2">&quot;,</span>
+<a id="__codelineno-23-95" name="__codelineno-23-95" href="#__codelineno-23-95"></a><span class="s2">    &quot;</span>format<span class="s2">&quot;,</span>
+<a id="__codelineno-23-96" name="__codelineno-23-96" href="#__codelineno-23-96"></a><span class="s2">    &quot;</span>classes<span class="s2">&quot;,</span>
+<a id="__codelineno-23-97" name="__codelineno-23-97" href="#__codelineno-23-97"></a><span class="s2">    &quot;</span>provider_name<span class="s2">&quot;,</span>
+<a id="__codelineno-23-98" name="__codelineno-23-98" href="#__codelineno-23-98"></a><span class="s2">    &quot;</span>repository<span class="s2">&quot;</span>
+<a id="__codelineno-23-99" name="__codelineno-23-99" href="#__codelineno-23-99"></a><span class="s2">  ],</span>
+<a id="__codelineno-23-100" name="__codelineno-23-100" href="#__codelineno-23-100"></a><span class="s2">  &quot;</span>title<span class="s2">&quot;: &quot;</span>DatasetConfig<span class="s2">&quot;,</span>
+<a id="__codelineno-23-101" name="__codelineno-23-101" href="#__codelineno-23-101"></a><span class="s2">  &quot;</span>type<span class="s2">&quot;: &quot;</span>object<span class="s2">&quot;</span>
+<a id="__codelineno-23-102" name="__codelineno-23-102" href="#__codelineno-23-102"></a><span class="s2">}</span>
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 457-463 -->
+
+<h3 id="step-2-create-a-custom-configuration-file">Step 2: Create a Custom Configuration File</h3>
+<p>Now that we know the required structure, let's create a custom configuration.</p>
+<p>First, it's best practice to keep your custom configurations separate from the
+library's defaults. We'll create a dedicated directory for them.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 465-469 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">custom_config_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;culicidae_custom_config&quot;</span><span class="p">)</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">custom_config_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created custom config directory at: ./</span><span class="si">{</span><span class="n">custom_config_dir</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>Created<span class="w"> </span>custom<span class="w"> </span>config<span class="w"> </span>directory<span class="w"> </span>at:<span class="w"> </span>./culicidae_custom_config
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 470-475 -->
+
+<p>Next, create a <code>.yaml</code> file inside this directory. Your file must have a top-level
+<code>datasets:</code> key. Under this key, you can add one or more named dataset configurations,
+where each one follows the <code>DatasetConfig</code> structure we just inspected.</p>
+<p><strong>Example</strong>: Let's add a configuration for a hypothetical <code>culex-pipiens-complex</code> dataset.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 477-479 -->
+
+<p>The file's stem will become the top-level key in the merged config.
+To override the library's 'datasets' section, save the mapping directly</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 479-499 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">custom_dataset_config</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>    <span class="c1"># Note: do NOT add a top-level &#39;datasets&#39; key here; the filename</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>    <span class="c1"># will be used as the key in the merged config.</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>    <span class="s2">&quot;culex-pipiens-complex&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;culex-pipiens-complex&quot;</span><span class="p">,</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>        <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;culex_pipiens_complex&quot;</span><span class="p">,</span>
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;imagefolder&quot;</span><span class="p">,</span>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>        <span class="s2">&quot;classes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;culex_pipiens&quot;</span><span class="p">,</span> <span class="s2">&quot;culex_torrentium&quot;</span><span class="p">],</span>
+<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>        <span class="s2">&quot;provider_name&quot;</span><span class="p">:</span> <span class="s2">&quot;huggingface&quot;</span><span class="p">,</span>
+<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a>        <span class="s2">&quot;repository&quot;</span><span class="p">:</span> <span class="s2">&quot;my-org/culex-pipiens-complex-dataset&quot;</span><span class="p">,</span>
+<a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>    <span class="p">},</span>
+<a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a><span class="p">}</span>
+<a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a>
+<a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a>
+<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a><span class="n">config_file_path</span> <span class="o">=</span> <span class="n">custom_config_dir</span> <span class="o">/</span> <span class="s2">&quot;datasets.yaml&quot;</span>
+<a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a>    <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">custom_dataset_config</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a>
+<a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Custom dataset config saved to: </span><span class="si">{</span><span class="n">config_file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>✅<span class="w"> </span>Custom<span class="w"> </span>dataset<span class="w"> </span>config<span class="w"> </span>saved<span class="w"> </span>to:<span class="w"> </span>culicidae_custom_config<span class="se">\d</span>atasets.yaml
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 500-504 -->
+
+<h3 id="step-3-load-culicidaelab-with-your-custom-configuration">Step 3: Load <code>culicidaelab</code> with Your Custom Configuration</h3>
+<p>The <code>get_settings</code> function will create a <em>new</em>, merged settings instance
+when a <code>config_dir</code> is provided, loading your custom file on top of the defaults.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 506-521 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Initializing with Custom Settings ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="n">custom_settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">(</span><span class="n">config_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">custom_config_dir</span><span class="p">))</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="c1"># Create a new manager with the custom settings</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="n">custom_manager</span> <span class="o">=</span> <span class="n">DatasetsManager</span><span class="p">(</span><span class="n">custom_settings</span><span class="p">)</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Listing All Datasets (including custom) ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="n">all_datasets</span> <span class="o">=</span> <span class="n">custom_manager</span><span class="o">.</span><span class="n">list_datasets</span><span class="p">()</span>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">all_datasets</span><span class="p">)</span>
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a>
+<a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="k">if</span> <span class="s2">&quot;culex-pipiens-complex&quot;</span> <span class="ow">in</span> <span class="n">all_datasets</span><span class="p">:</span>
+<a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✅ Successfully added &#39;culex-pipiens-complex&#39; to the available datasets!&quot;</span><span class="p">)</span>
+<a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a><span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">❌ Custom dataset was not loaded correctly.&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>---<span class="w"> </span>Initializing<span class="w"> </span>with<span class="w"> </span>Custom<span class="w"> </span>Settings<span class="w"> </span>---
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>---<span class="w"> </span>Listing<span class="w"> </span>All<span class="w"> </span>Datasets<span class="w"> </span><span class="o">(</span>including<span class="w"> </span>custom<span class="o">)</span><span class="w"> </span>---
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="o">[</span><span class="s1">&#39;classification&#39;</span>,<span class="w"> </span><span class="s1">&#39;detection&#39;</span>,<span class="w"> </span><span class="s1">&#39;segmentation&#39;</span>,<span class="w"> </span><span class="s1">&#39;species_diversity&#39;</span>,<span class="w"> </span><span class="s1">&#39;culex-pipiens-complex&#39;</span><span class="o">]</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>✅<span class="w"> </span>Successfully<span class="w"> </span>added<span class="w"> </span><span class="s1">&#39;culex-pipiens-complex&#39;</span><span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>available<span class="w"> </span>datasets!
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 522-533 -->
+
+<h2 id="6-next-steps-further-reading">6. Next Steps &amp; Further Reading</h2>
+<p>You now have a solid understanding of how to use the <code>DatasetsManager</code> in <code>culicidaelab</code>.
+From here, you can:</p>
+<ul>
+<li><strong>Train a new model:</strong> Use the loaded data with your favorite deep learning framework.</li>
+<li><strong>Contribute to the project:</strong> If you have your own labeled mosquito datasets,
+consider sharing them with the community.</li>
+<li><strong>Explore the API:</strong> Dive deeper into the <code>culicidaelab</code> source code to discover more functionalities.</li>
+</ul>
+<p>By providing standardized datasets and an easy-to-use interface, <code>culicidaelab</code> aims
+to accelerate innovation in the fight against mosquito-borne diseases. Happy coding!</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  6.979 seconds)</p>
+<div id="download_links"></div>
+
+<p><a class="md-button center" href="../tutorial_part_1_datasets_example.py"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32v242.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64h384c35.3 0 64-28.7 64-64v-32c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48"/></svg></span> Download Python source code: tutorial_part_1_datasets_example.py</a></p>
+<p><a class="md-button center" href="../tutorial_part_1_datasets_example.ipynb"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32v242.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64h384c35.3 0 64-28.7 64-64v-32c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48"/></svg></span> Download Jupyter notebook: tutorial_part_1_datasets_example.ipynb</a></p>
+<p><a class="mkd-glr-signature" href="https://smarie.github.io/mkdocs-gallery">Gallery generated by mkdocs-gallery</a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../tutorial_part_0_settings_example/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Understanding and Using the Settings">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Understanding and Using the Settings
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../tutorial_part_2_mosquito_detection/" class="md-footer__link md-footer__link--next" aria-label="Next: Mosquito Detection Tutorial">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Mosquito Detection Tutorial
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 Kovaleva Ilona
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["search.suggest", "search.highlight", "navigation.path", "navigation.footer", "navigation.tabs", "navigation.tabs.sticky", "navigation.tracking", "navigation.sections", "navigation.expand", "toc.follow", "toc.integrate", "content.code.annotate", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.83f73b43.min.js"></script>
+      
+    
+  </body>
+</html>
