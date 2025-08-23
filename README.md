@@ -211,8 +211,9 @@ An open-source system for mosquito research and analysis includes components:
 
   - [Detection model reports](https://gitlab.com/mosquitoscan/experiments-reports-detection-models)
   - [Segmentation model reports](https://gitlab.com/mosquitoscan/experiments-reports-segmentation-models)
-  - [General experiment reports](https://gitlab.com/mosquitoscan/experiments-reports)
-  - [Additional technical reports](https://gitlab.com/iloncka/mosal-reports)
+  - [Classification experiment reports - 1st round](https://gitlab.com/iloncka/mosal-reports)
+  - [Classification experiment reports -2nd round](https://gitlab.com/mosquitoscan/experiments-reports)
+
 - **Applications**:
 
   - [Python library (AGPL-3.0)](https://github.com/iloncka-ds/culicidaelab) providing core ML functionality

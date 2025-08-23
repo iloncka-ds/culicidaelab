@@ -1,0 +1,9 @@
+culex-pipiens-complex:
+  classes:
+  - culex_pipiens
+  - culex_torrentium
+  format: imagefolder
+  name: culex-pipiens-complex
+  path: culex_pipiens_complex
+  provider_name: huggingface
+  repository: my-org/culex-pipiens-complex-dataset
