@@ -3,13 +3,13 @@
 Examples using ``numpy.arange``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-<div class="mkd-glr-thumbcontainer" tooltip="В этом руководстве демонстрируется, как использовать DatasetsManager в CulicidaeLab для взаимод...">
+<div class="mkd-glr-thumbcontainer" tooltip="This tutorial demonstrates how to use the DatasetsManager in CulicidaeLab to interact with the ...">
     <!--div class="figure align-default" id="id1"-->
-        <img alt="Управление и загрузка наборов данных" src="images/thumb/mkd_glr_tutorial_part_1_datasets_example_thumb.png" />
+        <img alt="Managing and Loading Datasets" src="images\thumb\mkd_glr_tutorial_part_1_datasets_example_thumb.png" />
         <p class="caption">
             <span class="caption-text">
                 <a class="reference internal" href="tutorial_part_1_datasets_example">
-                    <span class="std std-ref">Управление и загрузка наборов данных</span>
+                    <span class="std std-ref">Managing and Loading Datasets</span>
                 </a>
             </span>
             <!--a class="headerlink" href="#id1" title="Permalink to this image"></a-->

@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="ru" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -12,7 +12,7 @@
         <meta name="author" content="Ilona Kovaleva">
       
       
-        <link rel="canonical" href="https://iloncka-ds.github.io/culicidaelab/ru/dev_docs/contributing/">
+        <link rel="canonical" href="https://iloncka-ds.github.io/culicidaelab/en/dev_docs/contributing/">
       
       
         <link rel="prev" href="../architecture/">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Инструкция по внесению изменений - CulicidaeLab</title>
+        <title>Contributing - CulicidaeLab</title>
       
     
     
@@ -56,11 +56,11 @@
     
       <link rel="stylesheet" href="../../sg_gallery-binder.css">
     
+      <link rel="stylesheet" href="../../sg_gallery-dataframe.css">
+    
       <link rel="stylesheet" href="../../sg_gallery-rendered-html.css">
     
       <link rel="stylesheet" href="../../sg_gallery.css">
-    
-      <link rel="stylesheet" href="../../sg_gallery-dataframe.css">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -88,8 +88,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#culicidaelab" class="md-skip">
-          Перейти к содержанию
+        <a href="#contributing-to-culicidaelab" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -103,7 +103,7 @@
   
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Верхний колонтитул">
+  <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="CulicidaeLab" class="md-header__button md-logo" aria-label="CulicidaeLab" data-md-component="logo">
       
   
@@ -124,7 +124,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Инструкция по внесению изменений
+              Contributing
             
           </span>
         </div>
@@ -164,7 +164,7 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="Выберите язык">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
@@ -196,16 +196,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Поиск" placeholder="Поиск" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="Поиск">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="Очистить" aria-label="Очистить" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -218,7 +218,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            Инициализация поиска
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -229,7 +229,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/iloncka-ds/culicidaelab" title="Перейти к репозиторию" class="md-source" data-md-component="source">
+        <a href="https://github.com/iloncka-ds/culicidaelab" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
@@ -244,7 +244,7 @@
   
     
       
-<nav class="md-tabs" aria-label="Вкладки" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -258,7 +258,7 @@
   
     
   
-  ВВЕДЕНИЕ
+  INTRODUCTION
 
       </a>
     </li>
@@ -275,7 +275,7 @@
   
     
   
-  УСТАНОВКА
+  INSTALLATION
 
       </a>
     </li>
@@ -292,7 +292,7 @@
   
     
   
-  БЫСТРЫЙ СТАРТ
+  QUICK START
 
       </a>
     </li>
@@ -309,7 +309,7 @@
   
     
   
-  РУКОВОДСТВО ПОЛЬЗОВАТЕЛЯ
+  USER MANUAL
 
       </a>
     </li>
@@ -332,7 +332,7 @@
         <a href="../../generated/gallery/" class="md-tabs__link">
           
   
-  ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ
+  USAGE EXAMPLES
 
         </a>
       </li>
@@ -355,7 +355,7 @@
         <a href="../architecture/" class="md-tabs__link">
           
   
-  РУКОВОДСТВО РАЗРАБОТЧИКА
+  DEVELOPER GUIDE
 
         </a>
       </li>
@@ -373,7 +373,7 @@
         <a href="../../api_docs/core/" class="md-tabs__link">
           
   
-  API ДОКУМЕНТАЦИЯ
+  API REFERENCE
 
         </a>
       </li>
@@ -409,7 +409,7 @@
 
   
 
-<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Навигация" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="CulicidaeLab" class="md-nav__button md-logo" aria-label="CulicidaeLab" data-md-component="logo">
       
@@ -421,7 +421,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/iloncka-ds/culicidaelab" title="Перейти к репозиторию" class="md-source" data-md-component="source">
+      <a href="https://github.com/iloncka-ds/culicidaelab" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
@@ -445,7 +445,7 @@
         
   
   <span class="md-ellipsis">
-    ВВЕДЕНИЕ
+    INTRODUCTION
   </span>
   
 
@@ -465,7 +465,7 @@
         
   
   <span class="md-ellipsis">
-    УСТАНОВКА
+    INSTALLATION
   </span>
   
 
@@ -485,7 +485,7 @@
         
   
   <span class="md-ellipsis">
-    БЫСТРЫЙ СТАРТ
+    QUICK START
   </span>
   
 
@@ -505,7 +505,7 @@
         
   
   <span class="md-ellipsis">
-    РУКОВОДСТВО ПОЛЬЗОВАТЕЛЯ
+    USER MANUAL
   </span>
   
 
@@ -542,7 +542,7 @@
             
   
   <span class="md-ellipsis">
-    ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ
+    USAGE EXAMPLES
   </span>
   
 
@@ -552,7 +552,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ
+            USAGE EXAMPLES
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -584,7 +584,7 @@
             
   
   <span class="md-ellipsis">
-    Примеры
+    Tutorials
   </span>
   
 
@@ -594,7 +594,7 @@
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5_1">
             <span class="md-nav__icon md-icon"></span>
-            Примеры
+            Tutorials
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -609,7 +609,7 @@
         
   
   <span class="md-ellipsis">
-    Примеры
+    Tutorials
   </span>
   
 
@@ -630,7 +630,7 @@
         
   
   <span class="md-ellipsis">
-    Использование модуля `settings`
+    Understanding and Using the Settings
   </span>
   
 
@@ -651,7 +651,7 @@
         
   
   <span class="md-ellipsis">
-    Управление и загрузка наборов данных
+    Managing and Loading Datasets
   </span>
   
 
@@ -672,7 +672,7 @@
         
   
   <span class="md-ellipsis">
-    Руководство по обнаружению комаров
+    Mosquito Detection Tutorial
   </span>
   
 
@@ -693,7 +693,7 @@
         
   
   <span class="md-ellipsis">
-    Руководство по сегментации комаров
+    Mosquito Segmentation Tutorial
   </span>
   
 
@@ -714,7 +714,7 @@
         
   
   <span class="md-ellipsis">
-    Классификация видов комаров
+    Classifying Mosquito Species
   </span>
   
 
@@ -770,7 +770,7 @@
             
   
   <span class="md-ellipsis">
-    РУКОВОДСТВО РАЗРАБОТЧИКА
+    DEVELOPER GUIDE
   </span>
   
 
@@ -780,7 +780,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
-            РУКОВОДСТВО РАЗРАБОТЧИКА
+            DEVELOPER GUIDE
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -795,7 +795,7 @@
         
   
   <span class="md-ellipsis">
-    Руководство разработчика
+    Developer guide
   </span>
   
 
@@ -825,7 +825,7 @@
           
   
   <span class="md-ellipsis">
-    Инструкция по внесению изменений
+    Contributing
   </span>
   
 
@@ -836,7 +836,7 @@
         
   
   <span class="md-ellipsis">
-    Инструкция по внесению изменений
+    Contributing
   </span>
   
 
@@ -844,7 +844,7 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="Содержание">
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
   
@@ -853,42 +853,42 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Содержание
+      Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
+  <a href="#code-of-conduct" class="md-nav__link">
     <span class="md-ellipsis">
-      Кодекс поведения
+      Code of Conduct
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#how-can-i-contribute" class="md-nav__link">
     <span class="md-ellipsis">
-      Как я могу внести вклад?
+      How Can I Contribute?
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Как я могу внести вклад?">
+    <nav class="md-nav" aria-label="How Can I Contribute?">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#reporting-bugs" class="md-nav__link">
     <span class="md-ellipsis">
-      Сообщение об ошибках
+      Reporting Bugs
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#suggesting-enhancements" class="md-nav__link">
     <span class="md-ellipsis">
-      Предложение улучшений
+      Suggesting Enhancements
     </span>
   </a>
   
@@ -900,37 +900,37 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#development-setup" class="md-nav__link">
     <span class="md-ellipsis">
-      Настройка среды разработки
+      Development Setup
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
+  <a href="#our-development-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      Наш процесс разработки
+      Our Development Workflow
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Наш процесс разработки">
+    <nav class="md-nav" aria-label="Our Development Workflow">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
+  <a href="#running-tests" class="md-nav__link">
     <span class="md-ellipsis">
-      Запуск тестов
+      Running Tests
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
+  <a href="#writing-documentation" class="md-nav__link">
     <span class="md-ellipsis">
-      Написание документации
+      Writing Documentation
     </span>
   </a>
   
@@ -942,9 +942,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#-" class="md-nav__link">
+  <a href="#submitting-a-pull-request" class="md-nav__link">
     <span class="md-ellipsis">
-      Отправка пулл-реквеста
+      Submitting a Pull Request
     </span>
   </a>
   
@@ -994,7 +994,7 @@
             
   
   <span class="md-ellipsis">
-    API ДОКУМЕНТАЦИЯ
+    API REFERENCE
   </span>
   
 
@@ -1004,7 +1004,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
-            API ДОКУМЕНТАЦИЯ
+            API REFERENCE
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -1117,142 +1117,142 @@
   
 
 
-<h1 id="culicidaelab">Участие в разработке CulicidaeLab</h1>
-<p>Прежде всего, благодарим вас за то, что вы решили внести свой вклад в <code>CulicidaeLab</code>! Мы очень рады видеть вас здесь и ценим ваш интерес к улучшению этого проекта. Каждый вклад, от исправления небольшой опечатки до добавления крупной новой функции, очень важен.</p>
-<p>Этот документ содержит руководство по участию в проекте. Пожалуйста, внимательно прочтите его, чтобы обеспечить гладкий и эффективный процесс совместной работы.</p>
-<h2 id="_1">Кодекс поведения</h2>
-<p>Этот проект и все его участники руководствуются <a href="../code_of_conduct/">Кодексом поведения CulicidaeLab</a>. Участвуя в проекте, вы обязуетесь соблюдать этот кодекс. Пожалуйста, сообщайте о неприемлемом поведении по адресу <a href="mailto:iloncka.ds@gmail.com">iloncka.ds@gmail.com</a>.</p>
-<h2 id="_2">Как я могу внести вклад?</h2>
-<p>Существует множество способов внести свой вклад, и мы приветствуем каждый из них:</p>
+<h1 id="contributing-to-culicidaelab">Contributing to CulicidaeLab</h1>
+<p>First off, thank you for considering contributing to <code>CulicidaeLab</code>! We are thrilled you're here and appreciate your interest in making this project better. Every contribution, from a small typo fix to a major new feature, is valuable.</p>
+<p>This document provides guidelines for contributing to the project. Please read it carefully to ensure a smooth and effective collaboration process.</p>
+<h2 id="code-of-conduct">Code of Conduct</h2>
+<p>This project and everyone participating in it is governed by the <a href="../code_of_conduct/">CulicidaeLab Code of Conduct</a>. By participating, you are expected to uphold this code. Please report unacceptable behavior to <a href="mailto:iloncka.ds@gmail.com">iloncka.ds@gmail.com</a>.</p>
+<h2 id="how-can-i-contribute">How Can I Contribute?</h2>
+<p>There are many ways to contribute, and all of them are welcome:</p>
 <ul>
-<li><strong>Сообщение об ошибках:</strong> Если вы нашли ошибку, пожалуйста, откройте «issue» (проблему) и предоставьте подробную информацию, включая шаги для ее воспроизведения.</li>
-<li><strong>Предложение улучшений:</strong> У вас есть идея для новой функции или улучшения существующей? Откройте «issue», чтобы начать обсуждение.</li>
-<li><strong>Написание документации:</strong> Помогите нам улучшить нашу документацию, исправляя опечатки, проясняя непонятные разделы или добавляя новые примеры.</li>
-<li><strong>Отправка пулл-реквестов:</strong> Если вы готовы внести свой вклад в код, это лучший способ.</li>
+<li><strong>Reporting Bugs:</strong> If you find a bug, please open an issue and provide detailed information, including steps to reproduce it.</li>
+<li><strong>Suggesting Enhancements:</strong> Have an idea for a new feature or an improvement to an existing one? Open an issue to start a discussion.</li>
+<li><strong>Writing Documentation:</strong> Help us improve our documentation by fixing typos, clarifying confusing sections, or adding new examples.</li>
+<li><strong>Submitting Pull Requests:</strong> If you're ready to contribute code, this is the way to go.</li>
 </ul>
-<h3 id="_3">Сообщение об ошибках</h3>
-<p>Перед созданием отчета об ошибке, пожалуйста, проверьте <a href="https://github.com/iloncka-ds/culicidaelab/issues">существующие «issues»</a>, чтобы убедиться, что о проблеме еще не сообщалось. Если нет, пожалуйста, откройте новую «issue» и включите следующее:</p>
+<h3 id="reporting-bugs">Reporting Bugs</h3>
+<p>Before creating a bug report, please check the <a href="https://github.com/iloncka-ds/culicidaelab/issues">existing issues</a> to see if the problem has already been reported. If it hasn't, please open a new issue and include the following:</p>
 <ul>
-<li>Четкий и описательный заголовок.</li>
-<li>Версия <code>culicidaelab</code>, которую вы используете.</li>
-<li>Ваша операционная система и версия Python.</li>
-<li>Пошаговое описание того, как воспроизвести ошибку.</li>
-<li>Фрагмент кода, демонстрирующий проблему.</li>
-<li>Полная трассировка стека любых сообщений об ошибках.</li>
+<li>A clear and descriptive title.</li>
+<li>The version of <code>culicidaelab</code> you are using.</li>
+<li>Your operating system and Python version.</li>
+<li>A step-by-step description of how to reproduce the bug.</li>
+<li>A code snippet that demonstrates the issue.</li>
+<li>The full traceback of any error messages.</li>
 </ul>
-<h3 id="_4">Предложение улучшений</h3>
-<p>Мы будем рады услышать ваши идеи по улучшению <code>CulicidaeLab</code>. Чтобы предложить улучшение, пожалуйста, откройте «issue» и предоставьте:</p>
+<h3 id="suggesting-enhancements">Suggesting Enhancements</h3>
+<p>We'd love to hear your ideas for improving <code>CulicidaeLab</code>. To suggest an enhancement, please open an issue and provide:</p>
 <ul>
-<li>Четкий и описательный заголовок.</li>
-<li>Подробное объяснение предлагаемого улучшения и почему оно будет полезным.</li>
-<li>(Необязательно) Примерный набросок того, как функция может быть реализована или использована в коде.</li>
+<li>A clear and descriptive title.</li>
+<li>A detailed explanation of the proposed enhancement and why it would be beneficial.</li>
+<li>(Optional) A rough sketch of how the feature might be implemented or used in code.</li>
 </ul>
-<h2 id="_5">Настройка среды разработки</h2>
-<p>Готовы написать код? Вот как настроить вашу среду разработки.</p>
+<h2 id="development-setup">Development Setup</h2>
+<p>Ready to write some code? Here’s how to set up your development environment.</p>
 <ol>
 <li>
-<p><strong>Сделайте форк репозитория</strong>
-    Начните с создания форка <a href="https://github.com/iloncka-ds/culicidaelab">основного репозитория</a> на GitHub.</p>
+<p><strong>Fork the Repository</strong>
+    Start by forking the <a href="https://github.com/iloncka-ds/culicidaelab">main repository</a> on GitHub.</p>
 </li>
 <li>
-<p><strong>Клонируйте ваш форк</strong>
-    Клонируйте ваш форк-репозиторий на свой локальный компьютер:
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ВАШ_ЛОГИН/culicidaelab.git
+<p><strong>Clone Your Fork</strong>
+    Clone your forked repository to your local machine:
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/YOUR_USERNAME/culicidaelab.git
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>culicidaelab
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>Создайте виртуальное окружение</strong>
-    Настоятельно рекомендуется работать в виртуальном окружении. Вы можете использовать <code>uv</code> или встроенный в Python модуль <code>venv</code>.
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Используя uv (рекомендуется)</span>
+<p><strong>Create a Virtual Environment</strong>
+    It is highly recommended to work in a virtual environment. You can use <code>uv</code> or Python's built-in <code>venv</code> module.
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Using uv (recommended)</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>venv
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Или используя venv</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Or using venv</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
 </code></pre></div>
-    Активируйте окружение:
-    <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># На macOS/Linux</span>
+    Activate the environment:
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># On macOS/Linux</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># На Windows</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># On Windows</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>.venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>Установите зависимости</strong>
-    Установите проект в редактируемом режиме (<code>-e</code>) вместе со всеми зависимостями для разработки (<code>[dev]</code>).
+<p><strong>Install Dependencies</strong>
+    Install the project in editable mode (<code>-e</code>) along with all development dependencies (<code>[dev]</code>).
     <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
 </code></pre></div>
-    Эта команда устанавливает все необходимое для разработки, включая инструменты для тестирования, линтеры и генераторы документации.</p>
+    This command installs everything you need for development, including testing tools, linters, and documentation generators.</p>
 </li>
 <li>
-<p><strong>Установите хуки pre-commit</strong>
-    Мы используем <code>pre-commit</code> для автоматического запуска линтеров и форматеров перед каждым коммитом. Это обеспечивает качество и согласованность кода во всем проекте.
+<p><strong>Install pre-commit Hooks</strong>
+    We use <code>pre-commit</code> to automatically run linters and formatters before each commit. This ensures code quality and consistency across the project.
     <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pre-commit<span class="w"> </span>install
 </code></pre></div>
-    Это разовая настройка для каждого клона. Теперь при каждом выполнении <code>git commit</code> будут запускаться хуки, определенные в <code>.pre-commit-config.yaml</code>.</p>
+    This is a one-time setup per clone. Now, whenever you run <code>git commit</code>, the hooks defined in <code>.pre-commit-config.yaml</code> will be executed.</p>
 </li>
 </ol>
-<h2 id="_6">Наш процесс разработки</h2>
-<p>Мы используем набор инструментов для поддержания качества кода. Ваша настройка <code>pre-commit</code> обрабатывает все это автоматически, но полезно знать, что происходит «под капотом».</p>
+<h2 id="our-development-workflow">Our Development Workflow</h2>
+<p>We use a suite of tools to maintain code quality. Your <code>pre-commit</code> setup handles all of this automatically, but it's good to know what's happening under the hood.</p>
 <ul>
-<li><strong>Форматирование:</strong> <code>black</code> и <code>ruff-format</code> используются для детерминированного и согласованного форматирования кода.</li>
-<li><strong>Линтинг:</strong> <code>ruff</code> и <code>flake8</code> выявляют распространенные ошибки программирования и проблемы со стилем.</li>
-<li><strong>Проверка типов:</strong> <code>mypy</code> выполняет статическую проверку типов для поиска ошибок, связанных с типами, до времени выполнения.</li>
-<li><strong>Безопасность:</strong> <code>bandit</code> сканирует код на наличие распространенных уязвимостей безопасности.</li>
-<li><strong>Модернизация:</strong> <code>pyupgrade</code> автоматически обновляет синтаксис до более новых версий Python.</li>
+<li><strong>Formatting:</strong> <code>black</code> and <code>ruff-format</code> are used for deterministic, consistent code formatting.</li>
+<li><strong>Linting:</strong> <code>ruff</code> and <code>flake8</code> catch common programming errors and style issues.</li>
+<li><strong>Type Checking:</strong> <code>mypy</code> performs static type checking to find type-related bugs before runtime.</li>
+<li><strong>Security:</strong> <code>bandit</code> scans for common security vulnerabilities in the code.</li>
+<li><strong>Modernization:</strong> <code>pyupgrade</code> automatically upgrades syntax to newer Python versions.</li>
 </ul>
-<h3 id="_7">Запуск тестов</h3>
-<p>Чтобы убедиться, что ваши изменения не привели к регрессиям, пожалуйста, запустите полный набор тестов с помощью <code>pytest</code>.
+<h3 id="running-tests">Running Tests</h3>
+<p>To ensure your changes haven't introduced any regressions, please run the full test suite using <code>pytest</code>.
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pytest
 </code></pre></div>
-Все тесты должны проходить успешно перед отправкой пулл-реквеста.</p>
-<h3 id="_8">Написание документации</h3>
-<p>Хорошая документация так же важна, как и хороший код. Если вы добавляете или изменяете функцию, пожалуйста, обновите документацию в каталоге <code>docs/</code> соответствующим образом.</p>
-<p>Вы можете предварительно просмотреть свои изменения локально, выполнив:
+All tests should pass before you submit a pull request.</p>
+<h3 id="writing-documentation">Writing Documentation</h3>
+<p>Good documentation is as important as good code. If you add or modify a feature, please update the documentation in the <code>docs/</code> directory accordingly.</p>
+<p>You can preview your changes locally by running:
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>mkdocs<span class="w"> </span>serve
 </code></pre></div>
-Это запустит локальный сервер, и вы сможете просмотреть сайт документации в своем браузере по адресу <code>http://127.0.0.1:8000</code>.</p>
-<h2 id="-">Отправка пулл-реквеста</h2>
-<p>Когда вы будете готовы отправить свои изменения, пожалуйста, следуйте этим шагам:</p>
+This will start a local server, and you can view the documentation site in your browser at <code>http://127.0.0.1:8000</code>.</p>
+<h2 id="submitting-a-pull-request">Submitting a Pull Request</h2>
+<p>When you're ready to submit your changes, please follow these steps:</p>
 <ol>
 <li>
-<p><strong>Создайте новую ветку</strong>
-    Создайте описательную ветку для ваших изменений от ветки <code>main</code>.
+<p><strong>Create a New Branch</strong>
+    Create a descriptive branch for your changes from the <code>main</code> branch.
     <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature/your-awesome-feature
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>Внесите свои изменения</strong>
-    Напишите свой код, добавьте или обновите тесты и напишите документацию.</p>
+<p><strong>Make Your Changes</strong>
+    Write your code, add or update tests, and write documentation.</p>
 </li>
 <li>
-<p><strong>Закоммитьте свою работу</strong>
-    Закоммитьте свои изменения с четким и кратким сообщением. Когда вы делаете коммит, запустятся хуки <code>pre-commit</code>. Если они не сработают, исправьте указанные проблемы и закоммитьте снова.
+<p><strong>Commit Your Work</strong>
+    Commit your changes with a clear and concise message. When you commit, the <code>pre-commit</code> hooks will run. If they fail, fix the reported issues and commit again.
     <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>git<span class="w"> </span>add<span class="w"> </span>.
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: Добавлена новая замечательная функция&quot;</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: Add awesome new feature&quot;</span>
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>Отправьте изменения в ваш форк</strong>
-    Отправьте вашу ветку в ваш форк-репозиторий на GitHub.
+<p><strong>Push to Your Fork</strong>
+    Push your branch to your forked repository on GitHub.
     <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>feature/your-awesome-feature
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>Откройте пулл-реквест</strong>
-    Перейдите в репозиторий <code>CulicidaeLab</code> на GitHub и откройте пулл-реквест.</p>
+<p><strong>Open a Pull Request</strong>
+    Go to the <code>CulicidaeLab</code> repository on GitHub and open a pull request.</p>
 <ul>
-<li>Укажите четкий заголовок и подробное описание ваших изменений.</li>
-<li>Если ваш PR решает существующую «issue», сошлитесь на нее, включив <code>Closes #123</code> в описание.</li>
+<li>Provide a clear title and a detailed description of your changes.</li>
+<li>If your PR addresses an existing issue, link to it by including <code>Closes #123</code> in the description.</li>
 </ul>
 </li>
 <li>
-<p><strong>Ревью кода</strong>
-    Как только ваш PR будет отправлен, мейнтейнер его рассмотрит. Мы можем предложить некоторые изменения или улучшения. Мы сделаем все возможное, чтобы предоставить своевременную и конструктивную обратную связь.</p>
+<p><strong>Code Review</strong>
+    Once your PR is submitted, a maintainer will review it. We may suggest some changes or improvements. We will do our best to provide timely and constructive feedback.</p>
 </li>
 </ol>
-<p>Еще раз спасибо за ваш интерес к участию в проекте! Мы с нетерпением ждем ваших предложений.</p>
+<p>Thank you again for your interest in contributing! We look forward to your submissions.</p>
 
 
 
@@ -1279,30 +1279,30 @@
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="Нижний колонтитул" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../architecture/" class="md-footer__link md-footer__link--prev" aria-label="Назад: Руководство разработчика">
+          <a href="../architecture/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Developer guide">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                Назад
+                Previous
               </span>
               <div class="md-ellipsis">
-                Руководство разработчика
+                Developer guide
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../api_docs/core/" class="md-footer__link md-footer__link--next" aria-label="Вперед: Core">
+          <a href="../../api_docs/core/" class="md-footer__link md-footer__link--next" aria-label="Next: Core">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                Вперед
+                Next
               </span>
               <div class="md-ellipsis">
                 Core
@@ -1343,7 +1343,7 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["search.suggest", "search.highlight", "navigation.path", "navigation.footer", "navigation.tabs", "navigation.tabs.sticky", "navigation.tracking", "navigation.sections", "navigation.expand", "toc.follow", "toc.integrate", "content.code.annotate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["search.suggest", "search.highlight", "navigation.path", "navigation.footer", "navigation.tabs", "navigation.tabs.sticky", "navigation.tracking", "navigation.sections", "navigation.expand", "toc.follow", "toc.integrate", "content.code.annotate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.83f73b43.min.js"></script>

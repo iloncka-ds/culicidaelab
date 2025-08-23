@@ -1,337 +1,532 @@
+# %%
 """
-# Управление и загрузка наборов данных
+# Managing and Loading Datasets
 
-В этом руководстве демонстрируется, как использовать `DatasetsManager` в CulicidaeLab
-для взаимодействия с наборами данных, определенными в конфигурации библиотеки.
+This tutorial demonstrates how to use the `DatasetsManager` in CulicidaeLab
+to interact with the datasets defined in the library's configuration.
 """
+
+
+# %% [markdown]
+# ### Who is this guide for?
+#
+# This tutorial is for researchers, developers, and students working on entomology,
+# epidemiology, and computer vision. Whether you're training a new AI model,
+# benchmarking an algorithm, or exploring mosquito biodiversity,
+# this guide will help you get up and running quickly with available mosquito datasets.
+#
+# ### What you will learn:
+#
+# *   How to initialize the `DatasetsManager`.
+# *   To list available mosquito datasets and view their specific details.
+# *   How to load classification, detection, and segmentation datasets.
+# *   How to perform exploratory data analysis (EDA) on a mosquito diversity dataset.
+#
+# ### Prerequisites
+#
+# Before you start, make sure you have `culicidaelab` and other necessary libraries installed with code:
+#
+# ```bash
+# %pip install culicidaelab requests matplotlib numpy
+# ```
 
 # %%
-# Установите библиотеку `culicidaelab`, если она еще не установлена
-# !pip install -q culicidaelab
+# Standard library imports
+from collections import defaultdict
+from pathlib import Path
+import json
 
-# %%
-# Сторонние импорты
+# Third-party imports
 import matplotlib.pyplot as plt
 import numpy as np
 import requests
+import yaml
+import cv2
 
-from collections import defaultdict
-
-# Импорты CulicidaeLab
-from culicidaelab import get_settings, ProviderService, DatasetsManager
+# CulicidaeLab imports
+from culicidaelab import get_settings, DatasetsManager, DatasetConfig
 
 # %% [markdown]
-# ## 1. Инициализация DatasetsManager
+# ## 1. Quick Start: Load a Dataset in 3 Lines
 #
-# `DatasetsManager` — это высокоуровневый интерфейс для всех операций с наборами данных.
-# Для его функционирования требуются объект `settings` и `ProviderService`.
+# For those who want to get data immediately. This snippet initializes the library and loads the test
+# split of the mosquito species classification dataset.
 
 # %%
-print("--- 1. Инициализация DatasetsManager ---")
+print("--- Quick Start: Loading Classification Dataset ---")
+# Initialize settings and datasets manager
 settings = get_settings()
-provider_service = ProviderService(settings)
-manager = DatasetsManager(settings, provider_service)
-print("DatasetsManager успешно инициализирован.")
+manager = DatasetsManager(settings)
+# Load the classification dataset
+classification_dataset = manager.load_dataset("classification", split="test")
+
+print(f"🚀 Quick Start successful! Loaded {len(classification_dataset)} classification samples.")
 
 # %% [markdown]
-# ## 2. Список доступных наборов данных
+# ## 2. Initializing and Exploring Available Datasets
 #
-# Вы можете легко просмотреть все наборы данных, настроенные в библиотеке.
+# Now, let's dive deeper with each component.
 
 # %%
-print("\n--- 2. Список всех доступных наборов данных ---")
-available_datasets = manager.list_datasets()
-print(f"Доступные наборы данных, найденные в конфигурации: {available_datasets}")
+print("--- Initializing Core Components ---")
+# The get_settings() function is a singleton, so it will return the
+# already loaded instance
+settings = get_settings()
+# The `DatasetsManager` is your central hub for all dataset-related
+# tasks. It handles downloading, caching, and loading.
+manager = DatasetsManager(settings)
+print("✅ Core components initialized.")
 
 # %% [markdown]
-# ## 3. Получение информации о конкретном наборе данных
+# ### Listing Datasets and Their Statistics
 #
-# Перед загрузкой вы можете получить метаданные конфигурации для любого набора данных.
+# You can easily see all datasets configured in the library and get a quick overview
+# of their contents.
 
 # %%
-print("\n--- 3. Получение информации о наборе данных 'classification' ---")
+print("\n--- Available Datasets ---")
+dataset_names = manager.list_datasets()
+
+for name in dataset_names:
+    try:
+        # Access the dataset's configuration directly from settings
+        config = settings.get_config(f"datasets.{name}")
+        class_count = len(config.classes)
+        print(f"\n📋 Dataset: '{name}'")
+        print(f"   - Provider: {config.provider_name}")
+        print(f"   - Repository: {config.repository}")
+        print(f"   - Format: {config.format}")
+        print(f"   - Classes: {class_count}")
+    except KeyError:
+        print(f"\nCould not find configuration for dataset: {name}")
+
+# %% [markdown]
+# ## 3. Loading and Visualizing Each Dataset Type
+#
+# `culicidaelab` supports three main task types: classification, detection, and segmentation.
+# Let's load a sample from each and visualize the data to understand its structure.
+#
+# ### Use Case 1: Species Classification
+#
+# **Goal**: Identify the species of a mosquito from an image.
+#
+# **Data Structure**: The dataset returns a dictionary containing a PIL `Image`
+# and an string `label`.
+
+# %%
+print("\n--- Loading Classification Dataset ---")
+class_data = manager.load_dataset("classification", split="test")
+
+# Let's inspect a single sample
+sample = class_data[10]
+image = sample["image"]
+label = sample["label"]
+
+# The dataset features contain the mapping from integer ID to class name
+class_name = class_data.features["label"]
+species_name = label.replace("_", " ").title()
+
+print(f"Sample image size: {image.size}")
+print(f"Sample label: {label}")
+print(f"Corresponding species name: {species_name}")
+
+# Visualize the sample
+plt.figure(figsize=(6, 6))
+plt.imshow(image)
+plt.title(f"Classification Sample\nLabel: {label} ({species_name})")
+plt.axis("off")
+plt.show()
+
+# %% [markdown]
+# ### Use Case 2: Mosquito Detection
+#
+# **Goal**: Draw a bounding box around each mosquito in an image.
+#
+# **Data Structure**: The dataset provides bounding boxes in `[x_min, y_min, x_max, y_max]`
+# format and corresponding labels for each object.
+
+# %%
+print("\n--- Loading Detection Dataset ---")
+# Note: YOLO format may require special handling not covered here.
+# We will use the COCO-formatted segmentation dataset and treat its boxes as
+# detection boxes for this example.
+detect_data = manager.load_dataset("detection", split="train[:20]")
+
+# Inspect a detection sample
+detect_sample = detect_data[5]
+detect_image_pil = detect_sample["image"]
+# Convert PIL image to OpenCV format for drawing
+detect_image_cv2 = cv2.cvtColor(np.array(detect_image_pil), cv2.COLOR_RGB2BGR)
+
+objects = detect_sample["objects"]
+print(f"Found {len(objects['bboxes'])} object(s) in this image.")
+
+# Draw bounding boxes on the image
+for bbox in objects["bboxes"]:
+    x_min, y_min, x_max, y_max = (int(v) for v in bbox)
+    # Draw a green rectangle
+    cv2.rectangle(detect_image_cv2, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+
+# Visualize the sample
+plt.figure(figsize=(8, 8))
+plt.imshow(cv2.cvtColor(detect_image_cv2, cv2.COLOR_BGR2RGB))
+plt.title("Detection Sample with Bounding Boxes")
+plt.axis("off")
+plt.show()
+
+# %% [markdown]
+# ### Use Case 3: Image Segmentation
+#
+# **Goal**: Isolate the exact pixels of a mosquito's body from the background.
+#
+# **Data Structure**: The dataset provides a `label` which is a 2D array (mask) where pixel values indicate the class.
+
+# %%
+print("\n--- Loading Segmentation Dataset ---")
+seg_data = manager.load_dataset("segmentation", split="train[:20]")
+
+# Inspect a segmentation sample
+seg_sample = seg_data[0]
+seg_image = seg_sample["image"]
+seg_mask = np.array(seg_sample["label"])  # Convert mask to numpy array
+
+print(f"Image size: {seg_image.size}")
+print(f"Segmentation mask shape: {seg_mask.shape}")
+print(f"Unique values in mask: {np.unique(seg_mask)}")  # 0 is background, 1 is mosquito
+
+# Create a colored overlay for the mask
+# Where the mask is 1 (mosquito), we make it red
+overlay = np.zeros((*seg_mask.shape, 4), dtype=np.uint8)
+overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Red color with 50% opacity
+
+# Visualize the image with the mask overlay
+fig, ax = plt.subplots(figsize=(8, 8))
+ax.imshow(seg_image)
+ax.imshow(overlay)
+ax.set_title("Segmentation Sample with Mask Overlay")
+ax.axis("off")
+plt.show()
+
+
+# %% [markdown]
+# ## 4. Advanced: Exploratory Data Analysis (EDA)
+#
+# Understanding your data's distribution is vital. Here, we'll analyze the foundational
+# `mosquito-species-diversity` dataset.
+#
+# We will fetch the `repository_id` using datasets manager, making the code robust and reusable.
+
+# %%
+# Get the repository ID from the dataset config.
 try:
-    info = manager.get_dataset_info("classification")
-    print(f"  - Имя: {info.name}")
-    print(f"  - Репозиторий Hugging Face: {info.repository}")
-    print(f"  - Формат данных: {info.format}")
-    print(f"  - Провайдер: {info.provider_name}")
-    # print(f"  - Классы: {info.classes}") # Это может быть длинный список, поэтому мы его здесь опустим.
-except KeyError as e:
-    print(e)
+    diversity_config = manager.get_dataset_info("species_diversity")
+    repo_id = diversity_config.repository
+    print(f"✅ Successfully found repository ID from settings: {repo_id}")
+except KeyError:
+    print("❌ Could not find 'mosquito-species-diversity' dataset in settings.")
+    repo_id = None
 
 # %% [markdown]
-# ## 4. Загрузка набора данных
+# #### **Exploring the mosquito species diversity dataset**
 #
-# Когда вы загружаете набор данных в первый раз, менеджер выполняет несколько действий:
-# 1. Он находит соответствующего поставщика данных (например, `HuggingFaceProvider`).
-# 2. Он дает указание поставщику загрузить набор данных в локальный кэш.
-# 3. Он загружает набор данных из локального кэша в память.
+# This dataset serves as the foundational source for the classification, detection, and
+# segmentation datasets. It contains a rich collection of images with corresponding
+# labels and bounding box information.
 #
-# При последующих вызовах менеджер будет использовать кэшированную версию, что значительно ускорит загрузку.
+# Let's start by defining the repository ID and fetching some basic statistics.
 
 # %%
-print("\n--- 4. Первая загрузка 'test' сплита набора данных 'classification' ---")
-print("Это может занять некоторое время, так как будет запущена загрузка с Hugging Face.")
-classification_data = manager.load_dataset("classification", split="test")
-print("\nНабор данных успешно загружен!")
-print(f"Тип возвращенных данных: {type(classification_data)}")
-print(f"Характеристики набора данных: {classification_data.features}")
-print(f"Количество образцов в 'test' сплите: {len(classification_data)}")
+# The repository ID for our source dataset on Hugging Face
+repo_id = "iloncka/mosquito_dataset_46_3139"
 
 
-# %% [markdown]
-# ## 5. Список загруженных наборов данных
-#
-# Менеджер хранит внутренний кэш наборов данных, которые были загружены в течение сессии.
-
-# %%
-print("\n--- 5. Список текущих загруженных (кэшированных) наборов данных ---")
-loaded_list = manager.list_loaded_datasets()
-print(f"Менеджер сообщает, что загружены следующие наборы данных: {loaded_list}")
-
-# %% [markdown]
-# ---
-# ## Продвинутый уровень: Изучение статистики набора данных с помощью Hugging Face API
-#
-# Оставшаяся часть этого руководства выходит за рамки основной функциональности библиотеки `culicidaelab`.
-# Она демонстрирует, как можно напрямую запрашивать API сервера наборов данных Hugging Face для получения
-# подробной статистики и создания информативных визуализаций для набора данных о видах комаров.
-# Это полезно для разведочного анализа данных (EDA).
-#
-# **Примечание:** Следующий код не использует `DatasetsManager` и предоставляется в качестве дополнительного примера.
-
-# %%
-# Определяем имя набора данных, который мы хотим изучить
-repo_id = "iloncka/mosquito-species-classification-dataset"
-
-# %% [markdown]
-# ### Получение метаданных и статистики набора данных
-# Мы будем использовать вспомогательные функции для запроса
-# конечных точек API для получения общих метаданных и подробной статистики.
-
-
-# %%
-def get_dataset_metadata(repo_id):
-    """Получить общие метаданные для заданного набора данных с Hugging Face."""
-    api_url = f"https://datasets-server.huggingface.co/croissant-crumbs?dataset={repo_id}"
-    response = requests.get(api_url, timeout=10)
-    response.raise_for_status()
-    return response.json()
-
-
-def get_dataset_statistics(repo_id, config_name="default", split_name="test"):
-    """Получить подробную статистику по столбцам для сплита набора данных."""
+def get_dataset_statistics(repo_id, config_name="default", split_name="train"):
+    """Fetch detailed column statistics for a dataset split from the Hugging Face API."""
     api_url = (
         f"https://datasets-server.huggingface.co/statistics?dataset={repo_id}&config={config_name}&split={split_name}"
     )
+    print(f"Querying API: {api_url}")
     response = requests.get(api_url, timeout=10)
-    response.raise_for_status()
+    response.raise_for_status()  # Will raise an error for bad responses
     return response.json()
 
 
-print(f"--- Получение статистики для '{repo_id}' ---")
-dataset_info = get_dataset_statistics(repo_id)
-print("Статистика успешно получена.")
-
+# Fetch the statistics
+print(f"--- Fetching statistics for '{repo_id}' ---")
+try:
+    dataset_info = get_dataset_statistics(repo_id)
+    print("✅ Statistics fetched successfully.")
+except requests.exceptions.RequestException as e:
+    print(f"❌ Failed to fetch statistics: {e}")
+    dataset_info = None
 
 # %% [markdown]
-# ### Визуализация распределения классов
-# Сбалансированный набор данных имеет решающее значение для обучения хорошей модели.
-# Давайте визуализируем количество образцов для каждого вида.
+# #### **Visualizing Class Distribution**
+#
+# A balanced dataset is crucial for training a robust model.
+# Let's write a function to visualize the number of samples for
+# each mosquito species to check for any significant imbalances.
 
 
 # %%
 def get_label_stats(dataset_info):
-    """Извлечь статистику меток из dataset_info."""
-    label_stats = None
-    for column in dataset_info["statistics"]:
-        if column["column_type"] == "string_label":
-            label_stats = column["column_statistics"].get("frequencies", {})
-            break
+    """Extract label frequencies from the fetched dataset statistics."""
+    if not dataset_info:
+        return None
 
-    return label_stats
+    for column in dataset_info.get("statistics", []):
+        if column.get("column_name") == "label" and column.get("column_type") == "string_label":
+            return column["column_statistics"].get("frequencies", {})
+
+    print("Warning: 'label' statistics not found.")
+    return None
 
 
 def create_distribution_plot(
     dataset_info,
     repo_id,
     color="teal",
-    figsize=(15, 10),
-    output_file="распределение_классов.png",
+    figsize=(15, 12),
+    output_file="class_distribution.png",
 ):
-    # (Код из оригинального скрипта остается без изменений)
-    # Получить частоты меток из dataset_info
+    """Creates and saves a bar chart of the class distribution."""
     label_stats = get_label_stats(dataset_info)
-
     if not label_stats:
-        print("В dataset_info не найдена статистика меток")
+        print("Cannot create plot: No label statistics available.")
         return
-    # Отсортировать классы по количеству образцов
+
+    # Sort classes by the number of samples for better visualization
     sorted_items = sorted(label_stats.items(), key=lambda x: x[1], reverse=True)
     classes, counts = zip(*sorted_items)
-    # Создать фигуру с пользовательским размером
+
     _, ax = plt.subplots(figsize=figsize)
-    # Создать горизонтальные столбцы
     y_pos = np.arange(len(classes))
     ax.barh(y_pos, counts, align="center", color=color, alpha=0.8)
-    # Настроить график
+
+    # Format plot for clarity
     ax.set_yticks(y_pos)
-    # Отформатировать названия классов, заменив подчеркивания на пробелы и сделав заглавными
     formatted_classes = [c.replace("_", " ").title() for c in classes]
-    ax.set_yticklabels(formatted_classes, fontsize=16)
-    # Добавить метки значений на столбцах
+    ax.set_yticklabels(formatted_classes, fontsize=12)
+    ax.invert_yaxis()  # Display the class with the most samples at the top
+    ax.set_xlabel("Number of Samples", fontsize=14)
+    ax.set_title(f"Distribution of Mosquito Species in {repo_id}", pad=20, fontsize=18)
+
+    # Add count labels to each bar
     for i, v in enumerate(counts):
-        ax.text(v + 0.5, i, str(v), va="center", fontsize=20)
-    # Добавить заголовок и метки
-    plt.title(f"Распределение видов комаров в {repo_id}", pad=20, fontsize=18)
-    plt.xlabel("Количество образцов", fontsize=14)
-    # Настроить макет для предотвращения обрезки меток
+        ax.text(v + 3, i, str(v), color="blue", va="center", fontsize=10)
+
     plt.tight_layout()
-    # Сохранить график
     plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"График распределения сохранен как {output_file}")
-    # Показать график
+    print(f"✅ Distribution plot saved as {output_file}")
     plt.show()
 
 
-# Создать график
-create_distribution_plot(dataset_info, repo_id)
-
+# Generate and display the plot
+if dataset_info:
+    create_distribution_plot(dataset_info, repo_id)
 
 # %% [markdown]
-# ### Визуализация таксономического распределения
-# Мы также можем визуализировать данные в более структурированном,
-# древовидном формате, чтобы увидеть, как виды сгруппированы по родам.
+# This chart gives you an immediate understanding of which species
+# are well-represented and which might require techniques
+# like data augmentation or weighted loss functions during model training.
+
+# %% [markdown]
+# #### **Visualizing Taxonomic Distribution**
+#
+# To better understand the relationships between species, we can visualize the dataset
+# in a hierarchical tree structure, grouping species by their genus.
+# This provides insight into the taxonomic diversity of the data.
 
 
 # %%
 def create_tree_visualization(
     dataset_info,
-    figsize=(15, 10),
-    output_file="древовидное_распределение.png",
+    figsize=(16, 12),
+    output_file="taxonomic_tree.png",
 ):
-    # (Код из оригинального скрипта остается без изменений)
-    # Получить частоты меток из dataset_info
+    """Creates a tree-like visualization of species grouped by genus."""
     label_stats = get_label_stats(dataset_info)
-
     if not label_stats:
-        print("В dataset_info не найдена статистика меток")
+        print("Cannot create visualization: No label statistics available.")
         return
-    # Сгруппировать виды по родам
+
+    # Group species by genus and calculate totals
     genus_groups = defaultdict(list)
     genus_totals = defaultdict(int)
     for species, count in label_stats.items():
         genus = species.split("_")[0]
         genus_groups[genus].append((species, count))
         genus_totals[genus] += count
-    # Отсортировать роды по общему количеству
+
+    # Sort genera by the total number of samples
     sorted_genera = sorted(genus_totals.items(), key=lambda x: x[1], reverse=True)
-    # Создать фигуру
+
     fig, ax = plt.subplots(figsize=figsize)
-    # Рассчитать коэффициенты масштабирования
-    max_count = max(label_stats.values())
-    min_count = min(label_stats.values())
-    max_genus_count = max(genus_totals.values())
-    min_genus_count = min(genus_totals.values())
-    # Рассчитать позиции
-    total_species = sum(len(group) for group in genus_groups.values())
-    y_positions = np.linspace(0.1, 0.9, total_species)
-    trunk_x = 0.15  # Позиция главной вертикальной линии
-    max_branch_length = 0.4  # Максимальная длина ветви
-    current_y_index = 0
-    text_offset = 0.02
-    # Цветовая карта для родов
-    colors = plt.cm.tab20(np.linspace(0, 1, len(genus_groups)))
-    # Нарисовать сегменты главного ствола между родами
-    for (genus, _), color in zip(sorted_genera, colors):
-        species_count = len(genus_groups[genus])
-        start_y = y_positions[current_y_index]
-        end_y = y_positions[current_y_index + species_count - 1]
-        # Нарисовать сегмент главного ствола для этого рода
-        ax.plot([trunk_x, trunk_x], [start_y, end_y], color="k", linewidth=3)
-        current_y_index += species_count
-    # Сбросить current_y_index для отрисовки видов
-    current_y_index = 0
-    # Нарисовать ветви для каждого рода
-    for (genus, total_count), color in zip(sorted_genera, colors):
-        species_list = genus_groups[genus]
-        species_count = len(species_list)
-        # Рассчитать позицию и длину ветви рода
-        genus_y = np.mean(y_positions[current_y_index : current_y_index + species_count])
-        genus_branch_length = 0.02  # Фиксированная длина для ветвей рода
-        # Рассчитать толщину линии на основе количества
-        thickness = 1 + 3 * (total_count - min_genus_count) / (max_genus_count - min_genus_count)
-        # Нарисовать ветвь рода
-        ax.plot([trunk_x, trunk_x + genus_branch_length], [genus_y, genus_y], "-", color=color, linewidth=thickness)
-        # Добавить название рода
+
+    # --- Plotting Logic ---
+    total_species_count = len(label_stats)
+    y_positions = np.linspace(0.95, 0.05, total_species_count)
+    current_y_idx = 0
+
+    # Use a color map for different genera
+    colors = plt.cm.get_cmap("tab20", len(sorted_genera))
+
+    for i, (genus, total_count) in enumerate(sorted_genera):
+        species_in_genus = sorted(genus_groups[genus], key=lambda x: x[1], reverse=True)
+        num_species = len(species_in_genus)
+
+        # Define y-coordinates for this genus block
+        y_start = y_positions[current_y_idx]
+        y_end = y_positions[current_y_idx + num_species - 1]
+        y_genus_mid = (y_start + y_end) / 2
+
+        # Draw genus branch and label
+        ax.plot([0.1, 0.2], [y_genus_mid, y_genus_mid], color=colors(i), linewidth=3)
         ax.text(
-            trunk_x - 0.02,
-            genus_y,
-            f"{genus.title()}\n({total_count} всего)",
-            horizontalalignment="right",
-            verticalalignment="center",
-            fontsize=18,
-            fontweight="bold",
+            0.08,
+            y_genus_mid,
+            f"{genus.title()}\n({total_count})",
+            ha="right",
+            va="center",
+            fontsize=14,
+            weight="bold",
         )
-        # Нарисовать вертикальный соединитель для видов
-        if species_count > 1:
-            ax.plot(
-                [trunk_x + genus_branch_length, trunk_x + genus_branch_length],
-                [y_positions[current_y_index], y_positions[current_y_index + species_count - 1]],
-                "-",
-                color=color,
-                linewidth=1,
-                alpha=1,
-            )
-        # Нарисовать ветви видов
-        for i, (species, count) in enumerate(sorted(species_list, key=lambda x: x[1], reverse=True)):
-            y_pos = y_positions[current_y_index + i]
-            # Рассчитать длину ветви вида на основе количества
-            species_branch_length = max_branch_length * 0.5 * (count - min_count) / (max_count - min_count)
-            # Нарисовать ветвь вида
-            species_thickness = 0.5 + 2 * (count - min_count) / (max_count - min_count)
-            ax.plot(
-                [trunk_x + genus_branch_length, trunk_x + genus_branch_length + species_branch_length],
-                [y_pos, y_pos],
-                "-",
-                color=color,
-                linewidth=species_thickness,
-            )
-            # Добавить название вида с родом
-            species_name = species.replace("_", " ").title()
+
+        # Draw vertical connector for species in this genus
+        ax.plot([0.2, 0.2], [y_start, y_end], color=colors(i), linewidth=1)
+
+        # Draw branches for each species
+        for species_name, count in species_in_genus:
+            y_species = y_positions[current_y_idx]
+            branch_length = 0.1 + 0.5 * (count / max(label_stats.values()))
+
+            ax.plot([0.2, 0.2 + branch_length], [y_species, y_species], color=colors(i), linewidth=1.5)
             ax.text(
-                trunk_x + genus_branch_length + species_branch_length + text_offset,
-                y_pos,
-                f"{species_name} ({count})",
-                verticalalignment="center",
-                fontsize=16,
+                0.22 + branch_length,
+                y_species,
+                f"{species_name.replace('_', ' ').title()} ({count})",
+                va="center",
+                fontsize=12,
             )
-        current_y_index += species_count
-    # Настроить график
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
+            current_y_idx += 1
+
+    # --- Final Plot Customization ---
     ax.axis("off")
-    # Добавить заголовок
-    plt.suptitle("Распределение видов комаров по родам и видам", y=0.95, fontsize=18)
-    # Добавить общее количество образцов и легенду
-    total_samples = sum(label_stats.values())
-    text_img = f"""Всего образцов: {total_samples}\n
-    Количество родов: {len(genus_groups)}\n
-    Количество видов: {len(label_stats)}\n
-    Длина ветви ∝ количеству образцов"""
-    plt.figtext(
-        0.02,
-        0.02,
-        text_img,
-        fontsize=18,
-    )
-    # Сохранить график
+    plt.title("Taxonomic Distribution of Mosquito Species", fontsize=20, pad=20)
     plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"Древовидная визуализация сохранена как {output_file}")
-    # Показать график
+    print(f"✅ Tree visualization saved as {output_file}")
     plt.show()
 
 
-# Пример использования
-create_tree_visualization(dataset_info)
+# Generate and display the tree visualization
+if dataset_info:
+    create_tree_visualization(dataset_info)
+
+# %% [markdown]
+# This plot provides a clear visual summary of the dataset's structure,
+# showing which genera are most prevalent and how the samples are distributed
+# among their respective species. It's an invaluable tool for both educational
+# purposes and for guiding research that may focus on specific genera.
+
+# %% [markdown]
+# ## 5. Advanced: Adding a Custom Dataset
+#
+# `culicidaelab` is designed to be extensible. You can easily add your own Hugging Face
+# datasets by creating a simple YAML configuration file.
+#
+# ### Step 1: Understanding the Required Structure with `DatasetConfig`
+#
+# Before writing a configuration, you need to know what fields are required.
+# All dataset configurations are validated against the `DatasetConfig` Pydantic model.
+# We can inspect this model directly to get a perfect template.
+
+# %%
+
+# Let's print the model's docstring for a human-readable explanation.
+print("--- DatasetConfig Model Documentation ---")
+print(DatasetConfig.__doc__)
+
+# For a precise, technical blueprint, we can generate its JSON Schema.
+# This shows all fields, their types, and which ones are required.
+print("\n--- DatasetConfig JSON Schema ---")
+schema = DatasetConfig.model_json_schema()
+print(json.dumps(schema, indent=2))
+
+
+# %% [markdown]
+# ### Step 2: Create a Custom Configuration File
+#
+# Now that we know the required structure, let's create a custom configuration.
+#
+# First, it's best practice to keep your custom configurations separate from the
+# library's defaults. We'll create a dedicated directory for them.
+
+# %%
+custom_config_dir = Path("culicidae_custom_config")
+custom_config_dir.mkdir(exist_ok=True)
+print(f"Created custom config directory at: ./{custom_config_dir.name}")
+
+# %% [markdown]
+# Next, create a `.yaml` file inside this directory. Your file must have a top-level
+# `datasets:` key. Under this key, you can add one or more named dataset configurations,
+# where each one follows the `DatasetConfig` structure we just inspected.
+#
+# **Example**: Let's add a configuration for a hypothetical `culex-pipiens-complex` dataset.
+
+# %%
+# The file's stem will become the top-level key in the merged config.
+# To override the library's 'datasets' section, save the mapping directly
+custom_dataset_config = {
+    # Note: do NOT add a top-level 'datasets' key here; the filename
+    # will be used as the key in the merged config.
+    "culex-pipiens-complex": {
+        "name": "culex-pipiens-complex",
+        "path": "culex_pipiens_complex",
+        "format": "imagefolder",
+        "classes": ["culex_pipiens", "culex_torrentium"],
+        "provider_name": "huggingface",
+        "repository": "my-org/culex-pipiens-complex-dataset",
+    },
+}
+
+
+config_file_path = custom_config_dir / "datasets.yaml"
+with open(config_file_path, "w") as f:
+    yaml.safe_dump(custom_dataset_config, f)
+
+print(f"✅ Custom dataset config saved to: {config_file_path}")
+
+# %% [markdown]
+# ### Step 3: Load `culicidaelab` with Your Custom Configuration
+#
+# The `get_settings` function will create a *new*, merged settings instance
+# when a `config_dir` is provided, loading your custom file on top of the defaults.
+
+# %%
+print("\n--- Initializing with Custom Settings ---")
+custom_settings = get_settings(config_dir=str(custom_config_dir))
+
+# Create a new manager with the custom settings
+custom_manager = DatasetsManager(custom_settings)
+
+print("\n--- Listing All Datasets (including custom) ---")
+all_datasets = custom_manager.list_datasets()
+print(all_datasets)
+
+if "culex-pipiens-complex" in all_datasets:
+    print("\n✅ Successfully added 'culex-pipiens-complex' to the available datasets!")
+else:
+    print("\n❌ Custom dataset was not loaded correctly.")
+
+# %% [markdown]
+# ## 6. Next Steps & Further Reading
+# You now have a solid understanding of how to use the `DatasetsManager` in `culicidaelab`.
+# From here, you can:
+#
+# *   **Train a new model:** Use the loaded data with your favorite deep learning framework.
+# *   **Contribute to the project:** If you have your own labeled mosquito datasets,
+# consider sharing them with the community.
+# *   **Explore the API:** Dive deeper into the `culicidaelab` source code to discover more functionalities.
+#
+# By providing standardized datasets and an easy-to-use interface, `culicidaelab` aims
+# to accelerate innovation in the fight against mosquito-borne diseases. Happy coding!

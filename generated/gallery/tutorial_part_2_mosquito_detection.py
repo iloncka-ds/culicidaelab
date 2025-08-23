@@ -1,145 +1,206 @@
+# %%
 """
-# Руководство по обнаружению комаров
+# Mosquito Detection Tutorial
 
-В этом руководстве показано, как использовать `MosquitoDetector` из библиотеки CulicidaeLab
-для выполнения обнаружения объектов на изображениях. Мы рассмотрим:
+This tutorial shows how to use the `MosquitoDetector` from the CulicidaeLab
+library to perform object detection on images. We will cover:
 
-- Загрузка модели детектора
-- Подготовка изображения
-- Запуск модели для получения ограничивающих рамок
-- Визуализация результатов
-- Оценка точности предсказания
-- Выполнение предсказаний на пакете изображений
+- Loading the detector model
+- Preparing an image from the dataset
+- Running the model to get bounding boxes
+- Visualizing the results
+- Evaluating prediction accuracy
+- Running predictions on a batch of images
 
 """
-# %% [markdown]
-# ## 1. Инициализация
-#
-# Сначала мы получим глобальный экземпляр `settings` и используем его для инициализации нашего `MosquitoDetector`.
-# Устанавливая `load_model=True`, мы указываем детектору немедленно загрузить веса модели в память.
-# Если файл модели не существует локально, он будет загружен автоматически.
 
 # %%
-import re
+# Install the `culicidaelab` library if not already installed
+# # !pip install -q culicidaelab
+
+# %% [markdown]
+# ## 1. Initialization
+#
+# First, we'll get the global `settings` instance and use it to initialize our `MosquitoDetector`.
+# By setting `load_model=True`, we tell the detector to load the model weights into memory immediately.
+# If the model file doesn't exist locally, it will be downloaded automatically.
+
+# %%
 import cv2
+import numpy as np
 import matplotlib.pyplot as plt
-from pathlib import Path
 
 from culicidaelab import get_settings
-from culicidaelab import MosquitoDetector
+from culicidaelab import MosquitoDetector, DatasetsManager
 
-# Получить экземпляр настроек
+# Get settings instance
 settings = get_settings()
 
-# Инициализировать детектор и загрузить модель
-print("Инициализация MosquitoDetector и загрузка модели...")
+# Initialize the datasets manager
+manager = DatasetsManager(settings)
+
+# Load detection dataset
+detect_data = manager.load_dataset("detection", split="train[:20]")
+
+# Instantiate the detector and load the model
+print("Initializing MosquitoDetector and loading model...")
 detector = MosquitoDetector(settings=settings, load_model=True)
-print("Модель успешно загружена.")
+print("Model loaded successfully.")
 
 # %% [markdown]
-# ## 2. Обнаружение комаров на одном изображении
+# ## 2. Detecting Mosquitoes in a Dataset Image
 #
-# Теперь загрузим тестовое изображение и запустим на нем детектор.
+# Now let's use an image from the detection dataset and run the detector on it.
 
 # %%
-# Загрузка тестового изображения из локального каталога 'test_imgs'
-image_path = Path("test_imgs") / "640px-Aedes_aegypti.jpg"
-image = cv2.imread(str(image_path))
-image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Преобразование в RGB для matplotlib
+# Inspect a detection sample
+detect_sample = detect_data[5]
+detect_image = detect_sample["image"]
 
-# Метод `predict` возвращает список обнаружений.
-# Каждое обнаружение — это кортеж: (center_x, center_y, width, height, confidence_score)
-detections = detector.predict(image_rgb)
+# Get ground truth objects
+objects = detect_sample["objects"]
+print(f"Found {len(objects['bboxes'])} object(s) in this image.")
 
-# Метод `visualize` рисует ограничивающие рамки на изображении для удобного просмотра.
-annotated_image = detector.visualize(image_rgb, detections)
+# The `predict` method returns a list of detections.
+# Each detection is a tuple: (x1, y1, x2, y2, confidence_score)
+detections = detector.predict(detect_image)
 
-# Отображение результата
+# The `visualize` method draws the bounding boxes onto the image for easy inspection.
+annotated_image = detector.visualize(detect_image, detections)
+
+# Display the result
 plt.figure(figsize=(12, 8))
 plt.imshow(annotated_image)
 plt.axis("off")
-plt.title("Обнаруженные комары")
+plt.title("Detected Mosquitoes")
 plt.show()
 
-# Вывод численных результатов обнаружения
-print("\nРезультаты обнаружения:")
+# Print the numerical detection results
+print("\nDetection Results:")
 if detections:
-    for i, (x, y, w, h, conf) in enumerate(detections):
-        print(f"  - Комар {i+1}: Уверенность = {conf:.2f}, Рамка = (x={x:.1f}, y={y:.1f}, w={w:.1f}, h={h:.1f})")
+    for i, (x1, y1, x2, y2, conf) in enumerate(detections):
+        print(
+            f"  - Mosquito {i+1}: \
+            Confidence = {conf:.2f}, \
+            Box = (x1={x1:.1f}, y1={y1:.1f}, x2={x2:.1f}, y2={y2:.1f})",
+        )
 else:
-    print("  Комары не обнаружены.")
+    print("  No mosquitoes detected.")
 
 # %% [markdown]
-# ## 3. Оценка предсказания
+# ## 3. Evaluating a Prediction with Ground Truth
 #
-# Метод `evaluate` позволяет сравнить предсказание с эталонными данными (ground truth).
-# Это полезно для измерения точности модели. Метод возвращает несколько метрик,
-# включая среднюю точность (Average Precision, AP), которая является стандартом для обнаружения объектов.
-#
-# Здесь мы будем использовать только что найденное обнаружение в качестве имитации эталонных данных,
-# чтобы продемонстрировать процесс.
+# The `evaluate` method allows you to compare a prediction against a ground truth.
+# This is useful for measuring the model's accuracy. The method returns several metrics,
+# including Average Precision (AP), which is a standard for object detection.
+# Now let's evaluate the prediction against the actual ground truth from the dataset.
 
 # %%
-# Эталонные данные (ground truth) — это список рамок без оценки уверенности: [(x, y, w, h), ...]
-if detections:
-    test_ground_truth = [detections[0][:4]]  # Использовать первую обнаруженную рамку в качестве наших эталонных данных
+# Extract ground truth boxes from the dataset sample
+ground_truth_boxes = []
+for bbox in objects["bboxes"]:
+    x_min, y_min, x_max, y_max = bbox
+    ground_truth_boxes.append((x_min, y_min, x_max, y_max))
 
-    # Вы можете выполнить оценку, используя предварительно вычисленное предсказание
-    print("--- Оценка с использованием предварительно вычисленного предсказания ---")
-    evaluation = detector.evaluate(ground_truth=test_ground_truth, prediction=detections)
-    print(evaluation)
+# Evaluate using the ground truth from the dataset
+print("--- Evaluating with dataset ground truth ---")
+evaluation = detector.evaluate(ground_truth=ground_truth_boxes, prediction=detections)
+print(evaluation)
 
-    # Или вы можете позволить методу выполнить предсказание внутренне, передав необработанное изображение
-    print("\n--- Оценка непосредственно из изображения ---")
-    evaluation_from_raw = detector.evaluate(ground_truth=test_ground_truth, input_data=image_rgb)
-    print(evaluation_from_raw)
-else:
-    print("Пропуск оценки, так как обнаружения не найдены.")
-
+# %%
+# You can let the method run prediction internally by passing the raw image
+print("\n--- Evaluating directly from an image ---")
+evaluation_from_raw = detector.evaluate(ground_truth=ground_truth_boxes, input_data=detect_image)
+print(evaluation_from_raw)
 
 # %% [markdown]
-# ## 4. Выполнение пакетных предсказаний
+# ## 4. Running Batch Predictions on Dataset Images
 #
-# Для эффективности вы можете обрабатывать несколько изображений одновременно, используя `predict_batch`.
-# Это намного быстрее, чем перебирать в цикле и вызывать `predict` для каждого изображения по отдельности.
+# For efficiency, you can process multiple images at once using `predict_batch`.
 
 # %%
-# Найти все файлы изображений в каталоге 'test_imgs'
-image_dir = Path("test_imgs")
-pattern = re.compile(r"\.(jpg|jpeg|png)$", re.IGNORECASE)
-image_paths = [path for path in image_dir.iterdir() if path.is_file() and pattern.search(str(path))]
+# Extract images from the detection dataset
+image_batch = [sample["image"] for sample in detect_data]
 
-# Загрузить все изображения в список (наш "пакет")
-try:
-    batch = [cv2.cvtColor(cv2.imread(str(path)), cv2.COLOR_BGR2RGB) for path in image_paths]
-    print(f"\n--- Обработка пакета из {len(batch)} изображений ---")
-except Exception as e:
-    print(f"Произошла ошибка при чтении изображений: {e}")
-    batch = []
+# Run batch prediction
+detections_batch = detector.predict_batch(image_batch)
+print("Batch prediction complete.")
 
-# Запустить пакетное предсказание
-detections_batch = detector.predict_batch(batch)
-print("Пакетное предсказание завершено.")
 for i, dets in enumerate(detections_batch):
-    print(f"  - Изображение {i+1} ({image_paths[i].name}): Найдено {len(dets)} обнаружение(й).")
-
+    print(f"  - Image {i+1}: Found {len(dets)} detection(s).")
 
 # %% [markdown]
-# ## 5. Оценка пакета предсказаний
+# ## 5. Evaluating a Batch of Predictions with Dataset Ground Truth
 #
-# Аналогично, `evaluate_batch` можно использовать для получения агрегированных метрик по всему набору изображений.
+# Similarly, `evaluate_batch` can be used to get aggregated metrics over the entire dataset.
 
 # %%
-# Создать имитацию пакета эталонных данных из результатов нашего пакетного предсказания
-batch_test_gt = [[(x, y, w, h) for (x, y, w, h, conf) in detections] for detections in detections_batch]
+# Extract ground truth from the detection dataset
+ground_truth_batch = []
+for sample in detect_data:
+    boxes = []
+    for bbox in sample["objects"]["bboxes"]:
+        x_min, y_min, x_max, y_max = bbox
+        boxes.append((x_min, y_min, x_max, y_max))
+    ground_truth_batch.append(boxes)
 
-# Вызвать evaluate_batch. Мы предоставляем предсказания напрямую.
-print("\n--- Оценка всего пакета ---")
+# Call evaluate_batch with dataset ground truth
+print("\n--- Evaluating the entire batch with dataset ground truth ---")
 batch_evaluation = detector.evaluate_batch(
-    ground_truth_batch=batch_test_gt,
+    ground_truth_batch=ground_truth_batch,
     predictions_batch=detections_batch,
-    num_workers=1,
+    num_workers=2,  # Use multiple workers for faster processing
 )
 
-print("Агрегированные метрики оценки пакета:")
+print("Aggregated batch evaluation metrics:")
 print(batch_evaluation)
+
+# %% [markdown]
+# ## 6. Visualizing Ground Truth vs Predictions
+#
+# Let's create a comparison visualization showing both ground truth and predictions.
+
+
+# %%
+# Create a function to visualize both ground truth and predictions
+def visualize_comparison(image_rgb, ground_truth_boxes, detection_boxes):
+    # Draw ground truth boxes in green
+    for bbox in ground_truth_boxes:
+        x_min, y_min, x_max, y_max = (int(v) for v in bbox)
+        cv2.rectangle(image_rgb, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+        cv2.putText(
+            image_rgb,
+            "GT",
+            (x_min, y_min - 5),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (0, 255, 0),
+            1,
+        )
+
+    # Draw detection boxes in blue with confidence
+    for x1, y1, x2, y2, conf in detection_boxes:
+        x_min, y_min, x_max, y_max = int(x1), int(y1), int(x2), int(y2)
+        cv2.rectangle(image_rgb, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)
+        cv2.putText(
+            image_rgb,
+            f"{conf:.2f}",
+            (x_min, y_min - 5),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (255, 0, 0),
+            1,
+        )
+
+    return image_rgb
+
+
+# Create comparison visualization
+comparison_image = visualize_comparison(np.array(detect_image), ground_truth_boxes, detections)
+
+# Display the comparison
+plt.figure(figsize=(12, 8))
+plt.imshow(comparison_image)
+plt.axis("off")
+plt.title("Ground Truth vs Predictions\nGreen: Ground Truth\nRed: Predictions with Confidence")
+plt.show()

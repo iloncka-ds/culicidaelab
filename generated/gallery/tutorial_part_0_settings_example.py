@@ -1,13 +1,14 @@
+# %%
 """
-# Использование модуля `settings`
+# Understanding and Using the Settings
 
-В этом руководстве демонстрируется, как использовать основной объект `settings` в CulicidaeLab.
-Объект `settings` является основной точкой входа для доступа к конфигурациям, путям к файлам
-и параметрам моделей во всей библиотеке.
+This tutorial demonstrates how to use the core `settings` object in CulicidaeLab.
+The `settings` object is the main entry point for accessing configurations, file paths,
+and model parameters throughout the library.
 """
 # %%
-# Установите библиотеку `culicidaelab`, если она еще не установлена
-# !pip install -q culicidaelab
+# Install the `culicidaelab` library if not already installed
+# # !pip install -q culicidaelab
 
 # %%
 import yaml
@@ -17,84 +18,84 @@ from pathlib import Path
 from culicidaelab import get_settings
 
 # %% [markdown]
-# ## 1. Использование настроек по умолчанию
+# ## 1. Using Default Settings
 #
-# Самый простой способ начать работу с `CulicidaeLab` — это загрузить настройки по умолчанию.
-# Функция `get_settings()` действует как синглтон; она загружает конфигурацию один раз
-# и возвращает тот же экземпляр при последующих вызовах. Это обеспечивает согласованное
-# состояние во всем вашем приложении.
+# The easiest way to start with `CulicidaeLab` is by loading the default settings.
+# The `get_settings()` function acts as a singleton; it loads the configuration once
+# and returns the same instance on subsequent calls. This ensures a consistent
+# state across your application.
 #
-# Настройки по умолчанию загружаются из файлов конфигурации, поставляемых с библиотекой.
+# The default settings are loaded from the configuration files bundled with the library.
 
 # %%
-# Получить экземпляр настроек по умолчанию
+# Get the default settings instance
 settings = get_settings()
 
-# Объект настроек обеспечивает легкий доступ к ключевым каталогам ресурсов.
-# Библиотека автоматически создаст эти каталоги, если они не существуют.
-print("--- Каталоги ресурсов по умолчанию ---")
-print(f"Активный каталог конфигурации: {settings.config_dir}")
-print(f"Каталог моделей: {settings.model_dir}")
-print(f"Каталог наборов данных: {settings.dataset_dir}")
-print(f"Каталог кэша: {settings.cache_dir}")
+# The settings object provides easy access to key resource directories.
+# The library will automatically create these directories if they don't exist.
+print("--- Default Resource Directories ---")
+print(f"Active Config Directory: {settings.config_dir}")
+print(f"Models Directory: {settings.model_dir}")
+print(f"Datasets Directory: {settings.dataset_dir}")
+print(f"Cache Directory: {settings.cache_dir}")
 
 # %% [markdown]
-# ## 2. Доступ к путям весов моделей
+# ## 2. Accessing Model Weight Paths
 #
-# Объект `settings` знает локальные пути по умолчанию для всех весов моделей-предикторов.
-# Когда вы создаете экземпляр предиктора, он использует эти пути для поиска или загрузки моделей.
+# The `settings` object knows the default local paths for all predictor model weights.
+# When you instantiate a predictor, it uses these paths to find or download the models.
 
 # %%
-# Получить настроенные локальные пути к файлам для разных типов моделей
+# Get the configured local file paths for different model types
 detection_weights = settings.get_model_weights_path("detector")
 segmentation_weights = settings.get_model_weights_path("segmenter")
 classification_weights = settings.get_model_weights_path("classifier")
 
-print("--- Пути к весам моделей по умолчанию ---")
-print(f"Модель обнаружения: {detection_weights}")
-print(f"Модель сегментации: {segmentation_weights}")
-print(f"Модель классификации: {classification_weights}")
+print("--- Default Model Weight Paths ---")
+print(f"Detection Model: {detection_weights}")
+print(f"Segmentation Model: {segmentation_weights}")
+print(f"Classification Model: {classification_weights}")
 
 # %% [markdown]
-# ## 3. Работа с конфигурацией видов
+# ## 3. Working with Species Configuration
 #
-# Вся информация, связанная с видами, включая названия классов и подробные метаданные,
-# управляется через свойство `species_config`. Это крайне важно для интерпретации
-# выходных данных модели классификации.
+# All species-related information, including class names and detailed metadata,
+# is managed through the `species_config` property. This is crucial for interpreting
+# the output of the classification model.
 
 # %%
-# Получить специальный объект конфигурации видов
+# Get the dedicated species configuration object
 species_config = settings.species_config
 
-# Вы можете легко получить сопоставление индексов классов с названиями видов.
-print("\n--- Сопоставление индексов видов с названиями ---")
+# You can easily retrieve the mapping of class indices to species names.
+print("\n--- Species Index-to-Name Mapping ---")
 for idx, species in species_config.species_map.items():
-    print(f"Класс {idx}: {species}")
+    print(f"Class {idx}: {species}")
 
-# Вы также можете получить подробные метаданные для любого конкретного вида.
+# You can also fetch detailed metadata for any specific species.
 species_name = "Aedes aegypti"
 metadata = species_config.get_species_metadata(species_name)
 if isinstance(metadata, dict):
-    print(f"\n--- Метаданные для '{species_name}' ---")
+    print(f"\n--- Metadata for '{species_name}' ---")
     for key, value in metadata.items():
         print(f"{key}: {value}")
 
 # %% [markdown]
-# ## 4. Использование пользовательского каталога конфигурации
+# ## 4. Using a Custom Configuration Directory
 #
-# Для более сложных случаев использования, таких как предоставление собственных метаданных о видах или изменение
-# параметров модели по умолчанию, вы можете указать библиотеке на пользовательский каталог конфигурации.
+# For advanced use cases, such as providing your own species metadata or changing
+# default model parameters, you can point the library to a custom configuration directory.
 #
-# `CulicidaeLab` загрузит ваши пользовательские файлы `.yaml` и объединит их с настройками по умолчанию.
-# Это позволяет вам переопределить только те настройки, которые необходимо изменить.
+# `CulicidaeLab` will load your custom `.yaml` files and merge them on top of the defaults.
+# This allows you to override only the settings you need to change.
 
 # %%
-# Создать пользовательский каталог конфигурации и новый файл конфигурации
+# Create a custom config directory and a new config file
 custom_config_dir = Path("custom_configs")
 custom_config_dir.mkdir(exist_ok=True)
 
-# Определим минимальную пользовательскую конфигурацию. Мы просто переопределим информацию о видах.
-# Все настройки, не определенные здесь, будут использовать значения по умолчанию из библиотеки.
+# Define a minimal custom configuration. We'll just override the species info.
+# Any settings not defined here will fall back to the library's defaults.
 example_config = {
     "species": {
         "species_classes": {0: "Aedes aegypti", 1: "Anopheles gambiae"},
@@ -105,7 +106,7 @@ example_config = {
             },
             "species_metadata": {
                 "Aedes aegypti": {
-                    "common_name": "Пользовательский комар-переносчик желтой лихорадки",
+                    "common_name": "Custom Yellow Fever Mosquito",
                     "taxonomy": {
                         "family": "Culicidae",
                         "subfamily": "Culicinae",
@@ -120,7 +121,7 @@ example_config = {
                     },
                 },
                 "Anopheles gambiae": {
-                    "common_name": "Пользовательский африканский малярийный комар",
+                    "common_name": "Custom African Malaria Mosquito",
                     "taxonomy": {
                         "family": "Culicidae",
                         "subfamily": "Anophelinae",
@@ -140,38 +141,38 @@ example_config = {
 }
 
 
-# Записать пользовательский файл конфигурации
+# Write the custom config file
 config_file_path = custom_config_dir / "species.yaml"
 with open(config_file_path, "w") as f:
     yaml.safe_dump(example_config, f)
 
-# Теперь инициализируем настройки с путем к нашему пользовательскому каталогу.
-# `get_settings` достаточно умен, чтобы создать *новый* экземпляр, если указан другой `config_dir`.
-print("\n--- Инициализация с пользовательскими настройками ---")
+# Now, initialize settings with the path to our custom directory.
+# `get_settings` is smart enough to create a *new* instance if a different config_dir is provided.
+print("\n--- Initializing with Custom Settings ---")
 custom_settings = get_settings(config_dir=str(custom_config_dir))
 
-print(f"Активный каталог конфигурации: {custom_settings.config_dir}")
+print(f"Active Config Directory: {custom_settings.config_dir}")
 
-# Давайте проверим, загрузилась ли наша пользовательская карта видов
-print("\n--- Пользовательское сопоставление видов ---")
+# Let's check if our custom species map was loaded
+print("\n--- Custom Species Mapping ---")
 for idx, species in custom_settings.species_config.species_map.items():
-    print(f"Класс {idx}: {species}")
+    print(f"Class {idx}: {species}")
 
 # %% [markdown]
-# ## 5. Переопределение одного значения конфигурации
+# ## 5. Overriding a Single Configuration Value
 #
-# Иногда вам может потребоваться изменить только одно значение во время выполнения без создания новых YAML-файлов.
-# Метод `set_config` идеально подходит для этого.
+# Sometimes, you may only want to change a single value at runtime without creating new YAML files.
+# The `set_config` method is perfect for this.
 #
-# Давайте загрузим настройки по умолчанию и изменим порог уверенности для детектора.
+# Let's load the default settings and change the confidence threshold for the detector.
 
 # %%
-# Снова загрузить настройки по умолчанию (или использовать предыдущий экземпляр 'settings')
+# Load default settings again (or use the previous 'settings' instance)
 runtime_settings = get_settings()
 original_confidence = runtime_settings.get_config("predictors.detector.confidence")
-print(f"Исходная уверенность детектора: {original_confidence}")
+print(f"Original detector confidence: {original_confidence}")
 
-# Установить новое значение порога уверенности детектора с помощью `set_config`
+# Set a new confidence value at runtime
 runtime_settings.set_config("predictors.detector.confidence", 0.85)
 new_confidence = runtime_settings.get_config("predictors.detector.confidence")
-print(f"Новая уверенность детектора: {new_confidence}")
+print(f"New detector confidence: {new_confidence}")
