@@ -202,6 +202,5 @@ comparison_image = visualize_comparison(np.array(detect_image), ground_truth_box
 plt.figure(figsize=(12, 8))
 plt.imshow(comparison_image)
 plt.axis("off")
-plt.legend(["Green: Ground Truth", "Red: Predictions with Confidence"])
 plt.title("Ground Truth vs Predictions\nGreen: Ground Truth\nRed: Predictions with Confidence")
 plt.show()

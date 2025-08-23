@@ -1,145 +1,206 @@
+# %%
 """
-# Руководство по обнаружению комаров
+# Руководство по детекции комаров
 
-В этом руководстве показано, как использовать `MosquitoDetector` из библиотеки CulicidaeLab
-для выполнения обнаружения объектов на изображениях. Мы рассмотрим:
+Это руководство показывает, как использовать `MosquitoDetector` из библиотеки CulicidaeLab
+для выполнения детекции объектов на изображениях. Мы рассмотрим:
 
-- Загрузка модели детектора
-- Подготовка изображения
+- Загрузку модели детектора
+- Подготовку изображения из набора данных
 - Запуск модели для получения ограничивающих рамок
-- Визуализация результатов
-- Оценка точности предсказания
+- Визуализацию результатов
+- Оценку точности предсказаний
 - Выполнение предсказаний на пакете изображений
 
 """
+
+# %%
+# Установите библиотеку `culicidaelab`, если она еще не установлена
+# # !pip install -q culicidaelab
+
 # %% [markdown]
 # ## 1. Инициализация
 #
 # Сначала мы получим глобальный экземпляр `settings` и используем его для инициализации нашего `MosquitoDetector`.
-# Устанавливая `load_model=True`, мы указываем детектору немедленно загрузить веса модели в память.
+# Установив `load_model=True`, мы указываем детектору немедленно загрузить веса модели в память.
 # Если файл модели не существует локально, он будет загружен автоматически.
 
 # %%
-import re
 import cv2
+import numpy as np
 import matplotlib.pyplot as plt
-from pathlib import Path
 
 from culicidaelab import get_settings
-from culicidaelab import MosquitoDetector
+from culicidaelab import MosquitoDetector, DatasetsManager
 
-# Получить экземпляр настроек
+# Получаем экземпляр настроек
 settings = get_settings()
 
-# Инициализировать детектор и загрузить модель
+# Инициализируем менеджер наборов данных
+manager = DatasetsManager(settings)
+
+# Загружаем набор данных для детекции
+detect_data = manager.load_dataset("detection", split="train[:20]")
+
+# Создаем экземпляр детектора и загружаем модель
 print("Инициализация MosquitoDetector и загрузка модели...")
 detector = MosquitoDetector(settings=settings, load_model=True)
 print("Модель успешно загружена.")
 
 # %% [markdown]
-# ## 2. Обнаружение комаров на одном изображении
+# ## 2. Детекция комаров на изображении из набора данных
 #
-# Теперь загрузим тестовое изображение и запустим на нем детектор.
+# Теперь давайте используем изображение из набора данных для детекции и запустим на нем детектор.
 
 # %%
-# Загрузка тестового изображения из локального каталога 'test_imgs'
-image_path = Path("test_imgs") / "640px-Aedes_aegypti.jpg"
-image = cv2.imread(str(image_path))
-image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Преобразование в RGB для matplotlib
+# Изучаем образец для детекции
+detect_sample = detect_data[5]
+detect_image = detect_sample["image"]
+
+# Получаем истинные объекты (ground truth)
+objects = detect_sample["objects"]
+print(f"На этом изображении найдено {len(objects['bboxes'])} объект(ов).")
 
 # Метод `predict` возвращает список обнаружений.
-# Каждое обнаружение — это кортеж: (center_x, center_y, width, height, confidence_score)
-detections = detector.predict(image_rgb)
+# Каждое обнаружение — это кортеж: (x1, y1, x2, y2, оценка_уверенности)
+detections = detector.predict(detect_image)
 
-# Метод `visualize` рисует ограничивающие рамки на изображении для удобного просмотра.
-annotated_image = detector.visualize(image_rgb, detections)
+# Метод `visualize` рисует ограничивающие рамки на изображении для удобной проверки.
+annotated_image = detector.visualize(detect_image, detections)
 
-# Отображение результата
+# Отображаем результат
 plt.figure(figsize=(12, 8))
 plt.imshow(annotated_image)
 plt.axis("off")
 plt.title("Обнаруженные комары")
 plt.show()
 
-# Вывод численных результатов обнаружения
-print("\nРезультаты обнаружения:")
+# Выводим численные результаты детекции
+print("\nРезультаты детекции:")
 if detections:
-    for i, (x, y, w, h, conf) in enumerate(detections):
-        print(f"  - Комар {i+1}: Уверенность = {conf:.2f}, Рамка = (x={x:.1f}, y={y:.1f}, w={w:.1f}, h={h:.1f})")
+    for i, (x1, y1, x2, y2, conf) in enumerate(detections):
+        print(
+            f"  - Комар {i+1}: \
+            Уверенность = {conf:.2f}, \
+            Рамка = (x1={x1:.1f}, y1={y1:.1f}, x2={x2:.1f}, y2={y2:.1f})",
+        )
 else:
     print("  Комары не обнаружены.")
 
 # %% [markdown]
-# ## 3. Оценка предсказания
+# ## 3. Оценка предсказания с использованием истинных данных (Ground Truth)
 #
-# Метод `evaluate` позволяет сравнить предсказание с эталонными данными (ground truth).
+# Метод `evaluate` позволяет сравнить предсказание с истинными данными.
 # Это полезно для измерения точности модели. Метод возвращает несколько метрик,
-# включая среднюю точность (Average Precision, AP), которая является стандартом для обнаружения объектов.
-#
-# Здесь мы будем использовать только что найденное обнаружение в качестве имитации эталонных данных,
-# чтобы продемонстрировать процесс.
+# включая среднюю точность (Average Precision, AP), которая является стандартом для задач детекции объектов.
+# Теперь давайте оценим предсказание по сравнению с фактическими истинными данными из набора данных.
 
 # %%
-# Эталонные данные (ground truth) — это список рамок без оценки уверенности: [(x, y, w, h), ...]
-if detections:
-    test_ground_truth = [detections[0][:4]]  # Использовать первую обнаруженную рамку в качестве наших эталонных данных
+# Извлекаем истинные рамки из образца набора данных
+ground_truth_boxes = []
+for bbox in objects["bboxes"]:
+    x_min, y_min, x_max, y_max = bbox
+    ground_truth_boxes.append((x_min, y_min, x_max, y_max))
 
-    # Вы можете выполнить оценку, используя предварительно вычисленное предсказание
-    print("--- Оценка с использованием предварительно вычисленного предсказания ---")
-    evaluation = detector.evaluate(ground_truth=test_ground_truth, prediction=detections)
-    print(evaluation)
+# Оцениваем, используя истинные данные из набора данных
+print("--- Оценка с использованием истинных данных из набора данных ---")
+evaluation = detector.evaluate(ground_truth=ground_truth_boxes, prediction=detections)
+print(evaluation)
 
-    # Или вы можете позволить методу выполнить предсказание внутренне, передав необработанное изображение
-    print("\n--- Оценка непосредственно из изображения ---")
-    evaluation_from_raw = detector.evaluate(ground_truth=test_ground_truth, input_data=image_rgb)
-    print(evaluation_from_raw)
-else:
-    print("Пропуск оценки, так как обнаружения не найдены.")
-
+# %%
+# Вы можете позволить методу выполнить предсказание внутренне, передав необработанное изображение
+print("\n--- Оценка напрямую из изображения ---")
+evaluation_from_raw = detector.evaluate(ground_truth=ground_truth_boxes, input_data=detect_image)
+print(evaluation_from_raw)
 
 # %% [markdown]
-# ## 4. Выполнение пакетных предсказаний
+# ## 4. Выполнение пакетных предсказаний на изображениях из набора данных
 #
 # Для эффективности вы можете обрабатывать несколько изображений одновременно, используя `predict_batch`.
-# Это намного быстрее, чем перебирать в цикле и вызывать `predict` для каждого изображения по отдельности.
 
 # %%
-# Найти все файлы изображений в каталоге 'test_imgs'
-image_dir = Path("test_imgs")
-pattern = re.compile(r"\.(jpg|jpeg|png)$", re.IGNORECASE)
-image_paths = [path for path in image_dir.iterdir() if path.is_file() and pattern.search(str(path))]
+# Извлекаем изображения из набора данных для детекции
+image_batch = [sample["image"] for sample in detect_data]
 
-# Загрузить все изображения в список (наш "пакет")
-try:
-    batch = [cv2.cvtColor(cv2.imread(str(path)), cv2.COLOR_BGR2RGB) for path in image_paths]
-    print(f"\n--- Обработка пакета из {len(batch)} изображений ---")
-except Exception as e:
-    print(f"Произошла ошибка при чтении изображений: {e}")
-    batch = []
-
-# Запустить пакетное предсказание
-detections_batch = detector.predict_batch(batch)
+# Запускаем пакетное предсказание
+detections_batch = detector.predict_batch(image_batch)
 print("Пакетное предсказание завершено.")
-for i, dets in enumerate(detections_batch):
-    print(f"  - Изображение {i+1} ({image_paths[i].name}): Найдено {len(dets)} обнаружение(й).")
 
+for i, dets in enumerate(detections_batch):
+    print(f"  - Изображение {i+1}: Найдено {len(dets)} обнаружений.")
 
 # %% [markdown]
-# ## 5. Оценка пакета предсказаний
+# ## 5. Оценка пакета предсказаний с использованием истинных данных из набора данных
 #
-# Аналогично, `evaluate_batch` можно использовать для получения агрегированных метрик по всему набору изображений.
+# Аналогично, `evaluate_batch` можно использовать для получения агрегированных метрик по всему набору данных.
 
 # %%
-# Создать имитацию пакета эталонных данных из результатов нашего пакетного предсказания
-batch_test_gt = [[(x, y, w, h) for (x, y, w, h, conf) in detections] for detections in detections_batch]
+# Извлекаем истинные данные из набора данных для детекции
+ground_truth_batch = []
+for sample in detect_data:
+    boxes = []
+    for bbox in sample["objects"]["bboxes"]:
+        x_min, y_min, x_max, y_max = bbox
+        boxes.append((x_min, y_min, x_max, y_max))
+    ground_truth_batch.append(boxes)
 
-# Вызвать evaluate_batch. Мы предоставляем предсказания напрямую.
-print("\n--- Оценка всего пакета ---")
+# Вызываем evaluate_batch с истинными данными из набора данных
+print("\n--- Оценка всего пакета с использованием истинных данных из набора данных ---")
 batch_evaluation = detector.evaluate_batch(
-    ground_truth_batch=batch_test_gt,
+    ground_truth_batch=ground_truth_batch,
     predictions_batch=detections_batch,
-    num_workers=1,
+    num_workers=2,  # Используйте несколько потоков для ускорения обработки
 )
 
 print("Агрегированные метрики оценки пакета:")
 print(batch_evaluation)
+
+# %% [markdown]
+# ## 6. Визуализация истинных данных в сравнении с предсказаниями
+#
+# Давайте создадим сравнительную визуализацию, показывающую как истинные данные, так и предсказания.
+
+
+# %%
+# Создадим функцию для визуализации как истинных данных, так и предсказаний
+def visualize_comparison(image_rgb, ground_truth_boxes, detection_boxes):
+    # Рисуем истинные рамки зеленым цветом
+    for bbox in ground_truth_boxes:
+        x_min, y_min, x_max, y_max = (int(v) for v in bbox)
+        cv2.rectangle(image_rgb, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+        cv2.putText(
+            image_rgb,
+            "GT",
+            (x_min, y_min - 5),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (0, 255, 0),
+            1,
+        )
+
+    # Рисуем предсказанные рамки синим цветом с указанием показателя уверенности
+    for x1, y1, x2, y2, conf in detection_boxes:
+        x_min, y_min, x_max, y_max = int(x1), int(y1), int(x2), int(y2)
+        cv2.rectangle(image_rgb, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)
+        cv2.putText(
+            image_rgb,
+            f"{conf:.2f}",
+            (x_min, y_min - 5),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (255, 0, 0),
+            1,
+        )
+
+    return image_rgb
+
+
+# Создаем сравнительную визуализацию
+comparison_image = visualize_comparison(np.array(detect_image), ground_truth_boxes, detections)
+
+# Отображаем сравнение
+plt.figure(figsize=(12, 8))
+plt.imshow(comparison_image)
+plt.axis("off")
+plt.title("Истинные данные vs Предсказанные\nЗеленый: Истинные данные\nКрасный: Результат модели")
+plt.show()

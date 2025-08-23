@@ -1,153 +1,162 @@
+# %%
 """
 # Руководство по сегментации комаров
 
-В этом руководстве демонстрируется, как использовать библиотеку CulicidaeLab
+Это руководство демонстрирует, как использовать библиотеку `culicidaelab`
 для выполнения сегментации комаров на изображениях. Мы рассмотрим:
 
-1. Настройка модели сегментации
-2. Загрузка и предварительная обработка изображений
-3. Запуск сегментации
-4. Визуализация результатов
+1. Настройку модели сегментации
+2. Загрузку данных для сегментации из набора данных
+3. Выполнение сегментации
+4. Визуализацию результатов
+5. Оценку производительности с использованием истинных (эталонных) масок
 
 """
 
 # %%
 # Установите библиотеку `culicidaelab`, если она еще не установлена
-# !pip install -q culicidaelab
+# # !pip install -q culicidaelab
 
 # %%
-# Сначала давайте импортируем необходимые библиотеки:
-import cv2
-from pathlib import Path
 import matplotlib.pyplot as plt
+import numpy as np
+
 from culicidaelab import MosquitoSegmenter, MosquitoDetector
-from culicidaelab import ModelWeightsManager
-from culicidaelab import get_settings
+from culicidaelab import DatasetsManager, get_settings
 
 # %% [markdown]
-# ## 1. Инициализация настроек и сегментатора
+# ## 1. Инициализация настроек и загрузка набора данных
 #
-# Сначала мы инициализируем наши настройки и создадим экземпляр MosquitoSegmenter:
+# Сначала мы инициализируем наши настройки, создадим `MosquitoSegmenter` и загрузим набор данных для сегментации:
 
 # %%
-# Получить экземпляр настроек
+# Получаем экземпляр настроек и инициализируем менеджер наборов данных
 settings = get_settings()
-settings.list_model_types()
+manager = DatasetsManager(settings)
 
-# %%
-model_config = settings.get_config("predictors.segmenter")
-model_path = settings.get_model_weights_path("segmenter")
+# Загружаем набор данных для сегментации
+seg_data = manager.load_dataset("segmentation", split="train[:20]")
 
-weights_manager = ModelWeightsManager(settings=settings)
-# Инициализация сегментатора
+# Инициализируем сегментатор и детектор
 segmenter = MosquitoSegmenter(settings=settings, load_model=True)
+detector = MosquitoDetector(settings=settings, load_model=True)
 
 # %% [markdown]
-# ## 2. Загрузка и предварительная обработка изображения
+# ## 2. Изучение образца для сегментации
 #
-# Теперь давайте загрузим тестовое изображение:
+# Давайте изучим образец из набора данных для сегментации, чтобы понять его структуру:
 
 # %%
-# Загрузка тестового изображения
-image_path = str(Path("test_imgs") / "640px-Aedes_aegypti.jpg")
-image = cv2.imread(image_path)
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+# Изучаем образец для сегментации
+seg_sample = seg_data[0]
+seg_image = seg_sample["image"]
+seg_mask = np.array(seg_sample["label"])  # Преобразуем маску в массив numpy
+
+print(f"Размер изображения: {seg_image.size}")
+print(f"Форма маски сегментации: {seg_mask.shape}")
+print(f"Уникальные значения в маске: {np.unique(seg_mask)}")  # 0 - фон, 1 и выше - комар
+
+# Создаем цветное наложение для маски
+# Где маска равна 1 и выше (комар), делаем ее красной
+overlay = np.zeros((*seg_mask.shape, 4), dtype=np.uint8)
+overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Красный цвет с 50% прозрачностью
 
 # %% [markdown]
-# ## 3. Запуск сегментации
+# ## 3. Запуск сегментации на изображении из набора данных
 #
-# Теперь мы можем запустить модель сегментации на нашем изображении:
+# Теперь мы можем запустить модель сегментации на нашем изображении из набора данных:
 
 # %%
-mask = segmenter.predict(image)
+# Запускаем детекцию для получения ограничивающих рамок
+detections = detector.predict(seg_image)
+
+# Запускаем сегментацию с рамками детекции
+predicted_mask = segmenter.predict(seg_image, detection_boxes=np.array(detections))
+
+# Создаем визуализации
+annotated_image = detector.visualize(seg_image, detections)
+segmented_image = segmenter.visualize(annotated_image, predicted_mask)
 
 # %% [markdown]
-# ## 4. Визуализация результатов
+# ## 4. Визуализация результатов со сравнением с истинной маской
 #
-# Наконец, давайте визуализируем результаты сегментации, наложенные на исходное изображение:
+# Давайте визуализируем результаты сегментации рядом с истинной (эталонной) маской:
 
 # %%
-# Визуализация результатов сегментации
-segmented_image = segmenter.visualize(image, mask)
+plt.figure(figsize=(20, 10))
 
-# Отображение результатов
-plt.figure(figsize=(15, 5))
-
-plt.subplot(1, 3, 1)
-plt.imshow(image)
+# Исходное изображение
+plt.subplot(2, 4, 1)
+plt.imshow(seg_image)
 plt.axis("off")
 plt.title("Исходное изображение")
 
-plt.subplot(1, 3, 2)
-plt.imshow(mask, cmap="gray")
+# Истинная маска
+plt.subplot(2, 4, 2)
+plt.imshow(seg_mask, cmap="gray")
 plt.axis("off")
-plt.title("Маска сегментации")
+plt.title("Истинная маска")
 
-plt.subplot(1, 3, 3)
+# Наложение истинной маски
+plt.subplot(2, 4, 3)
+plt.imshow(seg_image)
+plt.imshow(overlay, alpha=0.5)
+plt.axis("off")
+plt.title("Наложение истинной маски")
+
+# Детекции
+plt.subplot(2, 4, 4)
+plt.imshow(annotated_image)
+plt.axis("off")
+plt.title("Обнаруженные комары")
+
+# Предсказанная маска
+plt.subplot(2, 4, 5)
+plt.imshow(predicted_mask, cmap="gray")
+plt.axis("off")
+plt.title("Предсказанная маска")
+
+# Наложение предсказанной маски
+predicted_overlay = np.zeros((*predicted_mask.shape, 4), dtype=np.uint8)
+predicted_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Зеленый для предсказаний
+plt.subplot(2, 4, 6)
+plt.imshow(seg_image)
+plt.imshow(predicted_overlay, alpha=0.5)
+plt.axis("off")
+plt.title("Наложение предсказанной маски")
+
+# Комбинированное наложение (истинная маска + предсказания)
+combined_overlay = np.zeros((*predicted_mask.shape, 4), dtype=np.uint8)
+combined_overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Красный для истинной маски
+combined_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Зеленый для предсказаний
+plt.subplot(2, 4, 7)
+plt.imshow(seg_image)
+plt.imshow(combined_overlay, alpha=0.5)
+plt.axis("off")
+plt.title("Комбинированное наложение\n(Красный: Истинная, Зеленый: Предск.)")
+
+# Конечное сегментированное изображение
+plt.subplot(2, 4, 8)
 plt.imshow(segmented_image)
 plt.axis("off")
-plt.title("Сегментированное изображение")
+plt.title("Конечное сегментированное изображение")
 
 plt.tight_layout()
 plt.show()
 
 # %% [markdown]
-# ## Сегментация с использованием результатов обнаружения
+# ## 5. Оценка качества сегментации
 #
-
-# %% [markdown]
-# Сегментатор также может использовать результаты обнаружения для повышения точности сегментации.
-# Вот как объединить обнаружение и сегментацию:
+# Давайте оценим результаты сегментации, используя истинную маску:
 
 # %%
-# Инициализация детектора
-detector = MosquitoDetector(settings=settings, load_model=True)
-# Загрузка тестового изображения
-image_path = str(Path("test_imgs") / "640px-Aedes_aegypti.jpg")
-image = cv2.imread(image_path)
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-# Запуск обнаружения
-detections = detector.predict(image)
-
-# Запуск сегментации с рамками обнаружения
-mask_with_boxes = segmenter.predict(image, detection_boxes=detections)
-# Отрисовка обнаружений
-annotated_image = detector.visualize(image, detections)
-
-# Вывод результатов обнаружения
-print("\nРезультаты обнаружения:")
-for i, (x, y, w, h, conf) in enumerate(detections):
-    print(
-        f"Комар {i+1}: Уверенность = {conf:.2f}, Рамка = (x={x:.1f}, y={y:.1f}, w={w:.1f}, h={h:.1f})",
-    )
-# Визуализация результатов
-segmented_image_with_boxes = segmenter.visualize(annotated_image, mask_with_boxes)
-
-# plt.figure(figsize=(10, 10))
-plt.figure(figsize=(15, 5))
-
-plt.subplot(1, 2, 1)
-plt.imshow(mask_with_boxes, cmap="gray")
-plt.axis("off")
-plt.title("Маска сегментации")
-
-
-plt.subplot(1, 2, 2)
-plt.imshow(segmented_image_with_boxes)
-plt.axis("off")
-plt.title("Сегментация с рамками обнаружения")
-
-plt.tight_layout()
-plt.show()
-
-# %%
-metrics = segmenter.evaluate(mask_with_boxes, input_data=image)
-print(metrics)
-
-# %%
-metrics_default = segmenter.evaluate(
-    mask_with_boxes,
-    mask_with_boxes,
+metrics = segmenter.evaluate(
+    prediction=predicted_mask,
+    ground_truth=seg_mask,
 )
-print(metrics_default)
+print("Метрики оценки сегментации:")
+for key, value in metrics.items():
+    if isinstance(value, float):
+        print(f"  {key}: {value:.4f}")
+    else:
+        print(f"  {key}: {value}")
