@@ -386,17 +386,28 @@ def test_save_config(temp_config_dirs):
 def test_instantiate_from_config_success():
     """Test successful instantiation from config."""
     mock_config = Mock()
-    mock_config.target = "builtins.dict"
+    mock_config.target = "my_module.MyPredictor"
     mock_config.model_dump.return_value = {
-        "target": "builtins.dict",
         "param1": "value1",
         "param2": "value2",
     }
 
-    manager = ConfigManager.__new__(ConfigManager)
-    result = manager.instantiate_from_config(mock_config, extra_param="extra")
+    # Define a mock predictor class locally within the test
+    class MyPredictor:
+        def __init__(self, param1, param2):
+            self.param1 = param1
+            self.param2 = param2
 
-    assert isinstance(result, dict)
+    mock_module = Mock()
+    mock_module.MyPredictor = MyPredictor
+    with patch("builtins.__import__", return_value=mock_module) as mock_import:
+        manager = ConfigManager.__new__(ConfigManager)
+        result = manager.instantiate_from_config(mock_config)
+        mock_import.assert_called_with("my_module", fromlist=["MyPredictor"])
+
+        assert isinstance(result, MyPredictor)
+        assert result.param1 == "value1"
+        assert result.param2 == "value2"
 
 
 def test_instantiate_from_config_no_target():
