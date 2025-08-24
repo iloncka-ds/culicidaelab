@@ -200,6 +200,36 @@ class MosquitoClassifier(
         species_probs.sort(key=lambda x: x[1], reverse=True)
         return species_probs
 
+    def predict_batch(
+        self,
+        input_data_batch: Sequence[ImageInput],
+        show_progress: bool = False,
+        **kwargs: Any,
+    ) -> list[ClassificationPredictionType]:
+        """
+        Classifies a batch of mosquito images in a single, efficient pass.
+        """
+        if not self.model_loaded:
+            raise RuntimeError("Model is not loaded.")
+
+        images = [self._load_and_validate_image(item) for item in input_data_batch]
+
+        with self.learner.no_bar():
+            dl = self.learner.dls.test_dl(images, with_labels=False)
+            probabilities, _ = self.learner.get_preds(dl=dl, reorder=False)
+
+        batch_results = []
+        for probs_tensor in probabilities:
+            species_probs = []
+            for idx, prob in enumerate(probs_tensor):
+                species_name = self.species_map.get(idx, f"unknown_{idx}")
+                species_probs.append((species_name, float(prob)))
+
+            species_probs.sort(key=lambda x: x[1], reverse=True)
+            batch_results.append(species_probs)
+
+        return batch_results
+
     def visualize(
         self,
         input_data: ImageInput,
