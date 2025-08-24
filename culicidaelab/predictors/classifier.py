@@ -456,6 +456,7 @@ class MosquitoClassifier(
         with set_posix_windows():
             try:
                 self.learner = load_learner(self.model_path)
+                self.learner.to(self.config.device)
             except Exception as e:
                 raise RuntimeError(
                     f"Failed to load model from {self.model_path}. " f"Ensure the file is valid. Original error: {e}",
