@@ -238,6 +238,23 @@ This integrated approach enables comprehensive mosquito research, from data coll
 - **Extensible Provider System**: Seamlessly connect to data sources. A `HuggingFaceProvider` is built-in, with an easy-to-implement interface for adding more providers.
 - **Powerful Visualization**: Instantly visualize model outputs with built-in, configurable methods for drawing bounding boxes, classification labels, and segmentation masks.
 
+## Practical Applications
+
+`CulicidaeLab` is more than just a set of models; it's a powerful engine for building real-world solutions. Here are some of the ways it can be applied:
+
+- **Automation in Scientific Laboratories:**
+
+  - **Bulk Data Processing:** Automatically analyze thousands of images from camera traps or microscopes to assess mosquito populations without manual intervention.
+  - **Reproducible Research:** Standardize the data analysis process, allowing other scientists to easily reproduce and verify research results published using the library.
+- **Integration into Governmental and Commercial Systems:**
+
+  - **Epidemiological Surveillance:** Use the library as the core "engine" for national or regional monitoring systems to track vector-borne disease risks.
+  - **Custom Solution Development:** Rapidly prototype and create specialized software products for pest control services, agro-industrial companies, or environmental organizations.
+- **Advanced Analytics and Data Science:**
+
+  - **Geospatial Analysis:** Write scripts to build disease vector distribution maps by processing geotagged images.
+  - **Predictive Modeling:** Use the library's outputs as features for larger models that forecast disease outbreaks based on vector presence and density.
+
 ## Requirements
 
 ### Hardware Requirements
@@ -364,23 +381,6 @@ for species, confidence in predictions[:3]:
 # - Aedes albopictus: 0.0112
 # - Culex quinquefasciatus: 0.0009
 ```
-
-## Practical Applications
-
-`CulicidaeLab` is more than just a set of models; it's a powerful engine for building real-world solutions. Here are some of the ways it can be applied:
-
-- **Automation in Scientific Laboratories:**
-
-  - **Bulk Data Processing:** Automatically analyze thousands of images from camera traps or microscopes to assess mosquito populations without manual intervention.
-  - **Reproducible Research:** Standardize the data analysis process, allowing other scientists to easily reproduce and verify research results published using the library.
-- **Integration into Governmental and Commercial Systems:**
-
-  - **Epidemiological Surveillance:** Use the library as the core "engine" for national or regional monitoring systems to track vector-borne disease risks.
-  - **Custom Solution Development:** Rapidly prototype and create specialized software products for pest control services, agro-industrial companies, or environmental organizations.
-- **Advanced Analytics and Data Science:**
-
-  - **Geospatial Analysis:** Write scripts to build disease vector distribution maps by processing geotagged images.
-  - **Predictive Modeling:** Use the library's outputs as features for larger models that forecast disease outbreaks based on vector presence and density.
 
 ## Documentation
 
