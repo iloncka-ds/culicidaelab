@@ -142,7 +142,7 @@ class MosquitoSegmenter(
     def predict_batch(
         self,
         input_data_batch: Sequence[ImageInput],
-        show_progress: bool = True,
+        show_progress: bool = False,
         **kwargs: Any,
     ) -> list[SegmentationPredictionType]:
         """Generates segmentation masks for a batch of images by serial processing."""

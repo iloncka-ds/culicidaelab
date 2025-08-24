@@ -217,9 +217,15 @@ class HuggingFaceProvider(BaseProvider):
             )
             print(f"Downloaded weights to: {downloaded_path}")
 
+            if str(downloaded_path) != str(local_path):
+                try:
+                    shutil.move(downloaded_path, local_path)
+                except Exception as e:
+                    print(f"Error move to {local_path} from {downloaded_path}: {e}")
+
             shutil.rmtree(cache_path, ignore_errors=True)
 
-            return Path(downloaded_path)
+            return Path(local_path)
 
         except Exception as e:
             if local_path.exists():
