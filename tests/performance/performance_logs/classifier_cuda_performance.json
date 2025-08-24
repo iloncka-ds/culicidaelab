@@ -2,27 +2,27 @@
   {
     "test_name": "model_loading",
     "load": true,
-    "duration_sec": 0.08917244919999803,
-    "cpu_time_sec": 0.08799999999999994,
-    "mem_rss_bytes_diff": 270336,
-    "mem_rss_bytes_final": 863027200,
+    "duration_sec": 0.11227475299999697,
+    "cpu_time_sec": 0.11399999999999974,
+    "mem_rss_bytes_diff": 22745088,
+    "mem_rss_bytes_final": 1175605248,
     "gpu_memory_mb_diff": {
-      "0": 0.0
+      "0": 72.0
     },
     "gpu_utilization_percent": {
-      "0": 0.0
+      "0": 0.08
     },
     "gpu_memory_mb_final": {
-      "0": 0.0
+      "0": 614.0
     }
   },
   {
     "test_name": "prediction_batch_1",
     "batch_size": 1,
-    "duration_sec": 0.14361314600000696,
-    "cpu_time_sec": 0.13999999999999993,
-    "mem_rss_bytes_diff": 0,
-    "mem_rss_bytes_final": 895479808,
+    "duration_sec": 0.172458660399991,
+    "cpu_time_sec": 0.17199999999999988,
+    "mem_rss_bytes_diff": -393216,
+    "mem_rss_bytes_final": 1294581760,
     "gpu_memory_mb_diff": {
       "0": 0.0
     },
@@ -30,16 +30,16 @@
       "0": 0.0
     },
     "gpu_memory_mb_final": {
-      "0": 2.0
+      "0": 706.0
     }
   },
   {
     "test_name": "prediction_batch_8",
     "batch_size": 8,
-    "duration_sec": 1.2135027031999925,
-    "cpu_time_sec": 1.2079999999999997,
-    "mem_rss_bytes_diff": 98914304,
-    "mem_rss_bytes_final": 1179336704,
+    "duration_sec": 1.8277448730000174,
+    "cpu_time_sec": 1.7040000000000002,
+    "mem_rss_bytes_diff": -69713920,
+    "mem_rss_bytes_final": 1366679552,
     "gpu_memory_mb_diff": {
       "0": 0.0
     },
@@ -47,7 +47,7 @@
       "0": 0.0
     },
     "gpu_memory_mb_final": {
-      "0": 2.0
+      "0": 706.0
     }
   }
 ]
