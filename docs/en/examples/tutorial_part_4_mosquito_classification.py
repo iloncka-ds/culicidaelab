@@ -18,7 +18,7 @@ This guide will cover:
 
 # %%
 # Install the `culicidaelab` library if not already installed
-# !pip install -q culicidaelab
+# # !pip install -q culicidaelab
 
 # %% [markdown]
 # ## 1. Initialization and Setup

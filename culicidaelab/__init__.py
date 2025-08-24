@@ -19,6 +19,8 @@ Main Components:
 
 from __future__ import annotations
 
+from importlib.metadata import version, PackageNotFoundError
+
 # Core library components
 from .core.base_predictor import BasePredictor
 from .core.base_provider import BaseProvider
@@ -49,6 +51,12 @@ from .predictors.segmenter import MosquitoSegmenter
 # Data providers
 from .providers.huggingface_provider import HuggingFaceProvider
 
+# Versioning
+try:
+    __version__ = version("culicidaelab")
+except PackageNotFoundError:
+    __version__ = "0.0.0-dev"
+
 # Defines the public API for the package
 __all__ = [
     "BasePredictor",
@@ -74,15 +82,3 @@ __all__ = [
     "download_file",
     "get_settings",
 ]
-
-
-def __getattr__(name: str) -> str:
-    """Lazily retrieves the library version using PEP 562."""
-    if name != "__version__":
-        msg = f"module {__name__} has no attribute {name}"
-        raise AttributeError(msg)
-
-    from importlib.metadata import version
-
-    # Returns the version of the 'culicidaelab' package
-    return version("culicidaelab")
