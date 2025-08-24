@@ -180,8 +180,8 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
         ground_truth_batch: Sequence[GroundTruthType],
         predictions_batch: Sequence[PredictionType] | None = None,
         input_data_batch: Sequence[InputDataType] | None = None,
-        num_workers: int = 4,
-        show_progress: bool = True,
+        num_workers: int = 1,
+        show_progress: bool = False,
         **predict_kwargs: Any,
     ) -> dict[str, Any]:
         """Evaluate on a batch of items using parallel processing.
@@ -284,7 +284,7 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
     def predict_batch(
         self,
         input_data_batch: Sequence[InputDataType],
-        show_progress: bool = True,
+        show_progress: bool = False,
         **kwargs: Any,
     ) -> list[PredictionType]:
         """Makes predictions on a batch of inputs.

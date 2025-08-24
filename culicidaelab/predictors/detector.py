@@ -144,7 +144,7 @@ class MosquitoDetector(
     def predict_batch(
         self,
         input_data_batch: Sequence[ImageInput],
-        show_progress: bool = True,
+        show_progress: bool = False,
         **kwargs: Any,
     ) -> list[DetectionPredictionType]:
         """Detects mosquitos in a batch of images using YOLO's native batching.
@@ -152,7 +152,7 @@ class MosquitoDetector(
         Args:
             input_data_batch (Sequence[np.ndarray]): A list of input images.
             show_progress (bool, optional): If True, a progress bar is shown.
-                Defaults to True.
+                Defaults to False.
             **kwargs (Any): Additional arguments (not used).
 
         Returns:

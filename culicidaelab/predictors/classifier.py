@@ -189,7 +189,8 @@ class MosquitoClassifier(
         image = self._load_and_validate_image(input_data)
 
         with set_posix_windows():
-            _, _, probabilities = self.learner.predict(image)
+            with self.learner.no_bar():
+                _, _, probabilities = self.learner.predict(image)
 
         species_probs = []
         for idx, prob in enumerate(probabilities):
