@@ -87,52 +87,87 @@ class MosquitoSegmenter(
         )
 
     def predict(self, input_data: ImageInput, **kwargs: Any) -> np.ndarray:
+        """
+        Generates a segmentation mask for a single image using various prompts.
+
+        Args:
+            input_data: The input image data.
+            **kwargs:
+                detection_boxes (list | np.ndarray, optional): Bounding boxes in
+                    XYXY format. e.g., [[x1, y1, x2, y2], ...].
+                points (list | np.ndarray, optional): Point coordinates. Can be a
+                    single point [x, y] or multiple points [[x1, y1], [x2, y2], ...].
+                labels (list | np.ndarray, optional): Labels for points.
+                    1 for foreground, 0 for background. Must be provided if 'points'
+                    is used. e.g., [1, 0, 1, ...].
+        """
         if not self.model_loaded:
             self.load_model()
         if self._model is None:
             raise RuntimeError("Model could not be loaded for prediction.")
         model = cast(SAM, self._model)
-        detection_boxes = kwargs.get("detection_boxes")
+
         image_pil = self._load_and_validate_image(input_data)
         image_np = np.array(image_pil)
         h, w, _ = image_np.shape
 
-        is_empty = False
-        if detection_boxes is None:
-            is_empty = True
-        elif hasattr(detection_boxes, "size"):
-            if detection_boxes.size == 0:
-                is_empty = True
-        elif not detection_boxes:
-            is_empty = True
+        detection_boxes = kwargs.get("detection_boxes")
+        points = kwargs.get("points")
+        labels = kwargs.get("labels")
 
-        if is_empty:
-            message = "No detection boxes provided; returning empty mask."
-            self._logger.debug(message)
-            print(message)
-            return np.zeros((h, w), dtype=np.uint8)
-        else:
-            self._logger.debug(f"Using {len(detection_boxes)} detection boxes for segmentation.")
+        model_prompts = {}
 
-            boxes_xyxy = []
+        if detection_boxes is not None and len(detection_boxes) > 0:
             first_box = detection_boxes[0]
-            if len(first_box) == 5:
+            if len(first_box) == 5:  # Potentially box with confidence score
                 boxes_xyxy = [box[:4] for box in detection_boxes]
             elif len(first_box) == 4:
                 boxes_xyxy = detection_boxes
             else:
-                self._logger.warning("Invalid format for detection_boxes.")
-                return np.zeros((h, w), dtype=np.uint8)
+                self._logger.warning(
+                    "Invalid format for detection_boxes.",
+                    f"Expected 4 or 5 elements, got {len(first_box)}. Ignoring boxes.",
+                )
+                boxes_xyxy = []
 
-            self._logger.debug(f"Using {len(boxes_xyxy)} detection boxes for segmentation.")
+            if boxes_xyxy:
+                self._logger.debug(f"Using {len(boxes_xyxy)} detection boxes for segmentation.")
+                model_prompts["bboxes"] = boxes_xyxy
 
-            results = model(image_np, bboxes=boxes_xyxy, verbose=False)
-            result = results[0]
+        if points is not None and len(points) > 0:
+            if labels is None:
+                raise ValueError("'labels' must be provided when 'points' are given.")
+
+            # Normalize single point/label to a list of lists for consistent processing
+            is_single_point = isinstance(points[0], (int, float))
+            if is_single_point:
+                points = [points]
+                # Also ensure label is a list
+                if not isinstance(labels, list):
+                    labels = [labels]
+
+            if len(points) != len(labels):
+                raise ValueError(
+                    f"Mismatch between number of points ({len(points)}) and " f"labels ({len(labels)}).",
+                )
+            self._logger.debug(f"Using {len(points)} points for segmentation.")
+            model_prompts["points"] = points
+            model_prompts["labels"] = labels
+
+        if not model_prompts:
+            message = "No valid prompts (boxes, points) provided; returning empty mask."
+            self._logger.debug(message)
+            print(message)
+            return np.zeros((h, w), dtype=np.uint8)
+
+        results = model(image_np, verbose=False, **model_prompts)
+        result = results[0]
 
         if result.masks is None:
             return np.zeros((h, w), dtype=np.uint8)
 
         masks_np = self._to_numpy(result.masks.data)
+
         return (
             np.logical_or.reduce(masks_np).astype(np.uint8)
             if masks_np.shape[0] > 0
@@ -145,33 +180,59 @@ class MosquitoSegmenter(
         show_progress: bool = False,
         **kwargs: Any,
     ) -> list[SegmentationPredictionType]:
-        """Generates segmentation masks for a batch of images by serial processing."""
+        """
+        Generates segmentation masks for a batch of images by serial processing.
 
+        Args:
+            input_data_batch: A sequence of input images.
+            show_progress: Whether to display a progress bar.
+            **kwargs:
+                detection_boxes_batch (list[list], optional): A list of detection
+                    box lists, one for each image.
+                points_batch (list[list], optional): A list of point lists,
+                    one for each image.
+                labels_batch (list[list], optional): A list of point label
+                    lists, one for each image.
+        """
         if not self.model_loaded or self._model is None:
             self.load_model()
             if self._model is None:
                 raise RuntimeError("Failed to load model")
 
-        detection_boxes_batch = kwargs.get("detection_boxes_batch", [[] for _ in input_data_batch])
+        num_images = len(input_data_batch)
+        detection_boxes_batch = kwargs.get("detection_boxes_batch", [[] for _ in range(num_images)])
+        points_batch = kwargs.get("points_batch", [[] for _ in range(num_images)])
+        labels_batch = kwargs.get("labels_batch", [[] for _ in range(num_images)])
 
-        if len(input_data_batch) != len(detection_boxes_batch):
+        if not (
+            len(detection_boxes_batch) == num_images
+            and len(points_batch) == num_images
+            and len(labels_batch) == num_images
+        ):
             raise ValueError(
-                f"Mismatch between number of images ({len(input_data_batch)}) and "
-                f"number of detection box lists ({len(detection_boxes_batch)}).",
+                "Mismatch between the number of images and the number of items in "
+                f"prompt batches. Images: {num_images}, "
+                f"Boxes: {len(detection_boxes_batch)}, Points: {len(points_batch)}, "
+                f"Labels: {len(labels_batch)}.",
             )
 
         final_masks: list[SegmentationPredictionType] = []
         iterator = enumerate(input_data_batch)
         if show_progress:
-            iterator = progress_bar(iterator, total=len(input_data_batch))
+            iterator = progress_bar(iterator, total=num_images)
 
         for i, input_data in iterator:
             try:
-                mask = self.predict(input_data, detection_boxes=detection_boxes_batch[i])
+                predict_kwargs = {
+                    "detection_boxes": detection_boxes_batch[i],
+                    "points": points_batch[i],
+                    "labels": labels_batch[i],
+                }
+                mask = self.predict(input_data, **predict_kwargs)
                 final_masks.append(mask)
             except Exception as e:
                 self._logger.error(f"Failed to process image at index {i}: {e}")
-                final_masks.append(np.zeros((1, 1), dtype=np.uint8))  # Append placeholder
+                final_masks.append(np.zeros((1, 1), dtype=np.uint8))
         return final_masks
 
     def visualize(
