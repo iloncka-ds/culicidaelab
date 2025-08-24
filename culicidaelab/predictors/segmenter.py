@@ -146,9 +146,11 @@ class MosquitoSegmenter(
         **kwargs: Any,
     ) -> list[SegmentationPredictionType]:
         """Generates segmentation masks for a batch of images by serial processing."""
-        # This method remains unchanged from the previous correct version.
-        if not self.model_loaded:
-            raise RuntimeError("Model not loaded. Call load_model() first.")
+
+        if not self.model_loaded or self._model is None:
+            self.load_model()
+            if self._model is None:
+                raise RuntimeError("Failed to load model")
 
         detection_boxes_batch = kwargs.get("detection_boxes_batch", [[] for _ in input_data_batch])
 

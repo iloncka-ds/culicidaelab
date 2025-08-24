@@ -163,7 +163,9 @@ class MosquitoDetector(
             RuntimeError: If the model is not loaded.
         """
         if not self.model_loaded or self._model is None:
-            raise RuntimeError("Model not loaded. Call load_model() first.")
+            self.load_model()
+            if self._model is None:
+                raise RuntimeError("Failed to load model")
         if not input_data_batch:
             return []
 
