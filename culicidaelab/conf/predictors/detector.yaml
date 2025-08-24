@@ -9,7 +9,7 @@
 #     confidence_threshold: 0.25
 #     iou_threshold: 0.45
 #     max_detections: 1
-target: "culicidaelab.predictors.Detector"
+target: "culicidaelab.predictors.detector"
 model_path: "weights/detection/culico-net-det-v1-nano.pt"
 repository_id: "iloncka/culico-net-det-v1"
 filename: "culico-net-det-v1-nano.pt"
