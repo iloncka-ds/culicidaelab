@@ -259,7 +259,14 @@ class Settings:
         config_obj = self.get_config(config_path)
         if not config_obj:
             raise ValueError(f"No configuration object found at path: {config_path}")
-        return self._config_manager.instantiate_from_config(config_obj, **kwargs)
+
+        extra_deps = {"settings": self}
+
+        return self._config_manager.instantiate_from_config(
+            config_obj,
+            extra_params=extra_deps,
+            **kwargs,
+        )
 
 
 # Global access function

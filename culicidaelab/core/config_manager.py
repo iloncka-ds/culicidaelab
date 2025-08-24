@@ -8,6 +8,7 @@ Pydantic models.
 from __future__ import annotations
 
 from importlib import resources
+import inspect
 from pathlib import Path
 from types import ModuleType
 from typing import Any, TypeAlias, TypeVar, Union, cast
@@ -67,7 +68,12 @@ class ConfigManager:
         """
         return self.config
 
-    def instantiate_from_config(self, config_obj: Any, **kwargs: Any) -> Any:
+    def instantiate_from_config(
+        self,
+        config_obj: Any,
+        extra_params: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> Any:
         """Instantiates a Python object from its Pydantic config model.
 
         The config model must have a `target` field specifying the fully
@@ -75,6 +81,8 @@ class ConfigManager:
 
         Args:
             config_obj (Any): A Pydantic model instance (e.g., a predictor config).
+            extra_params (dict[str, Any] | None, optional): A dictionary of
+                extra parameters to inject into the constructor. Defaults to None.
             **kwargs (Any): Additional keyword arguments to pass to the object's
                 constructor, overriding any existing parameters in the config.
 
@@ -91,14 +99,30 @@ class ConfigManager:
         targetpath = config_obj.target
         config_params = config_obj.model_dump()
         config_params.pop("target", None)
-        config_params.update(kwargs)
+        final_params = {}
+        if extra_params:
+            final_params.update(extra_params)
+        final_params.update(config_params)
+        final_params.update(kwargs)
 
         try:
             module_path, class_name = targetpath.rsplit(".", 1)
             module = __import__(module_path, fromlist=[class_name])
             cls = getattr(module, class_name)
-            return cls(**config_params)
-        except (ValueError, ImportError, AttributeError) as e:
+
+            sig = inspect.signature(cls)
+
+            has_kwargs = any(p.kind == p.VAR_KEYWORD for p in sig.parameters.values())
+
+            if not has_kwargs:
+                # Filter final_params to only include keys that are in the signature
+                allowed_keys = set(sig.parameters.keys())
+                filtered_params = {k: v for k, v in final_params.items() if k in allowed_keys}
+            else:
+                filtered_params = final_params
+
+            return cls(**filtered_params)
+        except (ValueError, ImportError, AttributeError, TypeError) as e:
             raise ImportError(
                 f"Could not import and instantiate '{targetpath}': {e}",
             )

@@ -10,7 +10,7 @@
 #     input_size: 224
 #     mean: [0.485, 0.456, 0.406]
 #     std: [0.229, 0.224, 0.225]
-target: "culicidaelab.predictors.classifier"
+target: "culicidaelab.predictors.classifier.MosquitoClassifier"
 model_path: "weights/classification/culico-net-cls-v1-17.pkl"
 repository_id: "iloncka/culico-net-cls-v1"
 filename: "culico-net-cls-v1-17.pkl"
