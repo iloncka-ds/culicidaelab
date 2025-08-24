@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 import torch
 from typing import Any
 
@@ -105,6 +105,7 @@ def classifier(mock_settings):
         load_model=False,
     )
     clf.learner = Mock()
+    clf.learner.no_bar.return_value = MagicMock()
     return clf
 
 
