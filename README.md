@@ -17,7 +17,7 @@
 
 `culicidaeLab` python library provides a robust, extensible framework designed to streamline the pipeline of mosquito image analysis. Built on a powerful configuration system, it allows researchers and developers to easily manage datasets, experiment with models, and process images for classification, detection, and segmentation tasks. `culicidaelab` library is part of the is a part of the CulicidaeLab Ecosystem.
 
-**CulicidaeLab Ecosystem Architecture**
+## CulicidaeLab Ecosystem Architecture
 
 ```mermaid
 flowchart TD
@@ -121,7 +121,7 @@ subgraph L0 [" "]
     %% Data source for gallery
 
     DS1 -->|"provides photos"| APP2
-	DS1 -->|"provides photos"| APP3
+	  DS1 -->|"provides photos"| APP3
 
 
     %% Library to server integration
@@ -139,7 +139,7 @@ subgraph L0 [" "]
 
     APP2 -->|"hosts"| S4
 
-	APP2 -->|"hosts"| S5
+	  APP2 -->|"hosts"| S5
 
     %% Mobile app service consumption
 
@@ -183,7 +183,7 @@ subgraph L0 [" "]
 
     class L4 serviceLayer
    
-	class L5 collections
+	  class L5 collections
    
     class DS1,DS2,DS3,DS4 dataset
 
@@ -203,10 +203,12 @@ An open-source system for mosquito research and analysis includes components:
 
   - Base [diversity dataset (46 species, 3139 images](https://huggingface.co/datasets/iloncka/mosquito_dataset_46_3139)) under CC-BY-SA-4.0 license.
   - Specialized derivatives: [classification](https://huggingface.co/datasets/iloncka/mosquito-species-classification-dataset), [detection](https://huggingface.co/datasets/iloncka/mosquito-species-detection-dataset), and [segmentation](https://huggingface.co/datasets/iloncka/mosquito-species-segmentation-dataset) datasets under CC-BY-SA-4.0 licenses.
+
 - **Models**:
 
   - Top-1 models (see reports), used as default by `culicidaelab` library: [classification (Apache 2.0)](https://huggingface.co/iloncka/culico-net-cls-v1), [detection (AGPL-3.0)](https://huggingface.co/iloncka/culico-net-det-v1), [segmentation (Apache 2.0)](https://huggingface.co/iloncka/culico-net-segm-v1-nano)
   - [Top-5 classification models collection](https://huggingface.co/collections/iloncka/mosquito-classification-17-top-5-68945bf60bca2c482395efa8) with accuracy >90% for 17 mosquito species.
+
 - **Protocols**: All training parameters and metrics available at:
 
   - [Detection model reports](https://gitlab.com/mosquitoscan/experiments-reports-detection-models)
@@ -236,25 +238,104 @@ This integrated approach enables comprehensive mosquito research, from data coll
 - **Extensible Provider System**: Seamlessly connect to data sources. A `HuggingFaceProvider` is built-in, with an easy-to-implement interface for adding more providers.
 - **Powerful Visualization**: Instantly visualize model outputs with built-in, configurable methods for drawing bounding boxes, classification labels, and segmentation masks.
 
-## Installation
+## Requirements
 
-It is recommended to use a modern package manager like `uv` or `pip`.
+### Hardware Requirements
+
+**Processor (CPU):** Any modern x86-64 CPU.
+
+**Memory (RAM):** Minimum 2 GB. 8 GB or more is recommended for processing large datasets or using more complex models.
+
+**Graphics Card (GPU):** An NVIDIA GPU with CUDA support is highly recommended for a significant performance increase in deep learning model operations, especially for detection and segmentation but not essential for classification (see [performance logs](https://github.com/iloncka-ds/culicidaelab/tree/main/tests/performance/performance_logs) ang [notebook](https://colab.research.google.com/drive/1JdfxSQmtrJND4mNUctOkY7Kt0yvbO0eV?usp=sharing)). For the SAM model, a GPU is virtually essential for acceptable performance. Minimum video memory is 2 GB; 4 GB or more is recommended.
+
+**Hard Drive:** At least 10 GB of free space to install the library, dependencies, download pre-trained models, and store processed data.
+
+### Software Requirements:
+  Operating Systems (tested):
+  - Windows 10/11
+  - Linux 22.04+
+  Software:
+  - for Linux needed libgl1 package to be installed
+  - Git
+  - Python 3.11
+  - uv 0.8.13
+  Python packages:
+  - PyTorch 2.3.1+
+  - FastAI 2.7.0 - 2.8.0
+  - Ultralytics 8.3.0+
+  - HuggingFace Hub 0.16.0+
+  - Datasets 4.0.0
+  - Pillow 9.4.0
+  - Pydantic 2.0.0+
+    Full list of requirements: [requirements.txt](https://github.com/iloncka-ds/culicidaelab/blob/main/requirements.txt)
+    Development requirements: [requirements-dev.txt](https://github.com/iloncka-ds/culicidaelab/blob/main/dev-requirements.txt)
+
+
+## Installation
+For general usage with Python scripts or in Google Colab, you can install `culicidaelab` using pip:
 
 ```bash
-# Using uv
-uv add culicidaelab
-
-# Or using pip
 pip install culicidaelab
 ```
+
+If needed run examples in the Jupyter notebooks in local environment:
+
+```bash
+pip install culicidaelab[examples]
+```
+
+If needed build documentation in local environment:
+
+```bash
+pip install culicidaelab[docs]
+```
+
+If needed run tests in local environment:
+
+```bash
+pip install culicidaelab[test]
+```
+
+To get a **development environment** running:
+
+  1. Clone the repository:
+
+     ```bash
+     git clone https://github.com/iloncka-ds/culicidaelab.git
+     cd culicidaelab
+     ```
+  2. Install dependencies with `uv` (recommended):
+
+     ```bash
+     uv venv -p 3.11
+     uv sync -p 3.11
+     uv cache clean
+     # This installs the library in editable mode and includes all dev tools
+     uv pip install -e .[dev]
+     ```
+     Or with `pip`:
+
+     ```bash
+     python -m venv .venv
+     pip install --upgrade pip
+     pip install -e .[dev]
+     pip cache purge
+     ```
+  3. Set up pre-commit hooks:
+
+     ```bash
+     pre-commit install
+     ```
+
+     This will run linters and formatters automatically on each commit to ensure code quality and consistency.
 
 ## Quick Start
 
 Here's how to classify the species of a mosquito in just a few lines of code. The library will automatically download the necessary model on the first run.
 
 ```python
-import cv2
-from culicidaelab.core import get_settings
+
+from culicidaelab import MosquitoClassifier, get_settings
 
 # 1. Get the central settings object
 # This loads all default configurations for the library.
@@ -262,21 +343,11 @@ settings = get_settings()
 
 # 2. Instantiate the classifier
 # The settings object knows how to configure the classifier.
-classifier = settings.instantiate_from_config("predictors.classifier")
+classifier = MosquitoClassifier(settings, load_model=True)
 
-# 3. Load an image
-# (Ensure you have an image file at 'path/to/your/image.jpg')
-try:
-    image = cv2.imread("path/to/your/image.jpg")
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-except (cv2.error, AttributeError):
-    print("Error: Could not load image. Please check the file path.")
-    exit()
-
-# 4. Make a prediction
+# 3. Make a prediction
 # The model is lazy-loaded (downloaded and loaded into memory) here.
-with classifier.model_context():
-    predictions = classifier.predict(image_rgb)
+predictions = classifier.predict("path/to/your/image.jpg")
 
 # 5. Print the results
 # The output is a list of (species_name, confidence_score) tuples.
@@ -289,24 +360,6 @@ for species, confidence in predictions[:3]:
 # - Aedes aegypti: 0.9876
 # - Aedes albopictus: 0.0112
 # - Culex quinquefasciatus: 0.0009
-```
-
-## Going Deeper
-
-`CulicidaeLab` can do much more. You can easily chain predictors, run batch predictions, and visualize results.
-
-```python
-# --- Continuing from the Quick Start ---
-
-# Use the detector to find the mosquito first
-detector = settings.instantiate_from_config("predictors.detector")
-with detector.model_context():
-    detections = detector.predict(image_rgb) # Returns [(x, y, w, h, conf)]
-
-# Visualize the detection results
-with detector.model_context():
-    viz_image = detector.visualize(image_rgb, detections)
-    cv2.imwrite("detection_result.png", cv2.cvtColor(viz_image, cv2.COLOR_RGB2BGR))
 ```
 
 ## Practical Applications
@@ -343,33 +396,9 @@ Contributions are what make the open-source community such an amazing place to l
 
 Please see our **[Contributing Guide](https://github.com/iloncka-ds/culicidaelab/blob/main/CONTRIBUTING.md)** for details on our code of conduct, development setup, and the pull request process.
 
-## Development Setup
-
-To get a development environment running:
-
-1. **Clone the repository**:
-
-   ```bash
-   git clone https://github.com/iloncka-ds/culicidaelab.git
-   cd culicidaelab
-   ```
-2. **Install dependencies with `uv` or `pip`**:
-
-   ```bash
-   # This installs the library in editable mode and includes all dev tools
-   uv pip install -e ".[dev]"
-   ```
-3. **Set up pre-commit hooks**:
-
-   ```bash
-   pre-commit install
-   ```
-
-   This will run linters and formatters automatically on each commit to ensure code quality and consistency.
-
 ## Acknowledgments
 
-CulicidaeLab development is  supported by a grant from the [**Foundation for Assistance to Small Innovative Enterprises (FASIE)** https://fasie.ru/](https://fasie.ru/)
+CulicidaeLab development is  supported by a grant from the [**Foundation for Assistance to Small Innovative Enterprises (FASIE)**](https://fasie.ru/)
 
 ## License
 
