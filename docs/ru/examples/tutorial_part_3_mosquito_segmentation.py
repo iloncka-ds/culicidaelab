@@ -15,7 +15,7 @@
 
 # %%
 # Установите библиотеку `culicidaelab`, если она еще не установлена
-# # !pip install -q culicidaelab
+# !pip install -q culicidaelab
 
 # %%
 import matplotlib.pyplot as plt
@@ -57,7 +57,7 @@ print(f"Форма маски сегментации: {seg_mask.shape}")
 print(f"Уникальные значения в маске: {np.unique(seg_mask)}")  # 0 - фон, 1 и выше - комар
 
 # Создаем цветное наложение для маски
-# Где маска равна 1 и выше (комар), делаем ее красной
+# Где значения в маске равны 1 и выше (комар), делаем ее красной
 overlay = np.zeros((*seg_mask.shape, 4), dtype=np.uint8)
 overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Красный цвет с 50% прозрачностью
 

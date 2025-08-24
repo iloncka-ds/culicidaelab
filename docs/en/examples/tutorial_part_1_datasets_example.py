@@ -25,10 +25,9 @@ to interact with the datasets defined in the library's configuration.
 # ### Prerequisites
 #
 # Before you start, make sure you have `culicidaelab` and other necessary libraries installed with code:
-#
-# ```bash
+
+# %%
 # %pip install culicidaelab requests matplotlib numpy
-# ```
 
 # %%
 # Standard library imports
@@ -233,13 +232,11 @@ except KeyError:
 # segmentation datasets. It contains a rich collection of images with corresponding
 # labels and bounding box information.
 #
-# Let's start by defining the repository ID and fetching some basic statistics.
+# Let's start by fetching some basic statistics.
+
 
 # %%
 # The repository ID for our source dataset on Hugging Face
-repo_id = "iloncka/mosquito_dataset_46_3139"
-
-
 def get_dataset_statistics(repo_id, config_name="default", split_name="train"):
     """Fetch detailed column statistics for a dataset split from the Hugging Face API."""
     api_url = (
@@ -467,8 +464,8 @@ custom_config_dir.mkdir(exist_ok=True)
 print(f"Created custom config directory at: ./{custom_config_dir.name}")
 
 # %% [markdown]
-# Next, create a `.yaml` file inside this directory. Your file must have a top-level
-# `datasets:` key. Under this key, you can add one or more named dataset configurations,
+# Next, create a `.yaml` file inside this directory. Your file must name
+# `datasets`, in this file you can define one or more named dataset configurations,
 # where each one follows the `DatasetConfig` structure we just inspected.
 #
 # **Example**: Let's add a configuration for a hypothetical `culex-pipiens-complex` dataset.
@@ -477,8 +474,6 @@ print(f"Created custom config directory at: ./{custom_config_dir.name}")
 # The file's stem will become the top-level key in the merged config.
 # To override the library's 'datasets' section, save the mapping directly
 custom_dataset_config = {
-    # Note: do NOT add a top-level 'datasets' key here; the filename
-    # will be used as the key in the merged config.
     "culex-pipiens-complex": {
         "name": "culex-pipiens-complex",
         "path": "culex_pipiens_complex",

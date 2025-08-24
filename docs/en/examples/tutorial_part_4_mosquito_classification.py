@@ -18,7 +18,7 @@ This guide will cover:
 
 # %%
 # Install the `culicidaelab` library if not already installed
-# # !pip install -q culicidaelab
+# !pip install -q culicidaelab
 
 # %% [markdown]
 # ## 1. Initialization and Setup
@@ -26,7 +26,7 @@ This guide will cover:
 # Our first step is to set up the necessary components. We will initialize:
 #
 # - **`settings`**: An object that holds all library configuration, such as
-#   model paths and confidence thresholds.
+#   model paths and hyperparameters.
 # - **`DatasetsManager`**: A helper class to download and manage the sample
 #   datasets used in this tutorial.
 # - **`MosquitoClassifier`**: The main class for our classification task. We'll
@@ -239,10 +239,9 @@ classifier.visualize_report(report)
 # %% [markdown]
 # ## 7. Batch Prediction for Efficiency
 #
-# If your goal is simply to classify many images (and not to evaluate
-# performance), using `predict_batch()` is much more efficient than looping
-# over `predict()`. It leverages the GPU to process images in parallel,
-# resulting in a significant speed-up.
+# If your goal is to classify many images using `predict_batch()` is much more efficient than looping
+# over `predict()`, if it leverages the GPU to process images in parallel,
+# results will be returned in a significant speed-up.
 
 # %%
 # We'll use the same small batch from our evaluation example

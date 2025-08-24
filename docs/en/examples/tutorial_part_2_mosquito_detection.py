@@ -16,7 +16,7 @@ library to perform object detection on images. We will cover:
 
 # %%
 # Install the `culicidaelab` library if not already installed
-# # !pip install -q culicidaelab
+# !pip install -q culicidaelab
 
 # %% [markdown]
 # ## 1. Initialization
@@ -92,7 +92,7 @@ else:
 #
 # The `evaluate` method allows you to compare a prediction against a ground truth.
 # This is useful for measuring the model's accuracy. The method returns several metrics,
-# including Average Precision (AP), which is a standard for object detection.
+# which are a standard for object detection.
 # Now let's evaluate the prediction against the actual ground truth from the dataset.
 
 # %%
