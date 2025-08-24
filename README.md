@@ -308,6 +308,8 @@ To get a **development environment** running:
 
      ```bash
      uv venv -p 3.11
+     source .venv/bin/activate
+    # On Windows: .venv\Scripts\activate
      uv sync -p 3.11
      uv cache clean
      # This installs the library in editable mode and includes all dev tools
@@ -317,6 +319,7 @@ To get a **development environment** running:
 
      ```bash
      python -m venv .venv
+     source .venv/bin/activate  # On Windows: .venv\Scripts\activate
      pip install --upgrade pip
      pip install -e .[dev]
      pip cache purge
