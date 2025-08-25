@@ -3,13 +3,13 @@
 Examples using ``numpy.unique``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-<div class="mkd-glr-thumbcontainer" tooltip="Это руководство демонстрирует, как использовать DatasetsManager в CulicidaeLab для взаимодейств...">
+<div class="mkd-glr-thumbcontainer" tooltip="This tutorial demonstrates how to use the DatasetsManager in CulicidaeLab to interact with the ...">
     <!--div class="figure align-default" id="id1"-->
-        <img alt="Управление и загрузка наборов данных" src="images\thumb\mkd_glr_tutorial_part_1_datasets_example_thumb.png" />
+        <img alt="Managing and Loading Datasets" src="images\thumb\mkd_glr_tutorial_part_1_datasets_example_thumb.png" />
         <p class="caption">
             <span class="caption-text">
                 <a class="reference internal" href="tutorial_part_1_datasets_example">
-                    <span class="std std-ref">Управление и загрузка наборов данных</span>
+                    <span class="std std-ref">Managing and Loading Datasets</span>
                 </a>
             </span>
             <!--a class="headerlink" href="#id1" title="Permalink to this image"></a-->
@@ -17,13 +17,13 @@ Examples using ``numpy.unique``
     <!--/div-->
 </div>
 
-<div class="mkd-glr-thumbcontainer" tooltip="Это руководство демонстрирует, как использовать библиотеку culicidaelab для выполнения сегмента...">
+<div class="mkd-glr-thumbcontainer" tooltip="This tutorial demonstrates how to use the culicidaelab library to perform mosquito segmentation...">
     <!--div class="figure align-default" id="id1"-->
-        <img alt="Руководство по сегментации комаров" src="images\thumb\mkd_glr_tutorial_part_3_mosquito_segmentation_thumb.png" />
+        <img alt="Mosquito Segmentation Tutorial" src="images\thumb\mkd_glr_tutorial_part_3_mosquito_segmentation_thumb.png" />
         <p class="caption">
             <span class="caption-text">
                 <a class="reference internal" href="tutorial_part_3_mosquito_segmentation">
-                    <span class="std std-ref">Руководство по сегментации комаров</span>
+                    <span class="std std-ref">Mosquito Segmentation Tutorial</span>
                 </a>
             </span>
             <!--a class="headerlink" href="#id1" title="Permalink to this image"></a-->

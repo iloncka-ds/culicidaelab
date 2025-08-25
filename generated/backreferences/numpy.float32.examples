@@ -3,13 +3,13 @@
 Examples using ``numpy.float32``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-<div class="mkd-glr-thumbcontainer" tooltip="Это руководство показывает, как использовать MosquitoDetector из библиотеки CulicidaeLab для вы...">
+<div class="mkd-glr-thumbcontainer" tooltip="This tutorial shows how to use the MosquitoDetector from the CulicidaeLab library to perform ob...">
     <!--div class="figure align-default" id="id1"-->
-        <img alt="Руководство по детекции комаров" src="images\thumb\mkd_glr_tutorial_part_2_mosquito_detection_thumb.png" />
+        <img alt="Mosquito Detection Tutorial" src="images\thumb\mkd_glr_tutorial_part_2_mosquito_detection_thumb.png" />
         <p class="caption">
             <span class="caption-text">
                 <a class="reference internal" href="tutorial_part_2_mosquito_detection">
-                    <span class="std std-ref">Руководство по детекции комаров</span>
+                    <span class="std std-ref">Mosquito Detection Tutorial</span>
                 </a>
             </span>
             <!--a class="headerlink" href="#id1" title="Permalink to this image"></a-->

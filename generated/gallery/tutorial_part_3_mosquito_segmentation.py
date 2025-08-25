@@ -1,21 +1,21 @@
 # %%
 """
-# Руководство по сегментации комаров
+# Mosquito Segmentation Tutorial
 
-Это руководство демонстрирует, как использовать библиотеку `culicidaelab`
-для выполнения сегментации комаров на изображениях. Мы рассмотрим:
+This tutorial demonstrates how to use the `culicidaelab` library
+to perform mosquito segmentation on images. We'll cover:
 
-1. Настройку модели сегментации
-2. Загрузку данных для сегментации из набора данных
-3. Выполнение сегментации
-4. Визуализацию результатов
-5. Оценку производительности с использованием истинных (эталонных) масок
+1. Setting up the segmentation model
+2. Loading segmentation data from the dataset
+3. Running segmentation
+4. Visualizing results
+5. Evaluating performance with ground truth masks
 
 """
 
 # %%
-# Установите библиотеку `culicidaelab`, если она еще не установлена
-# # !pip install -q culicidaelab
+# Install the `culicidaelab` library if not already installed
+# !pip install -q culicidaelab
 
 # %%
 import matplotlib.pyplot as plt
@@ -25,136 +25,136 @@ from culicidaelab import MosquitoSegmenter, MosquitoDetector
 from culicidaelab import DatasetsManager, get_settings
 
 # %% [markdown]
-# ## 1. Инициализация настроек и загрузка набора данных
+# ## 1. Initialize Settings and Load Dataset
 #
-# Сначала мы инициализируем наши настройки, создадим `MosquitoSegmenter` и загрузим набор данных для сегментации:
+# First, we'll initialize our settings, create MosquitoSegmenter and load the segmentation dataset:
 
 # %%
-# Получаем экземпляр настроек и инициализируем менеджер наборов данных
+# Get settings instance and initialize dataset manager
 settings = get_settings()
 manager = DatasetsManager(settings)
 
-# Загружаем набор данных для сегментации
+# Load segmentation dataset
 seg_data = manager.load_dataset("segmentation", split="train[:20]")
 
-# Инициализируем сегментатор и детектор
+# Initialize segmenter and detector
 segmenter = MosquitoSegmenter(settings=settings, load_model=True)
 detector = MosquitoDetector(settings=settings, load_model=True)
 
 # %% [markdown]
-# ## 2. Изучение образца для сегментации
+# ## 2. Inspect a Segmentation Sample
 #
-# Давайте изучим образец из набора данных для сегментации, чтобы понять его структуру:
+# Let's examine a sample from the segmentation dataset to understand its structure:
 
 # %%
-# Изучаем образец для сегментации
+# Inspect a segmentation sample
 seg_sample = seg_data[0]
 seg_image = seg_sample["image"]
-seg_mask = np.array(seg_sample["label"])  # Преобразуем маску в массив numpy
+seg_mask = np.array(seg_sample["label"])  # Convert mask to numpy array
 
-print(f"Размер изображения: {seg_image.size}")
-print(f"Форма маски сегментации: {seg_mask.shape}")
-print(f"Уникальные значения в маске: {np.unique(seg_mask)}")  # 0 - фон, 1 и выше - комар
+print(f"Image size: {seg_image.size}")
+print(f"Segmentation mask shape: {seg_mask.shape}")
+print(f"Unique values in mask: {np.unique(seg_mask)}")  # 0 is background, 1 and above is mosquito
 
-# Создаем цветное наложение для маски
-# Где маска равна 1 и выше (комар), делаем ее красной
+# Create a colored overlay for the mask
+# Where the mask is 1 and above (mosquito), we make it red
 overlay = np.zeros((*seg_mask.shape, 4), dtype=np.uint8)
-overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Красный цвет с 50% прозрачностью
+overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Red color with 50% opacity
 
 # %% [markdown]
-# ## 3. Запуск сегментации на изображении из набора данных
+# ## 3. Run Segmentation on Dataset Image
 #
-# Теперь мы можем запустить модель сегментации на нашем изображении из набора данных:
+# Now we can run the segmentation model on our dataset image:
 
 # %%
-# Запускаем детекцию для получения ограничивающих рамок
+# Run detection to get bounding boxes
 detections = detector.predict(seg_image)
 
-# Запускаем сегментацию с рамками детекции
+# Run segmentation with detection boxes
 predicted_mask = segmenter.predict(seg_image, detection_boxes=np.array(detections))
 
-# Создаем визуализации
+# Create visualizations
 annotated_image = detector.visualize(seg_image, detections)
 segmented_image = segmenter.visualize(annotated_image, predicted_mask)
 
 # %% [markdown]
-# ## 4. Визуализация результатов со сравнением с истинной маской
+# ## 4. Visualize Results with Ground Truth Comparison
 #
-# Давайте визуализируем результаты сегментации рядом с истинной (эталонной) маской:
+# Let's visualize the segmentation results alongside the ground truth mask:
 
 # %%
 plt.figure(figsize=(20, 10))
 
-# Исходное изображение
+# Original image
 plt.subplot(2, 4, 1)
 plt.imshow(seg_image)
 plt.axis("off")
-plt.title("Исходное изображение")
+plt.title("Original Image")
 
-# Истинная маска
+# Ground truth mask
 plt.subplot(2, 4, 2)
 plt.imshow(seg_mask, cmap="gray")
 plt.axis("off")
-plt.title("Истинная маска")
+plt.title("Ground Truth Mask")
 
-# Наложение истинной маски
+# Ground truth overlay
 plt.subplot(2, 4, 3)
 plt.imshow(seg_image)
 plt.imshow(overlay, alpha=0.5)
 plt.axis("off")
-plt.title("Наложение истинной маски")
+plt.title("Ground Truth Overlay")
 
-# Детекции
+# Detections
 plt.subplot(2, 4, 4)
 plt.imshow(annotated_image)
 plt.axis("off")
-plt.title("Обнаруженные комары")
+plt.title("Detected Mosquitoes")
 
-# Предсказанная маска
+# Predicted mask
 plt.subplot(2, 4, 5)
 plt.imshow(predicted_mask, cmap="gray")
 plt.axis("off")
-plt.title("Предсказанная маска")
+plt.title("Predicted Mask")
 
-# Наложение предсказанной маски
+# Predicted overlay
 predicted_overlay = np.zeros((*predicted_mask.shape, 4), dtype=np.uint8)
-predicted_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Зеленый для предсказаний
+predicted_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Green for predictions
 plt.subplot(2, 4, 6)
 plt.imshow(seg_image)
 plt.imshow(predicted_overlay, alpha=0.5)
 plt.axis("off")
-plt.title("Наложение предсказанной маски")
+plt.title("Predicted Overlay")
 
-# Комбинированное наложение (истинная маска + предсказания)
+# Combined overlay (ground truth + predictions)
 combined_overlay = np.zeros((*predicted_mask.shape, 4), dtype=np.uint8)
-combined_overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Красный для истинной маски
-combined_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Зеленый для предсказаний
+combined_overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Red for ground truth
+combined_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Green for predictions
 plt.subplot(2, 4, 7)
 plt.imshow(seg_image)
 plt.imshow(combined_overlay, alpha=0.5)
 plt.axis("off")
-plt.title("Комбинированное наложение\n(Красный: Истинная, Зеленый: Предск.)")
+plt.title("Combined Overlay\n(Red: GT, Green: Pred)")
 
-# Конечное сегментированное изображение
+# Final segmented image
 plt.subplot(2, 4, 8)
 plt.imshow(segmented_image)
 plt.axis("off")
-plt.title("Конечное сегментированное изображение")
+plt.title("Final Segmented Image")
 
 plt.tight_layout()
 plt.show()
 
 # %% [markdown]
-# ## 5. Оценка качества сегментации
+# ## 5. Evaluate Segmentation Performance
 #
-# Давайте оценим результаты сегментации, используя истинную маску:
+# Let's evaluate the segmentation results using the ground truth mask:
 
 # %%
 metrics = segmenter.evaluate(
     prediction=predicted_mask,
     ground_truth=seg_mask,
 )
-print("Метрики оценки сегментации:")
+print("Segmentation Evaluation Metrics:")
 for key, value in metrics.items():
     if isinstance(value, float):
         print(f"  {key}: {value:.4f}")

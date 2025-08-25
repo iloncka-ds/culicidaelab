@@ -1,149 +1,149 @@
 # %%
 """
-# Классификация видов комаров
+# Classifying Mosquito Species
 
-Это руководство демонстрирует, как использовать `MosquitoClassifier` из библиотеки CulicidaeLab
-для определения видов комаров по изображениям. Мы пройдем через весь процесс,
-от загрузки модели до оценки ее производительности на пакете данных.
+This tutorial demonstrates how to use the `MosquitoClassifier` from the CulicidaeLab
+library to identify mosquito species from images. We will walk through the entire
+process, from loading the model to evaluating its performance on a batch of data.
 
-Это руководство охватывает:
+This guide will cover:
 
-- **Инициализация**: Как загрузить настройки и предварительно обученную модель.
-- **Обработка данных**: Как использовать `DatasetsManager` для получения образцов данных.
-- **Предсказание для одного изображения**: Как классифицировать одно изображение комара.
-- **Визуализация**: Как интерпретировать и визуализировать предсказания модели.
-- **Пакетная оценка**: Как измерить точность модели на наборе тестовых изображений.
-- **Отчетность**: Как сгенерировать и визуализировать всесторонний отчет о производительности.
+- **Initialization**: How to load the settings and the pre-trained model.
+- **Data Handling**: How to use the `DatasetsManager` to fetch sample data.
+- **Single Image Prediction**: How to classify a single mosquito image.
+- **Visualization**: How to interpret and visualize the model's predictions.
+- **Batch Evaluation**: How to measure the model's accuracy on a set of test images.
+- **Reporting**: How to generate and visualize a comprehensive performance report.
 """
 
 # %%
-# Установите библиотеку `culicidaelab`, если она еще не установлена
+# Install the `culicidaelab` library if not already installed
 # !pip install -q culicidaelab
 
 # %% [markdown]
-# ## 1. Инициализация и настройка
+# ## 1. Initialization and Setup
 #
-# Наш первый шаг — настройка необходимых компонентов. Мы инициализируем:
+# Our first step is to set up the necessary components. We will initialize:
 #
-# - **`settings`**: Объект, который содержит всю конфигурацию библиотеки, такую как
-#   пути к моделям и пороги уверенности.
-# - **`DatasetsManager`**: Вспомогательный класс для загрузки и управления образцами
-#   наборов данных, используемых в этом руководстве.
-# - **`MosquitoClassifier`**: Основной класс для нашей задачи классификации. Мы передадим
-#   `load_model=True`, чтобы убедиться, что веса предварительно обученной модели будут загружены
-#   в память немедленно.
+# - **`settings`**: An object that holds all library configuration, such as
+#   model paths and hyperparameters.
+# - **`DatasetsManager`**: A helper class to download and manage the sample
+#   datasets used in this tutorial.
+# - **`MosquitoClassifier`**: The main class for our classification task. We'll
+#   pass `load_model=True` to ensure the pre-trained model weights are downloaded
+#   and loaded into memory immediately.
 
 # %%
-# Импорт необходимых библиотек
+# Import necessary libraries
 import matplotlib.pyplot as plt
 
-# Импорт требуемых классов из библиотеки CulicidaeLab
+# Import the required classes from the CulicidaeLab library
 from culicidaelab import (
     DatasetsManager,
     MosquitoClassifier,
     get_settings,
 )
 
-# Получаем экземпляр настроек библиотеки по умолчанию
+# Get the default library settings instance
 settings = get_settings()
 
-# Инициализируем сервисы, необходимые для управления и загрузки данных
+# Initialize the services needed to manage and download data
 
 manager = DatasetsManager(settings)
 
-# Создаем экземпляр классификатора и загружаем модель.
-# При первом запуске это может занять некоторое время, так как будут загружаться веса модели.
-print("Инициализация MosquitoClassifier и загрузка модели...")
+# Instantiate the classifier and load the model.
+# This might take a moment on the first run as it downloads the model weights.
+print("Initializing MosquitoClassifier and loading model...")
 classifier = MosquitoClassifier(settings, load_model=True)
-print("Модель успешно загружена.")
+print("Model loaded successfully.")
 
 # %% [markdown]
-# ### Просмотр классов модели
+# ### Inspecting Model Classes
 #
-# Прежде чем начать предсказания, полезно знать, какие виды модель была
-# обучена распознавать. Мы можем легко получить доступ к этой информации из объекта
-# настроек.
+# Before we start predicting, it's useful to know which species the model was
+# trained to recognize. We can easily access this information from the settings
+# object.
 
 # %%
 species_map = settings.species_config.species_map
-print(f"--- Модель может распознавать {len(species_map)} классов ---")
-# Выведем первые 5 для краткости
+print(f"--- The model can recognize {len(species_map)} classes ---")
+# Print the first 5 for brevity
 for idx, name in list(species_map.items())[:5]:
-    print(f"  Индекс класса {idx}: {name}")
+    print(f"  Class Index {idx}: {name}")
 print("  ...")
 
 # %% [markdown]
-# ## 2. Загрузка тестового набора данных
+# ## 2. Loading the Test Dataset
 #
-# В этом руководстве мы будем использовать встроенный тестовый набор данных, предоставляемый библиотекой.
-# `DatasetsManager` упрощает загрузку и использование этих данных. Набор данных
-# содержит изображения и их соответствующие правильные метки, которые мы будем использовать для
-# предсказания и последующей оценки.
+# For this tutorial, we will use a built-in test dataset provided by the library.
+# The `DatasetsManager` makes it simple to download and load this data. The dataset
+# contains images and their corresponding correct labels, which we will use for
+# prediction and later for evaluation.
 
 # %%
-print("\n--- Загрузка тестовой части ('test' split) набора данных 'classification' ---")
+print("\n--- Loading the 'classification' dataset's 'test' split ---")
 classification_test_data = manager.load_dataset("classification", split="test")
-print("Тестовый набор данных успешно загружен!")
-print(f"Количество образцов в тестовом наборе данных: {len(classification_test_data)}")
+print("Test dataset loaded successfully!")
+print(f"Number of samples in the test dataset: {len(classification_test_data)}")
 
-# Давайте выберем один образец для работы.
-# Образец представляет собой словарь, содержащий изображение и его истинную метку.
+# Let's select one sample to work with.
+# The sample is a dictionary containing the image and its ground truth label.
 sample_index = 287
 sample = classification_test_data[sample_index]
 image = sample["image"]
 ground_truth_label = sample["label"]
 
-print(f"\nИстинная метка выбранного образца: '{ground_truth_label}'")
+print(f"\nSelected sample's ground truth label: '{ground_truth_label}'")
 
-# Отображаем входное изображение
+# Display the input image
 plt.figure(figsize=(6, 6))
 plt.imshow(image)
-plt.title(f"Входное изображение\n(Истинная метка: {ground_truth_label})")
+plt.title(f"Input Image\n(Ground Truth: {ground_truth_label})")
 plt.axis("off")
 plt.show()
 
 
 # %% [markdown]
-# ## 3. Классификация одного изображения
+# ## 3. Classifying a Single Image
 #
-# Теперь мы будем использовать классификатор для предсказания вида комара на нашем
-# выбранном изображении. Метод `predict()` принимает изображение (в виде массива NumPy,
-# пути к файлу или объекта PIL Image) и возвращает список предсказаний, отсортированный
-# от наиболее до наименее уверенного.
+# Now we'll use the classifier to predict the species of the mosquito in our
+# selected image. The `predict()` method takes an image (as a NumPy array, file
+# path, or PIL Image) and returns a list of predictions, sorted from most to
+# least confident.
 
 # %%
-# Запускаем классификацию на нашем образце изображения
+# Run the classification on our sample image
 predictions = classifier.predict(image)
 
-# Выводим топ-5 предсказаний в читаемом формате
-print("--- Топ-5 предсказаний ---")
+# Print the top 5 predictions in a readable format
+print("--- Top 5 Predictions ---")
 for species, probability in predictions[:5]:
     print(f"{species}: {probability:.2%}")
 
 # %% [markdown]
-# ## 4. Визуализация и интерпретация результатов
+# ## 4. Visualizing and Interpreting the Results
 #
-# Необработанный список предсказаний полезен, но визуализации делают результаты
-# гораздо более понятными. Мы создадим два графика:
+# A raw list of predictions is useful, but visualizations make the results much
+# easier to understand. We'll create two plots:
 #
-# 1.  **Гистограмма**: Показывает уверенность модели для каждого возможного
-#     вида. Это отлично подходит не только для просмотра лучшего предсказания, но и для
-#     того, чтобы увидеть, какие другие виды рассматривала модель.
-# 2.  **Композитное изображение**: Использует встроенный метод `visualize()` для создания
-#     аккуратного изображения, которое отображает лучшие предсказания рядом с входным изображением.
+# 1.  **A Bar Plot**: This shows the model's confidence for every possible
+#     species. It's great for seeing not just the top prediction, but also which
+#     other species the model considered.
+# 2.  **A Composite Image**: This uses the built-in `visualize()` method to create
+#     a clean image that displays the top predictions alongside the input image.
 
 # %%
-# Создаем гистограмму для визуализации вероятностей для всех видов
+# Create a bar plot to visualize the probabilities for all species
 plt.figure(figsize=(10, 8))
 
-# Предсказания уже отсортированы, поэтому мы можем их сразу построить
+# The predictions are already sorted, so we can plot them directly
 species_names = [p[0] for p in predictions]
 probabilities = [p[1] for p in predictions]
 
-# Мы развернем списки (`[::-1]`), чтобы самая высокая вероятность была вверху
+# We'll reverse the lists (`[::-1]`) so the highest probability is at the top
 bars = plt.barh(species_names[::-1], probabilities[::-1])
 
-# Выделяем столбцы, которые соответствуют нашему порогу уверенности
+# Highlight the bars that meet our confidence threshold
 conf_threshold = settings.get_config("predictors.classifier.confidence")
 for bar in bars:
     if bar.get_width() >= conf_threshold:
@@ -151,65 +151,65 @@ for bar in bars:
     else:
         bar.set_color("lightgray")
 
-# Добавляем контрольную линию для порога уверенности
+# Add a reference line for the confidence threshold
 plt.axvline(
     x=conf_threshold,
     color="red",
     linestyle="--",
-    label=f"Порог уверенности ({conf_threshold:.0%})",
+    label=f"Confidence Threshold ({conf_threshold:.0%})",
 )
-plt.xlabel("Присвоенная вероятность")
-plt.title("Вероятности классификации видов")
+plt.xlabel("Assigned Probability")
+plt.title("Species Classification Probabilities")
 plt.legend()
 plt.tight_layout()
 plt.show()
 
 # %%
-# Теперь давайте используем встроенный визуализатор для аккуратного представления
+# Now, let's use the built-in visualizer for a clean presentation
 annotated_image = classifier.visualize(image, predictions)
 
-# Отображаем итоговое аннотированное изображение
+# Display the final annotated image
 plt.figure(figsize=(10, 6))
 plt.imshow(annotated_image)
-plt.title("Результат классификации")
+plt.title("Classification Result")
 plt.axis("off")
 plt.show()
 
 # %% [markdown]
-# ## 5. Оценка производительности модели на пакете данных
+# ## 5. Evaluating Model Performance on a Batch
 #
-# Хотя классификация одного изображения полезна, более строгая проверка включает
-# оценку производительности модели на всем наборе данных. Метод
-# `evaluate_batch()` предназначен для этого. Он обрабатывает пакет
-# изображений и их соответствующие истинные метки, а затем вычисляет агрегированные
-# метрики.
+# While classifying a single image is useful, a more rigorous test involves
+# evaluating the model's performance across an entire dataset. The
+# `evaluate_batch()` method is designed for this. It processes a batch of
+# images and their corresponding ground truth labels, then computes aggregate
+# metrics.
 #
-# Результатом является словарь `report`, содержащий ключевые метрики, такие как средняя
-# точность и **матрица ошибок**, которая точно показывает, где модель
-# преуспевает или ошибается.
+# The result is a `report` dictionary containing key metrics like mean
+# accuracy and a **confusion matrix**, which shows exactly where the model is
+# succeeding or failing.
 
 # %%
-# Для примера оценим первые 30 изображений из тестового набора
+# Let's evaluate the first 30 images from the test set for this example
 num_samples_to_evaluate = 30
 batch_samples = classification_test_data.select(range(num_samples_to_evaluate))
 batch_images = [sample["image"] for sample in batch_samples]
 ground_truths = [sample["label"] for sample in batch_samples]
 
-print(f"\n--- Оценка пакета из {len(batch_images)} изображений ---")
+print(f"\n--- Evaluating a batch of {len(batch_images)} images ---")
 
-# Запускаем пакетную оценку.
-# Метод может принимать изображения и истинные метки отдельно, или он может
-# выполнять предсказания внутренне, если вы предоставите только изображения.
+# Run the batch evaluation.
+# The method can take images and ground truths separately, or it can
+# run predictions internally if you only provide the images.
 report = classifier.evaluate_batch(
     input_data_batch=batch_images,
     ground_truth_batch=ground_truths,
     show_progress=True,
 )
 
-print("\n--- Сводка отчета об оценке ---")
+print("\n--- Evaluation Report Summary ---")
 for key, value in report.items():
     if key != "confusion_matrix":
-        # Проверяем, является ли значение числом с плавающей точкой, перед форматированием
+        # Check if value is a float before formatting
         if isinstance(value, float):
             print(f"  {key}: {value:.4f}")
         else:
@@ -217,48 +217,47 @@ for key, value in report.items():
 
 
 # %% [markdown]
-# ## 6. Визуализация отчета об оценке
+# ## 6. Visualizing the Evaluation Report
 #
-# Сгенерированный словарь `report` содержит много информации, но
-# матрица ошибок лучше всего воспринимается визуально. Метод `visualize_report()`
-# создает комплексный график, который суммирует результаты оценки.
+# The generated `report` dictionary contains a wealth of information, but the
+# confusion matrix is best understood visually. The `visualize_report()` method
+# creates a comprehensive plot that summarizes the evaluation results.
 #
-# **Как читать матрицу ошибок:**
-# - Каждая строка представляет *фактический* (истинный) вид.
-# - Каждый столбец представляет вид, который *предсказала модель*.
-# - Диагональ (от верхнего левого до нижнего правого угла) показывает количество правильных
-#   предсказаний для каждого класса.
-# - Числа вне диагонали указывают на неверные классификации. Например, число
-#   в строке «A» и столбце «B» означает, что изображение вида A было неверно
-#   классифицировано как вид B.
+# **How to read the confusion matrix:**
+# - Each row represents the *actual* ground truth species.
+# - Each column represents the species that the *model predicted*.
+# - The diagonal (from top-left to bottom-right) shows the number of correct
+#   predictions for each class.
+# - Off-diagonal numbers indicate misclassifications. For example, a number
+#   in row "A" and column "B" means an image of species A was incorrectly
+#   classified as species B.
 
 # %%
-# Передаем словарь отчета в функцию визуализации
+# Pass the report dictionary to the visualization function
 classifier.visualize_report(report)
 
 # %% [markdown]
-# ## 7. Пакетное предсказание для эффективности
+# ## 7. Batch Prediction for Efficiency
 #
-# Если ваша цель — просто классифицировать много изображений (а не оценивать
-# производительность), использование `predict_batch()` гораздо эффективнее, чем
-# итерация по `predict()`. Этот метод использует GPU для параллельной обработки изображений,
-# что приводит к значительному ускорению.
+# If your goal is to classify many images using `predict_batch()` is much more efficient than looping
+# over `predict()`, if it leverages the GPU to process images in parallel,
+# results will be returned in a significant speed-up.
 
 # %%
-# Мы будем использовать тот же небольшой пакет из нашего примера оценки
+# We'll use the same small batch from our evaluation example
 print(
-    f"\n--- Классификация пакета из {len(batch_images)} изображений с помощью predict_batch ---",
+    f"\n--- Classifying a batch of {len(batch_images)} images with predict_batch ---",
 )
 batch_predictions = classifier.predict_batch(batch_images, show_progress=True)
 
-print("\n--- Результаты пакетной классификации (Лучшее предсказание для каждого изображения) ---")
+print("\n--- Batch Classification Results (Top prediction for each image) ---")
 for i, single_image_preds in enumerate(batch_predictions):
-    if single_image_preds:  # Проверяем, что список предсказаний не пуст
+    if single_image_preds:  # Check if the prediction list is not empty
         top_pred_species = single_image_preds[0][0]
         top_pred_conf = single_image_preds[0][1]
         print(
-            f"  - Изображение {i+1} (Истинная метка: {ground_truths[i]}): "
-            f"Предсказан '{top_pred_species}' с уверенностью {top_pred_conf:.2%}.",
+            f"  - Image {i+1} (GT: {ground_truths[i]}): "
+            f"Predicted '{top_pred_species}' with {top_pred_conf:.2%} confidence.",
         )
     else:
-        print(f"  - Изображение {i+1} (Истинная метка: {ground_truths[i]}): Предсказание не удалось.")
+        print(f"  - Image {i+1} (GT: {ground_truths[i]}): Prediction failed.")
