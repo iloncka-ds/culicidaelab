@@ -1,3 +1,4 @@
-[bandit]
-exclude = ./.venv,./tests
-skips = B104,B101,B311,B106,B105
+exclude:
+  - ./.venv
+  - ./tests*
+skips: [B104, B101, B311, B106, B105]
