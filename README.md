@@ -7,11 +7,7 @@
 </div>
 
 <p align="center">
-  <a href="https://pypi.org/project/culicidaelab/"><img alt="PyPI" src="https://img.shields.io/pypi/v/culicidaelab?color=blue"></a>
-
-  <a href="https://github.com/astral-sh/ruff"><img  alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
-
-  [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/iloncka-ds/culicidaelab)
+  <a href="https://pypi.org/project/culicidaelab/"><img alt="PyPI" src="https://img.shields.io/pypi/v/culicidaelab?color=blue"></a>  <a href="https://github.com/astral-sh/ruff"><img  alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>  [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/iloncka-ds/culicidaelab)
 </p>
 
 ---
@@ -182,18 +178,22 @@ This integrated approach enables comprehensive mosquito research, from data coll
 
 **Hard Drive:** At least 10 GB of free space to install the library, dependencies, download pre-trained models, and store processed data.
 
-### Software Requirements:
+### Software Requirements
 
-  Operating Systems (tested):
+Operating Systems (tested):
 
 - Windows 10/11
 - Linux 22.04+
-  Software:
+
+Software:
+
 - for Linux needed libgl1 package to be installed
 - Git
 - Python 3.11
 - uv 0.8.13
-  Python packages:
+
+Python packages:
+
 - PyTorch 2.3.1+
 - FastAI 2.7.0 - 2.8.0
 - Ultralytics 8.3.0+
@@ -201,8 +201,7 @@ This integrated approach enables comprehensive mosquito research, from data coll
 - Datasets 4.0.0
 - Pillow 9.4.0
 - Pydantic 2.0.0+
-  Full list of requirements: [requirements.txt](https://github.com/iloncka-ds/culicidaelab/blob/main/requirements.txt)
-  Development requirements: [requirements-dev.txt](https://github.com/iloncka-ds/culicidaelab/blob/main/dev-requirements.txt)
+For full list of dependencies, see the [pyproject.toml](https://github.com/iloncka-ds/culicidaelab/blob/main/pyproject.toml) file.
 
 ## Installation
 
@@ -234,14 +233,12 @@ To get a **development environment** running:
 
 1. Clone the repository:
 
-
 ```bash
 git clone https://github.com/iloncka-ds/culicidaelab.git
 cd culicidaelab
 ```
 
 2. Install dependencies with `uv` (recommended):
-
 
 ```bash
   uv venv -p 3.11
@@ -253,7 +250,8 @@ cd culicidaelab
   # This installs the library in editable mode and includes all dev tools
   uv pip install -e .[dev]
 ```
-    Or with `pip`:
+
+  Or with `pip`:
 
 ```bash
   python -m venv .venv
@@ -262,13 +260,14 @@ cd culicidaelab
   pip install -e .[dev]
   pip cache purge
 ```
+
   3. Set up pre-commit hooks:
 
 ```bash
 pre-commit install
 ```
 
-    This will run linters and formatters automatically on each commit to ensure code quality and consistency.
+  This will run linters and formatters automatically on each commit to ensure code quality and consistency.
 
 ## Quick Start
 
