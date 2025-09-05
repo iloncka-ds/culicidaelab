@@ -7,7 +7,8 @@
 </div>
 
 <p align="center">
-  <a href="https://pypi.org/project/culicidaelab/"><img alt="PyPI" src="https://img.shields.io/pypi/v/culicidaelab?color=blue"></a>  <a href="https://github.com/astral-sh/ruff"><img  alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>  [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/iloncka-ds/culicidaelab)
+  <a href="https://pypi.org/project/culicidaelab/"><img alt="PyPI" src="https://img.shields.io/pypi/v/culicidaelab?color=blue"></a>  <a href="https://github.com/astral-sh/ruff"><img  alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>  <a href="https://deepwiki.com/iloncka-ds/culicidaelab"><img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg"></a>
+
 </p>
 
 ---
