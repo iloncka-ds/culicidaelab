@@ -1,13 +1,15 @@
 name: ci
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - master
       - main
 permissions:
   contents: write
 jobs:
-  deploy:
+  doc_deploy:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
