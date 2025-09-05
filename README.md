@@ -202,6 +202,7 @@ Python packages:
 - Datasets 4.0.0
 - Pillow 9.4.0
 - Pydantic 2.0.0+
+
 For full list of dependencies, see the [pyproject.toml](https://github.com/iloncka-ds/culicidaelab/blob/main/pyproject.toml) file.
 
 ## Installation
