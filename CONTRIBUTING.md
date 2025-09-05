@@ -96,7 +96,7 @@ We use a suite of tools to maintain code quality. Your `pre-commit` setup handle
 
 To ensure your changes haven't introduced any regressions, please run the full test suite using `pytest`.
 ```bash
-pytest
+pytest tests
 ```
 All tests should pass before you submit a pull request.
 
@@ -106,9 +106,11 @@ Good documentation is as important as good code. If you add or modify a feature,
 
 You can preview your changes locally by running:
 ```bash
-mkdocs serve
+mkdocs serve --config-file=mkdocs.en.yml --clean
+# or
+mkdocs serve --config-file=mkdocs.ru.yml --clean
 ```
-This will start a local server, and you can view the documentation site in your browser at `http://127.0.0.1:8000`.
+This will start a local server, and you can view the documentation site in your browser at `http://127.0.0.1:8000/culicidaelab/en` and `http://127.0.0.1:8000/culicidaelab/ru` corresponding to the English and Russian versions.
 
 ## Submitting a Pull Request
 
