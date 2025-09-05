@@ -9,8 +9,9 @@
 <p align="center">
   <a href="https://pypi.org/project/culicidaelab/"><img alt="PyPI" src="https://img.shields.io/pypi/v/culicidaelab?color=blue"></a>
 
-<a href="#">
-  <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff" /></a>
+  <a href="https://github.com/astral-sh/ruff"><img  alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
+
+  [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/iloncka-ds/culicidaelab)
 </p>
 
 ---
@@ -22,177 +23,94 @@
 ```mermaid
 flowchart TD
 
-subgraph L0 [" "]
-
-    %% Define layers with subgraphs
-
-    subgraph L1 ["Data Layer"]
-
-        DS1["🦟 mosquito_dataset_46_3139<br/>Base Diversity Dataset<br/>(46 species, 3139 unique images)<br/>📄 CC-BY-SA-4.0"]
-
-        DS2["📊 mosquito-species-<br/>classification-dataset<br/>📄 CC-BY-SA-4.0"]
-
-        DS3["🔍 mosquito-species-<br/>detection-dataset<br/>📄 CC-BY-SA-4.0"]
-
-        DS4["✂️ mosquito-species-<br/>segmentation-dataset<br/>📄 CC-BY-SA-4.0"]
-
-    end
-
-
-
-    subgraph L2 ["AI Model Layer"]
-
-        subgraph M_COLLECTION ["Top-5 Model Collection"]
-
-            M4["📊 exp_7_new_bg_simple-subs_1_v_5<br/>pvt_v2_b0.in1k_ep_60<br/>(Classification)<br/>📄 Apache 2.0"]
-
-        end
-		subgraph M_DEFAULT ["Top-1 Models used as default in 'culicidaelab'"]
-        M1["📊 culico-net-cls-v1<br/>(Classification)<br/>📄 Apache 2.0"]
-
-        M2["🔍 culico-net-det-v1<br/>(Detection)<br/>📄 AGPL-3.0"]
-
-        M3["✂️ culico-net-segm-v1-nano<br/>(Segmentation)<br/>📄 Apache 2.0"]
-		end
-    end
-
-
-
-    subgraph L3 ["Application Layer"]
-
-        APP1["🐍 culicidaelab<br/>Python Library<br/>(Core ML functionality) <br/>📄 AGPL-3.0"]
-
-        APP2["🌐 culicidaelab-server<br/>Web Application<br/>(API services)<br/>📄 AGPL-3.0"]
-
-        APP3["📸 culicidaelab-mobile<br/>Mobile Application<br/><br/>📄 AGPL-3.0"]
-
-    end
-
-
-
-    subgraph L4 ["API Service Layer"]
-
-        S1["🗲 Prediction Service<br/>(ML inference)"]
-
-        S2["💾 Observation Service<br/>(Data storage & retrieval)"]
-
-        S3["🗺️ Map Service<br/>(Geospatial visualization)"]
-
-        S4["🦟 Mosquito Gallery Service<br/>"]
-       
-        S5["💊 Diseases Gallery Service<br/>"]
-
-    end
-
-  end
-
-   
-
-    %% Dataset derivation and training flows
-
-    DS1 -.->|"derives"| DS2
-
-    DS1 -.->|"derives"| DS3
-
-    DS1 -.->|"derives"| DS4
-
-    DS2 -->|"used for train"| M1
-
-    DS3 -->|"used for train"| M2
-
-    DS4 -->|"used for train"| M3
-
-    DS2 -->|"used for train"| M4
-
-
-
-    %% Model integration
-
-    M1 -->|"integrated into"| APP1
-
-    M2 -->|"integrated into"| APP1
-
-    M3 -->|"integrated into"| APP1
-
-    M4 -->|"integrated into"| APP3
-
-
-
-    %% Data source for gallery
-
-    DS1 -->|"provides photos"| APP2
-	  DS1 -->|"provides photos"| APP3
-
-
-    %% Library to server integration
-
-    APP1 -->|"powers"| APP2
-
-
-    %% Service provisioning
-
-    APP2 -->|"hosts"| S1
-
-    APP2 -->|"hosts"| S2
-
-    APP2 -->|"hosts"| S3
-
-    APP2 -->|"hosts"| S4
-
-	  APP2 -->|"hosts"| S5
-
-    %% Mobile app service consumption
-
-    APP3 <-->|"API calls"| S1
-
-    APP3 <-->|"API calls"| S2
-
-    APP3 -->|"WebView"| S3
-
-
-
-    %% Styling
-
-    classDef dataLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-
-    classDef modelLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-
-    classDef appLayer fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
-
-    classDef serviceLayer fill:#fff3e0,stroke:#f57c00,stroke-width:2px
-   
-    classDef collections fill:#f4dbf8,stroke:#9b3ac5,stroke-width:1px,stroke-dasharray:5,5	 
-
-
-
-    classDef dataset fill:#bbdefb,stroke:#1565c0,stroke-width:2px
-
-    classDef model fill:#e1bee7,stroke:#8e24aa,stroke-width:2px
-
-    classDef application fill:#c8e6c9,stroke:#43a047,stroke-width:2px
-
-    classDef service fill:#ffe0b2,stroke:#fb8c00,stroke-width:2px   
-
-
-
-    class L1 dataLayer
-
-    class L2 modelLayer
-
-    class L3 appLayer
-
-    class L4 serviceLayer
-   
-	  class L5 collections
-   
-    class DS1,DS2,DS3,DS4 dataset
-
-    class M1,M2,M3,M4 model
-
-    class APP1,APP2,APP3 application
-
-    class S1,S2,S3,S4,S5 service
-
+    %% Define layers with subgraphs
+    subgraph L1 ["Data Layer"]
+        DS1["🦟 mosquito_dataset_46_3139<br/>Base Diversity Dataset<br/>(46 species, 3139 unique images)<br/>📄 CC-BY-SA-4.0"]
+        DS2["📊 mosquito-species-<br/>classification-dataset<br/>📄 CC-BY-SA-4.0"]
+        DS3["🔍 mosquito-species-<br/>detection-dataset<br/>📄 CC-BY-SA-4.0"]
+        DS4["✂️ mosquito-species-<br/>segmentation-dataset<br/>📄 CC-BY-SA-4.0"]
+    end
+
+    subgraph L2 ["AI Model Layer"]
+        subgraph M_COLLECTION ["Top-5 Model Collection"]
+            M4["📊 exp_7_new_bg_simple-subs_1_v_5<br/>pvt_v2_b0.in1k_ep_60<br/>(Classification)<br/>📄 Apache 2.0"]
+        end
+        subgraph M_DEFAULT ["Top-1 Models used as default in 'culicidaelab'"]
+            M1["📊 culico-net-cls-v1<br/>(Classification)<br/>📄 Apache 2.0"]
+            M2["🔍 culico-net-det-v1<br/>(Detection)<br/>📄 AGPL-3.0"]
+            M3["✂️ culico-net-segm-v1-nano<br/>(Segmentation)<br/>📄 Apache 2.0"]
+        end
+    end
+
+    subgraph L3 ["Application Layer"]
+        APP1["🐍 culicidaelab<br/>Python Library<br/>(Core ML functionality) <br/>📄 AGPL-3.0"]
+        APP2["🌐 culicidaelab-server<br/>Web Application<br/>(API services)<br/>📄 AGPL-3.0"]
+        APP3["📸 culicidaelab-mobile<br/>Mobile Application<br/><br/>📄 AGPL-3.0"]
+    end
+
+    subgraph L4 ["API Service Layer"]
+        S1["🗲 Prediction Service<br/>(ML inference)"]
+        S2["💾 Observation Service<br/>(Data storage & retrieval)"]
+        S3["🗺️ Map Service<br/>(Geospatial visualization)"]
+        S4["🦟 Mosquito Gallery Service<br/>"]
+        S5["💊 Diseases Gallery Service<br/>"]
+    end
+
+    %% Dataset derivation and training flows
+    DS1 -.->|"derives"| DS2
+    DS1 -.->|"derives"| DS3
+    DS1 -.->|"derives"| DS4
+    DS2 -->|"used for train"| M1
+    DS3 -->|"used for train"| M2
+    DS4 -->|"used for train"| M3
+    DS2 -->|"used for train"| M4
+
+    %% Model integration
+    M1 -->|"integrated into"| APP1
+    M2 -->|"integrated into"| APP1
+    M3 -->|"integrated into"| APP1
+    M4 -->|"integrated into"| APP3
+
+    %% Data source for gallery
+    DS1 -->|"provides photos"| APP2
+    DS1 -->|"provides photos"| APP3
+
+    %% Library to server integration
+    APP1 -->|"powers"| APP2
+
+    %% Service provisioning
+    APP2 -->|"hosts"| S1
+    APP2 -->|"hosts"| S2
+    APP2 -->|"hosts"| S3
+    APP2 -->|"hosts"| S4
+    APP2 -->|"hosts"| S5
+
+    %% Mobile app service consumption
+    APP3 <-->|"API calls"| S1
+    APP3 <-->|"API calls"| S2
+    APP3 -->|"WebView"| S3
+
+    %% Styling
+    classDef dataLayer fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef modelLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef appLayer fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef serviceLayer fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef collections fill:#f4dbf8,stroke:#9b3ac5,stroke-width:1px,stroke-dasharray:5,5
+
+    classDef dataset fill:#bbdefb,stroke:#1565c0,stroke-width:2px
+    classDef model fill:#e1bee7,stroke:#8e24aa,stroke-width:2px
+    classDef application fill:#c8e6c9,stroke:#43a047,stroke-width:2px
+    classDef service fill:#ffe0b2,stroke:#fb8c00,stroke-width:2px
+
+    class L1 dataLayer
+    class L2 modelLayer
+    class L3 appLayer
+    class L4 serviceLayer
+
+    class DS1,DS2,DS3,DS4 dataset
+    class M1,M2,M3,M4 model
+    class APP1,APP2,APP3 application
+    class S1,S2,S3,S4,S5 service
     class M_DEFAULT,M_COLLECTION collections
    
 ```
@@ -203,19 +121,16 @@ An open-source system for mosquito research and analysis includes components:
 
   - Base [diversity dataset (46 species, 3139 images](https://huggingface.co/datasets/iloncka/mosquito_dataset_46_3139)) under CC-BY-SA-4.0 license.
   - Specialized derivatives: [classification](https://huggingface.co/datasets/iloncka/mosquito-species-classification-dataset), [detection](https://huggingface.co/datasets/iloncka/mosquito-species-detection-dataset), and [segmentation](https://huggingface.co/datasets/iloncka/mosquito-species-segmentation-dataset) datasets under CC-BY-SA-4.0 licenses.
-
 - **Models**:
 
   - Top-1 models (see reports), used as default by `culicidaelab` library: [classification (Apache 2.0)](https://huggingface.co/iloncka/culico-net-cls-v1), [detection (AGPL-3.0)](https://huggingface.co/iloncka/culico-net-det-v1), [segmentation (Apache 2.0)](https://huggingface.co/iloncka/culico-net-segm-v1-nano)
   - [Top-5 classification models collection](https://huggingface.co/collections/iloncka/mosquito-classification-17-top-5-68945bf60bca2c482395efa8) with accuracy >90% for 17 mosquito species.
-
 - **Protocols**: All training parameters and metrics available at:
 
   - [Detection model reports](https://gitlab.com/mosquitoscan/experiments-reports-detection-models)
   - [Segmentation model reports](https://gitlab.com/mosquitoscan/experiments-reports-segmentation-models)
   - [Classification experiment reports - 1st round](https://gitlab.com/iloncka/mosal-reports)
   - [Classification experiment reports -2nd round](https://gitlab.com/mosquitoscan/experiments-reports)
-
 - **Applications**:
 
   - [Python library (AGPL-3.0)](https://github.com/iloncka-ds/culicidaelab) providing core ML functionality
@@ -268,27 +183,29 @@ This integrated approach enables comprehensive mosquito research, from data coll
 **Hard Drive:** At least 10 GB of free space to install the library, dependencies, download pre-trained models, and store processed data.
 
 ### Software Requirements:
-  Operating Systems (tested):
-  - Windows 10/11
-  - Linux 22.04+
-  Software:
-  - for Linux needed libgl1 package to be installed
-  - Git
-  - Python 3.11
-  - uv 0.8.13
-  Python packages:
-  - PyTorch 2.3.1+
-  - FastAI 2.7.0 - 2.8.0
-  - Ultralytics 8.3.0+
-  - HuggingFace Hub 0.16.0+
-  - Datasets 4.0.0
-  - Pillow 9.4.0
-  - Pydantic 2.0.0+
-    Full list of requirements: [requirements.txt](https://github.com/iloncka-ds/culicidaelab/blob/main/requirements.txt)
-    Development requirements: [requirements-dev.txt](https://github.com/iloncka-ds/culicidaelab/blob/main/dev-requirements.txt)
 
+  Operating Systems (tested):
+
+- Windows 10/11
+- Linux 22.04+
+  Software:
+- for Linux needed libgl1 package to be installed
+- Git
+- Python 3.11
+- uv 0.8.13
+  Python packages:
+- PyTorch 2.3.1+
+- FastAI 2.7.0 - 2.8.0
+- Ultralytics 8.3.0+
+- HuggingFace Hub 0.16.0+
+- Datasets 4.0.0
+- Pillow 9.4.0
+- Pydantic 2.0.0+
+  Full list of requirements: [requirements.txt](https://github.com/iloncka-ds/culicidaelab/blob/main/requirements.txt)
+  Development requirements: [requirements-dev.txt](https://github.com/iloncka-ds/culicidaelab/blob/main/dev-requirements.txt)
 
 ## Installation
+
 For general usage with Python scripts or in Google Colab, you can install `culicidaelab` using pip:
 
 ```bash
@@ -315,39 +232,33 @@ pip install culicidaelab[test]
 
 To get a **development environment** running:
 
-  1. Clone the repository:
+1. Clone the repository:
 
-     ```bash
-     git clone https://github.com/iloncka-ds/culicidaelab.git
-     cd culicidaelab
-     ```
-  2. Install dependencies with `uv` (recommended):
+   ```bash
+   git clone https://github.com/iloncka-ds/culicidaelab.git
+   cd culicidaelab
+   ```
+2. Install dependencies with `uv` (recommended):
 
-     ```bash
-     uv venv -p 3.11
-     source .venv/bin/activate
+   ```bash
+   uv venv -p 3.11
+   source .venv/bin/activate
+   ```
+
     # On Windows: .venv\Scripts\activate
      uv sync -p 3.11
      uv cache clean
      # This installs the library in editable mode and includes all dev tools
      uv pip install -e .[dev]
      ```
-     Or with `pip`:
+     Or with`pip`:
 
-     ```bash
-     python -m venv .venv
-     source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-     pip install --upgrade pip
-     pip install -e .[dev]
-     pip cache purge
-     ```
+    ``bash      python -m venv .venv      source .venv/bin/activate  # On Windows: .venv\Scripts\activate      pip install --upgrade pip      pip install -e .[dev]      pip cache purge      ``
   3. Set up pre-commit hooks:
 
-     ```bash
-     pre-commit install
-     ```
+    ``bash      pre-commit install      ``
 
-     This will run linters and formatters automatically on each commit to ensure code quality and consistency.
+    This will run linters and formatters automatically on each commit to ensure code quality and consistency.
 
 ## Quick Start
 
