@@ -234,29 +234,39 @@ To get a **development environment** running:
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/iloncka-ds/culicidaelab.git
-   cd culicidaelab
-   ```
+
+```bash
+git clone https://github.com/iloncka-ds/culicidaelab.git
+cd culicidaelab
+```
+
 2. Install dependencies with `uv` (recommended):
 
-   ```bash
-   uv venv -p 3.11
-   source .venv/bin/activate
-   ```
 
-    # On Windows: .venv\Scripts\activate
-     uv sync -p 3.11
-     uv cache clean
-     # This installs the library in editable mode and includes all dev tools
-     uv pip install -e .[dev]
-     ```
-     Or with`pip`:
+```bash
+  uv venv -p 3.11
+  source .venv/bin/activate
 
-    ``bash      python -m venv .venv      source .venv/bin/activate  # On Windows: .venv\Scripts\activate      pip install --upgrade pip      pip install -e .[dev]      pip cache purge      ``
+  # On Windows: .venv\Scripts\activate
+  uv sync -p 3.11
+  uv cache clean
+  # This installs the library in editable mode and includes all dev tools
+  uv pip install -e .[dev]
+```
+    Or with `pip`:
+
+```bash
+  python -m venv .venv
+  source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+  pip install --upgrade pip
+  pip install -e .[dev]
+  pip cache purge
+```
   3. Set up pre-commit hooks:
 
-    ``bash      pre-commit install      ``
+```bash
+pre-commit install
+```
 
     This will run linters and formatters automatically on each commit to ensure code quality and consistency.
 
