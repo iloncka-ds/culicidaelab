@@ -79,27 +79,3 @@ def download_file(
     except OSError as e:
         logging.error(f"File write error for {dest_path}: {e}")
         raise RuntimeError(f"Failed to write file to {dest_path}: {e}") from e
-
-
-def str_to_bgr(str_color: str) -> tuple[int, int, int]:
-    """Converts a hexadecimal color string to a BGR tuple.
-
-    Args:
-        str_color (str): A hex color string in '#RRGGBB' or 'RRGGBB' format.
-
-    Returns:
-        tuple[int, int, int]: A (B, G, R) tuple of integers.
-
-    Raises:
-        ValueError: If the string has an invalid format or invalid characters.
-    """
-    hex_color = str_color.lstrip("#")
-    if len(hex_color) != 6:
-        raise ValueError(f"Invalid hex color string format: '{str_color}'.")
-    try:
-        r = int(hex_color[0:2], 16)
-        g = int(hex_color[2:4], 16)
-        b = int(hex_color[4:6], 16)
-        return (b, g, r)
-    except ValueError:
-        raise ValueError(f"Invalid characters in hex string: '{str_color}'.")

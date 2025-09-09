@@ -47,16 +47,15 @@ from pathlib import Path
 from typing import Any, TypeAlias
 from collections.abc import Sequence
 
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image, ImageDraw, ImageFont  # Added Image, ImageDraw, ImageFont
 from fastai.vision.all import load_learner
 from sklearn.metrics import confusion_matrix, roc_auc_score
 from sklearn.preprocessing import label_binarize
 
 from culicidaelab.core.base_predictor import BasePredictor, ImageInput
 from culicidaelab.core.settings import Settings
-from culicidaelab.core.utils import str_to_bgr
 from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
 ClassificationPredictionType: TypeAlias = list[tuple[str, float]]
@@ -261,44 +260,37 @@ class MosquitoClassifier(
 
         vis_config = self.config.visualization
         font_scale = vis_config.font_scale
-        thickness = vis_config.text_thickness if vis_config.text_thickness is not None else 1
-        text_color_bgr = str_to_bgr(vis_config.text_color)
         top_k = self.config.params.get("top_k", 5)
-        font = cv2.FONT_HERSHEY_SIMPLEX
 
         img_h, img_w, _ = image_np_rgb.shape
-        text_panel_width = 350
+        text_panel_width = 250
         padding = 20
         canvas_h = img_h
         canvas_w = text_panel_width + img_w
-        canvas = np.full((canvas_h, canvas_w, 3), 255, dtype=np.uint8)
+        canvas = Image.new("RGB", (canvas_w, canvas_h), color="white")
+        draw = ImageDraw.Draw(canvas)
 
         y_offset = 40
-        line_height = int(font_scale * 40)
+        line_height = int(font_scale * 20)
         for species, conf in predictions[:top_k]:
             display_name = self.labels_map.get(species, species)
             text = f"{display_name}: {conf:.3f}"
-            cv2.putText(
-                canvas,
-                text,
-                (padding, y_offset),
-                font,
-                font_scale,
-                text_color_bgr,
-                thickness,
-                lineType=cv2.LINE_AA,
-            )
+            # Load a font (you might want to make this configurable or load once)
+            try:
+                font_pil = ImageFont.truetype("arial.ttf", int(font_scale * 15))  # Adjust font size as needed
+            except OSError:
+                font_pil = ImageFont.load_default()
+            draw.text((padding, y_offset), text, fill=vis_config.text_color, font=font_pil)
             y_offset += line_height
 
-        canvas[:, text_panel_width:] = image_np_rgb
+        canvas.paste(image_pil, (text_panel_width, 0))
 
         if save_path:
             save_path = Path(save_path)
             save_path.parent.mkdir(parents=True, exist_ok=True)
-            save_img_bgr = cv2.cvtColor(canvas, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(str(save_path), save_img_bgr)
+            canvas.save(str(save_path))
 
-        return canvas
+        return np.array(canvas)
 
     def visualize_report(
         self,
@@ -333,7 +325,7 @@ class MosquitoClassifier(
         fig, (ax_text, ax_matrix) = plt.subplots(
             1,
             2,
-            figsize=(20, 8),
+            figsize=(15, 10),
             gridspec_kw={"width_ratios": [1, 2.5]},
         )
         fig.suptitle("Model Evaluation Report", fontsize=20, y=1.02)
@@ -354,7 +346,7 @@ class MosquitoClassifier(
             ha="left",
             va="top",
             transform=ax_text.transAxes,
-            fontsize=14,
+            fontsize=16,
             family="monospace",
         )
 
@@ -364,7 +356,7 @@ class MosquitoClassifier(
         ax_matrix.set_yticks(tick_marks)
         ax_matrix.set_xticklabels(
             class_labels,
-            rotation=45,
+            rotation=30,
             ha="right",
             rotation_mode="anchor",
         )

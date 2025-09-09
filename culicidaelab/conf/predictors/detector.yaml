@@ -16,7 +16,7 @@ dataset_repository: "iloncka/mosquito-species-detection-dataset"
 visualization:
   box_color: "#FF0000"
   box_thickness: 2
-  font_scale: 0.5
+  font_scale: 1
   text_color: "#000000"
   text_thickness: 2
   format: "png"

@@ -168,13 +168,11 @@ def test_visualize(classifier):
     """Test the visualize method."""
     dummy_image = np.zeros((100, 100, 3), dtype=np.uint8)
     predictions = [("species1", 0.9), ("species2", 0.08), ("species3", 0.02)]
-    with patch("cv2.putText") as mock_putText:
-        vis_img = classifier.visualize(dummy_image, predictions)
-        assert isinstance(vis_img, np.ndarray)
-        # visualize adds side panel; height equal, width larger
-        assert vis_img.shape[0] == dummy_image.shape[0]
-        assert vis_img.shape[1] > dummy_image.shape[1]
-        assert mock_putText.call_count == 3
+    vis_img = classifier.visualize(dummy_image, predictions)
+    assert isinstance(vis_img, np.ndarray)
+    # visualize adds side panel; height equal, width larger
+    assert vis_img.shape[0] == dummy_image.shape[0]
+    assert vis_img.shape[1] > dummy_image.shape[1]
 
 
 def test_evaluate_single_item_correct(classifier):

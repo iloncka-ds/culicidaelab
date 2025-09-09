@@ -34,8 +34,8 @@ from pathlib import Path
 from typing import Any, TypeAlias
 from collections.abc import Sequence
 
-import cv2
 import numpy as np
+from PIL import ImageDraw, ImageFont  # Added Image and ImageFont
 
 # CHANGED: Replaced tqdm with fastprogress for consistency.
 from fastprogress.fastprogress import progress_bar
@@ -44,7 +44,6 @@ from ultralytics import YOLO
 from culicidaelab.core.base_predictor import BasePredictor, ImageInput
 
 from culicidaelab.core.settings import Settings
-from culicidaelab.core.utils import str_to_bgr
 from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
 logger = logging.getLogger(__name__)
@@ -222,30 +221,30 @@ class MosquitoDetector(
             np.ndarray: A new image array with bounding boxes and confidence
             scores drawn on it.
         """
-        vis_img = np.array(self._load_and_validate_image(input_data))
+        vis_img = self._load_and_validate_image(input_data).copy()
+        draw = ImageDraw.Draw(vis_img)
         vis_config = self.config.visualization
-        box_color = str_to_bgr(vis_config.box_color)
-        text_color = str_to_bgr(vis_config.text_color)
+        # box_color = str_to_bgr(vis_config.box_color) # Removed
+        # text_color = str_to_bgr(vis_config.text_color) # Removed
         font_scale = vis_config.font_scale
         thickness = vis_config.box_thickness
 
         for x1, y1, x2, y2, conf in predictions:
-            cv2.rectangle(vis_img, (int(x1), int(y1)), (int(x2), int(y2)), box_color, thickness)
+            draw.rectangle([(int(x1), int(y1)), (int(x2), int(y2))], outline=vis_config.box_color, width=thickness)
             text = f"{conf:.2f}"
-            cv2.putText(
-                vis_img,
-                text,
-                (int(x1), int(y1 - 5)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                font_scale,
-                text_color,
-                thickness,
-            )
+            # Load a font (you might want to make this configurable or load once)
+            try:
+                font = ImageFont.truetype("arial.ttf", int(font_scale * 20))  # Adjust font size as needed
+            except OSError:
+                font = ImageFont.load_default()
+            draw.text((int(x1), int(y1 - 10)), text, fill=vis_config.text_color, font=font)
 
         if save_path:
-            cv2.imwrite(str(save_path), cv2.cvtColor(vis_img, cv2.COLOR_RGB2BGR))
+            save_path = Path(save_path)
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            vis_img.save(str(save_path))
 
-        return vis_img
+        return np.array(vis_img)
 
     def _calculate_iou(self, box1_xyxy: tuple, box2_xyxy: tuple) -> float:
         """Calculates Intersection over Union (IoU) for two boxes.

@@ -39,7 +39,6 @@ def mock_settings():
 @pytest.fixture(autouse=True)
 def mock_common_dependencies(mocker):
     """Mocks common, non-model dependencies for all tests."""
-    mocker.patch("culicidaelab.predictors.segmenter.str_to_bgr", return_value=[0, 0, 255])
     mock_mwm_instance = MagicMock()
     # Use a consistent, platform-independent path for the mock
     mock_mwm_instance.ensure_weights.return_value = Path("/mock/models/sam.pt")
@@ -102,7 +101,7 @@ def test_predict_raises_if_model_fails(segmenter, mocker):
 def test_visualize_shape_mismatch(segmenter):
     input_image = np.zeros((10, 10, 3), dtype=np.uint8)
     prediction_mask = np.ones((5, 5), dtype=np.uint8)
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError):
         segmenter.visualize(input_image, prediction_mask)
 
 
@@ -168,7 +167,9 @@ def test_predict_with_boxes(loaded_segmenter):
 def test_visualize(segmenter):
     input_image = np.zeros((10, 10, 3), dtype=np.uint8)
     prediction_mask = np.ones((10, 10), dtype=np.uint8)
-    segmenter.visualize(input_image, prediction_mask)
+    visualized_output = segmenter.visualize(input_image, prediction_mask)
+    assert visualized_output.shape == (10, 10, 3)
+    assert visualized_output.dtype == np.uint8
 
 
 @pytest.mark.parametrize(

@@ -15,7 +15,7 @@ params:
 model_arch: "tiny_vit_21m_224.in1k"
 dataset_repository: "iloncka/mosquito-species-classification-dataset"
 visualization:
-  font_scale: 0.5
+  font_scale: 1
   text_color: "#000000"
   text_thickness: 1
   format: "png"

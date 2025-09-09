@@ -42,8 +42,8 @@ from typing import Any, TypeAlias, cast
 from collections.abc import Sequence
 
 import torch
-import cv2
 import numpy as np
+from PIL import Image  # Added Image
 from ultralytics import SAM
 from fastprogress.fastprogress import progress_bar
 
@@ -51,7 +51,6 @@ from fastprogress.fastprogress import progress_bar
 from culicidaelab.core.base_predictor import BasePredictor, ImageInput
 
 from culicidaelab.core.settings import Settings
-from culicidaelab.core.utils import str_to_bgr
 from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
 SegmentationPredictionType: TypeAlias = np.ndarray
@@ -243,26 +242,19 @@ class MosquitoSegmenter(
     ) -> np.ndarray:
         """Overlays a segmentation mask on the original image."""
 
-        image_np = np.array(self._load_and_validate_image(input_data))
+        image_pil = self._load_and_validate_image(input_data)
 
-        colored_mask = np.zeros_like(image_np)
-        overlay_color_bgr = str_to_bgr(self.config.visualization.overlay_color)
+        colored_mask = Image.new("RGB", image_pil.size, self.config.visualization.overlay_color)
 
-        # This can fail if shapes mismatch, which is expected behavior
-        colored_mask[predictions > 0] = np.array(overlay_color_bgr)
-
-        overlay = cv2.addWeighted(
-            image_np,
-            1,
-            colored_mask,
-            self.config.visualization.alpha,
-            0,
-        )
+        alpha_mask = Image.fromarray(((1 - predictions) * 255).astype(np.uint8))
+        overlay = Image.composite(image_pil, colored_mask, alpha_mask)
 
         if save_path:
-            cv2.imwrite(str(save_path), cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
+            save_path = Path(save_path)
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            overlay.save(str(save_path))
 
-        return overlay
+        return np.array(overlay)
 
     def _evaluate_from_prediction(
         self,

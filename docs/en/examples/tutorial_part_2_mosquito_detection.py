@@ -26,7 +26,8 @@ library to perform object detection on images. We will cover:
 # If the model file doesn't exist locally, it will be downloaded automatically.
 
 # %%
-import cv2
+
+from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -164,35 +165,98 @@ print(batch_evaluation)
 # %%
 # Create a function to visualize both ground truth and predictions
 def visualize_comparison(image_rgb, ground_truth_boxes, detection_boxes):
+    """
+    Visualize ground truth and detection bounding boxes on an image using Pillow.
+
+    Args:
+        image_rgb: RGB image as numpy array or PIL Image
+        ground_truth_boxes: List of ground truth bounding boxes [x_min, y_min, x_max, y_max]
+        detection_boxes: List of detection boxes [x1, y1, x2, y2, confidence]
+
+    Returns:
+        PIL Image with bounding boxes drawn
+    """
+    # Convert numpy array to PIL Image if needed
+    if isinstance(image_rgb, np.ndarray):
+        if image_rgb.dtype == np.float32 or image_rgb.dtype == np.float64:
+            image_rgb = (image_rgb * 255).astype(np.uint8)
+        image = Image.fromarray(image_rgb)
+    else:
+        image = image_rgb.copy()
+
+    # Create a drawing context
+    draw = ImageDraw.Draw(image)
+
+    # Try to load a default font, fall back to default if not available
+    try:
+        font = ImageFont.truetype("arial.ttf", 16)
+    except OSError:
+        try:
+            font = ImageFont.load_default()
+        except Exception:
+            font = None
+
     # Draw ground truth boxes in green
     for bbox in ground_truth_boxes:
         x_min, y_min, x_max, y_max = (int(v) for v in bbox)
-        cv2.rectangle(image_rgb, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
-        cv2.putText(
-            image_rgb,
-            "GT",
-            (x_min, y_min - 5),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            (0, 255, 0),
-            1,
+
+        # Draw rectangle
+        draw.rectangle(
+            [(x_min, y_min), (x_max, y_max)],
+            outline="green",
+            width=2,
         )
+
+        # Draw label
+        text = "GT"
+        text_bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
+
+        # Position text above the box
+        text_x = x_min
+        text_y = max(0, y_min - text_height - 2)
+
+        # Draw text background
+        draw.rectangle(
+            [(text_x, text_y), (text_x + text_width, text_y + text_height)],
+            fill="green",
+        )
+
+        # Draw text
+        draw.text((text_x, text_y), text, fill="white", font=font)
 
     # Draw detection boxes in blue with confidence
     for x1, y1, x2, y2, conf in detection_boxes:
         x_min, y_min, x_max, y_max = int(x1), int(y1), int(x2), int(y2)
-        cv2.rectangle(image_rgb, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)
-        cv2.putText(
-            image_rgb,
-            f"{conf:.2f}",
-            (x_min, y_min - 5),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            (255, 0, 0),
-            1,
+
+        # Draw rectangle
+        draw.rectangle(
+            [(x_min, y_min), (x_max, y_max)],
+            outline="blue",
+            width=2,
         )
 
-    return image_rgb
+        # Draw confidence label
+        text = f"{conf:.2f}"
+        text_bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
+
+        # Position text above the box
+        text_x = x_min
+        text_y = max(0, y_min - text_height - 2)
+
+        # Draw text background
+        draw.rectangle(
+            [(text_x, text_y), (text_x + text_width, text_y + text_height)],
+            fill="blue",
+        )
+
+        # Draw text
+        draw.text((text_x, text_y), text, fill="white", font=font)
+
+    return image
 
 
 # Create comparison visualization

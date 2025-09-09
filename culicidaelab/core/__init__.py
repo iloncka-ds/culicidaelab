@@ -32,7 +32,7 @@ from culicidaelab.core.resource_manager import ResourceManager, ResourceManagerE
 from culicidaelab.core.settings import Settings, get_settings
 
 # Utilities
-from culicidaelab.core.utils import download_file, str_to_bgr
+from culicidaelab.core.utils import download_file
 
 __all__ = [
     # Base classes and protocols
