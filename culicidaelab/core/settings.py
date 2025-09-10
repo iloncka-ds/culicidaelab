@@ -297,3 +297,12 @@ def get_settings(config_dir: str | Path | None = None) -> Settings:
             _SETTINGS_INSTANCE = Settings(config_dir=config_dir)
 
         return _SETTINGS_INSTANCE
+
+
+def list_models() -> list[str]:
+    # Returns ["classifier", "detector", "segmenter"]
+    return get_settings().list_model_types()
+
+
+def list_datasets() -> list[str]:
+    return get_settings().list_datasets()

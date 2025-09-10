@@ -33,7 +33,7 @@ from .core.config_models import (
     SpeciesModel,
 )
 from .core.resource_manager import ResourceManager
-from .core.settings import Settings, get_settings
+from .core.settings import Settings, get_settings, list_datasets, list_models
 from .core.species_config import SpeciesConfig
 from .core.utils import download_file
 from .core.weights_manager_protocol import WeightsManagerProtocol
@@ -81,4 +81,6 @@ __all__ = [
     "WeightsManagerProtocol",
     "download_file",
     "get_settings",
+    "list_datasets",
+    "list_models",
 ]
