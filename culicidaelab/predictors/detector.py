@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import Any
 from collections.abc import Sequence
 
 import numpy as np
@@ -42,18 +42,21 @@ from fastprogress.fastprogress import progress_bar
 from ultralytics import YOLO
 
 from culicidaelab.core.base_predictor import BasePredictor, ImageInput
-
+from culicidaelab.core.prediction_models import (
+    BoundingBox,
+    Detection,
+    DetectionPrediction,
+)
 from culicidaelab.core.settings import Settings
 from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
 logger = logging.getLogger(__name__)
 
-DetectionPredictionType: TypeAlias = list[tuple[float, float, float, float, float]]
-DetectionGroundTruthType: TypeAlias = list[tuple[float, float, float, float]]
+DetectionGroundTruthType = list[tuple[float, float, float, float]]
 
 
 class MosquitoDetector(
-    BasePredictor[ImageInput, DetectionPredictionType, DetectionGroundTruthType],
+    BasePredictor[ImageInput, DetectionPrediction, DetectionGroundTruthType],
 ):
     """Detects mosquitos in images using a YOLO model.
 
@@ -89,7 +92,7 @@ class MosquitoDetector(
         self.iou_threshold: float = self.config.params.get("iou_threshold", 0.45)
         self.max_detections: int = self.config.params.get("max_detections", 300)
 
-    def predict(self, input_data: ImageInput, **kwargs: Any) -> DetectionPredictionType:
+    def predict(self, input_data: ImageInput, **kwargs: Any) -> DetectionPrediction:
         """Detects mosquitos in a single image.
 
         Args:
@@ -99,9 +102,8 @@ class MosquitoDetector(
                     threshold for this prediction.
 
         Returns:
-            DetectionPredictionType: A list of detection tuples. Each tuple is
-            (x1, y1, x2, y2, confidence). Returns an empty
-            list if no mosquitos are found.
+            DetectionPrediction: A `DetectionPrediction` object containing a list of
+            `Detection` instances. Returns an empty list if no mosquitos are found.
 
         Raises:
             RuntimeError: If the model fails to load or if prediction fails.
@@ -129,23 +131,24 @@ class MosquitoDetector(
             logger.error(f"Prediction failed: {e}", exc_info=True)
             raise RuntimeError(f"Prediction failed: {e}") from e
 
-        detections: DetectionPredictionType = []
+        detections: list[Detection] = []
         if results:
             boxes = results[0].boxes
             for box in boxes:
                 xyxy_tensor = box.xyxy[0]
                 x1, y1, x2, y2 = xyxy_tensor.cpu().numpy()
                 conf = float(box.conf[0])
-
-                detections.append((x1, y1, x2, y2, conf))
-        return detections
+                detections.append(
+                    Detection(box=BoundingBox(x1=x1, y1=y1, x2=x2, y2=y2), confidence=conf),
+                )
+        return DetectionPrediction(detections=detections)
 
     def predict_batch(
         self,
         input_data_batch: Sequence[ImageInput],
         show_progress: bool = False,
         **kwargs: Any,
-    ) -> list[DetectionPredictionType]:
+    ) -> list[DetectionPrediction]:
         """Detects mosquitos in a batch of images using YOLO's native batching.
 
         Args:
@@ -155,8 +158,8 @@ class MosquitoDetector(
             **kwargs (Any): Additional arguments (not used).
 
         Returns:
-            list[DetectionPredictionType]: A list where each item is the list
-            of detections for the corresponding image in the input batch.
+            list[DetectionPrediction]: A list where each item is the `DetectionPrediction`
+            object for the corresponding image in the input batch.
 
         Raises:
             RuntimeError: If the model is not loaded.
@@ -172,7 +175,7 @@ class MosquitoDetector(
 
         if not valid_images:
             self._logger.warning("No valid images found in the batch to process.")
-            return [[]] * len(input_data_batch)
+            return [DetectionPrediction(detections=[])] * len(input_data_batch)
 
         yolo_results = self._model(
             source=valid_images,
@@ -183,7 +186,7 @@ class MosquitoDetector(
             verbose=False,
         )
 
-        all_predictions: list[DetectionPredictionType] = []
+        all_predictions: list[DetectionPrediction] = []
         # CHANGED: Refactored the loop to use progress_bar correctly.
         iterator = yolo_results
         if show_progress:
@@ -198,22 +201,24 @@ class MosquitoDetector(
                 xyxy_tensor = box.xyxy[0]
                 x1, y1, x2, y2 = xyxy_tensor.cpu().numpy()
                 conf = float(box.conf[0])
-                detections.append((x1, y1, x2, y2, conf))
-            all_predictions.append(detections)
+                detections.append(
+                    Detection(box=BoundingBox(x1=x1, y1=y1, x2=x2, y2=y2), confidence=conf),
+                )
+            all_predictions.append(DetectionPrediction(detections=detections))
 
         return all_predictions
 
     def visualize(
         self,
         input_data: ImageInput,
-        predictions: DetectionPredictionType,
+        predictions: DetectionPrediction,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
         """Draws predicted bounding boxes on an image.
 
         Args:
             input_data (ImageInput): The original image.
-            predictions (DetectionPredictionType): The list of detections from `predict`.
+            predictions (DetectionPrediction): The `DetectionPrediction` from `predict`.
             save_path (str | Path | None, optional): If provided, the output
                 image is saved to this path. Defaults to None.
 
@@ -229,15 +234,21 @@ class MosquitoDetector(
         font_scale = vis_config.font_scale
         thickness = vis_config.box_thickness
 
-        for x1, y1, x2, y2, conf in predictions:
-            draw.rectangle([(int(x1), int(y1)), (int(x2), int(y2))], outline=vis_config.box_color, width=thickness)
+        for detection in predictions.detections:
+            box = detection.box
+            conf = detection.confidence
+            draw.rectangle(
+                [(int(box.x1), int(box.y1)), (int(box.x2), int(box.y2))],
+                outline=vis_config.box_color,
+                width=thickness,
+            )
             text = f"{conf:.2f}"
             # Load a font (you might want to make this configurable or load once)
             try:
                 font = ImageFont.truetype("arial.ttf", int(font_scale * 20))  # Adjust font size as needed
             except OSError:
                 font = ImageFont.load_default()
-            draw.text((int(x1), int(y1 - 10)), text, fill=vis_config.text_color, font=font)
+            draw.text((int(box.x1), int(box.y1 - 10)), text, fill=vis_config.text_color, font=font)
 
         if save_path:
             save_path = Path(save_path)
@@ -270,7 +281,7 @@ class MosquitoDetector(
 
     def _evaluate_from_prediction(
         self,
-        prediction: DetectionPredictionType,
+        prediction: DetectionPrediction,
         ground_truth: DetectionGroundTruthType,
     ) -> dict[str, float]:
         """Calculates detection metrics for a single image's predictions.
@@ -279,15 +290,14 @@ class MosquitoDetector(
         and mean IoU for a set of predicted boxes against ground truth boxes.
 
         Args:
-            prediction (DetectionPredictionType): A list of predicted boxes with
-                confidence scores: `[(x, y, w, h, conf), ...]`.
+            prediction (DetectionPrediction): A `DetectionPrediction` object.
             ground_truth (DetectionGroundTruthType): A list of ground truth
                 boxes: `[(x, y, w, h), ...]`.
 
         Returns:
             dict[str, float]: A dictionary containing the calculated metrics.
         """
-        if not ground_truth and not prediction:
+        if not ground_truth and not prediction.detections:
             return {
                 "precision": 1.0,
                 "recall": 1.0,
@@ -303,7 +313,7 @@ class MosquitoDetector(
                 "ap": 0.0,
                 "mean_iou": 0.0,
             }
-        if not prediction:  # False negatives exist
+        if not prediction.detections:  # False negatives exist
             return {
                 "precision": 0.0,
                 "recall": 0.0,
@@ -312,15 +322,15 @@ class MosquitoDetector(
                 "mean_iou": 0.0,
             }
 
-        predictions_sorted = sorted(prediction, key=lambda x: x[4], reverse=True)
+        predictions_sorted = sorted(prediction.detections, key=lambda x: x.confidence, reverse=True)
         tp = np.zeros(len(predictions_sorted))
         fp = np.zeros(len(predictions_sorted))
         gt_matched = [False] * len(ground_truth)
         all_ious_for_mean = []
         iou_threshold = self.iou_threshold
 
-        for i, pred_box_with_conf in enumerate(predictions_sorted):
-            pred_box = pred_box_with_conf[:4]
+        for i, pred in enumerate(predictions_sorted):
+            pred_box = (pred.box.x1, pred.box.y1, pred.box.x2, pred.box.y2)
             best_iou, best_gt_idx = 0.0, -1
 
             for j, gt_box in enumerate(ground_truth):

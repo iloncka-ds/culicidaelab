@@ -5,6 +5,11 @@ import torch
 
 from culicidaelab.core.config_models import PredictorConfig
 from culicidaelab.predictors.detector import MosquitoDetector
+from culicidaelab.core.prediction_models import (
+    BoundingBox,
+    Detection,
+    DetectionPrediction,
+)
 
 
 @pytest.fixture
@@ -92,27 +97,28 @@ def test_predict_single_image(detector):
     predictions = detector.predict(dummy_image)
 
     detector._model.assert_called_once()
-    assert isinstance(predictions, list)
-    assert len(predictions) == 1
-    x1, y1, x2, y2, conf = predictions[0]
-    assert x1 == pytest.approx(10.0)
-    assert y1 == pytest.approx(20.0)
-    assert x2 == pytest.approx(110.0)
-    assert y2 == pytest.approx(120.0)
-    assert conf == pytest.approx(0.9)
+    assert isinstance(predictions, DetectionPrediction)
+    assert len(predictions.detections) == 1
+    detection = predictions.detections[0]
+    assert detection.box.x1 == pytest.approx(10.0)
+    assert detection.box.y1 == pytest.approx(20.0)
+    assert detection.box.x2 == pytest.approx(110.0)
+    assert detection.box.y2 == pytest.approx(120.0)
+    assert detection.confidence == pytest.approx(0.9)
 
 
 @pytest.mark.parametrize(
-    "gt, pred, expected_ap",
+    "gt, pred_raw, expected_ap",
     [
-        ([(60, 70, 100, 100)], [(60, 70, 100, 100, 0.9)], 1.0),
+        ([(60, 70, 100, 100)], [Detection(box=BoundingBox(x1=60, y1=70, x2=100, y2=100), confidence=0.9)], 1.0),
         ([(60, 70, 100, 100)], [], 0.0),
-        ([], [(60, 70, 100, 100, 0.9)], 0.0),
+        ([], [Detection(box=BoundingBox(x1=60, y1=70, x2=100, y2=100), confidence=0.9)], 0.0),
         ([], [], 1.0),
     ],
 )
-def test_evaluate_from_prediction(detector, gt, pred, expected_ap):
+def test_evaluate_from_prediction(detector, gt, pred_raw, expected_ap):
     """Test the core evaluation logic with different scenarios."""
+    pred = DetectionPrediction(detections=pred_raw)
     metrics = detector._evaluate_from_prediction(pred, gt)
     assert metrics["ap"] == pytest.approx(expected_ap)
 
@@ -140,6 +146,7 @@ def test_predict_batch_efficiently(detector):
     detector._model.assert_called_once()
     assert isinstance(predictions_batch, list)
     assert len(predictions_batch) == 2
-    assert len(predictions_batch[0]) == 1
-    assert len(predictions_batch[1]) == 1
-    assert predictions_batch[1][0][-1] == pytest.approx(0.8)
+    assert isinstance(predictions_batch[0], DetectionPrediction)
+    assert len(predictions_batch[0].detections) == 1
+    assert len(predictions_batch[1].detections) == 1
+    assert predictions_batch[1].detections[0].confidence == pytest.approx(0.8)

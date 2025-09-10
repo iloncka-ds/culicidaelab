@@ -7,6 +7,10 @@ from typing import Any
 from culicidaelab.core.config_models import PredictorConfig
 from culicidaelab.predictors.classifier import MosquitoClassifier
 from culicidaelab.core.base_predictor import BasePredictor
+from culicidaelab.core.prediction_models import (
+    Classification,
+    ClassificationPrediction,
+)
 
 
 def get_mock_provider(settings, *args: Any, **kwargs: Any):
@@ -152,9 +156,11 @@ def test_predict(classifier):
     classifier._model_loaded = True
     results = classifier.predict(dummy_image)
     classifier.learner.predict.assert_called_once()
-    assert isinstance(results, list)
-    assert len(results) == 3
-    assert results[0] == ("species2", pytest.approx(0.7))
+    assert isinstance(results, ClassificationPrediction)
+    assert len(results.predictions) == 3
+    top_pred = results.top_prediction()
+    assert top_pred.species_name == "species2"
+    assert top_pred.confidence == pytest.approx(0.7)
 
 
 def test_predict_model_not_loaded(classifier):
@@ -167,7 +173,13 @@ def test_predict_model_not_loaded(classifier):
 def test_visualize(classifier):
     """Test the visualize method."""
     dummy_image = np.zeros((100, 100, 3), dtype=np.uint8)
-    predictions = [("species1", 0.9), ("species2", 0.08), ("species3", 0.02)]
+    predictions = ClassificationPrediction(
+        predictions=[
+            Classification(species_name="species1", confidence=0.9),
+            Classification(species_name="species2", confidence=0.08),
+            Classification(species_name="species3", confidence=0.02),
+        ],
+    )
     vis_img = classifier.visualize(dummy_image, predictions)
     assert isinstance(vis_img, np.ndarray)
     # visualize adds side panel; height equal, width larger
@@ -179,7 +191,12 @@ def test_evaluate_single_item_correct(classifier):
     """Test the public BasePredictor.evaluate method for a correct prediction."""
     dummy_image = np.zeros((100, 100, 3), dtype=np.uint8)
     ground_truth = "species1"
-    prediction_result = [("species1", 0.9), ("species2", 0.1)]
+    prediction_result = ClassificationPrediction(
+        predictions=[
+            Classification(species_name="species1", confidence=0.9),
+            Classification(species_name="species2", confidence=0.1),
+        ],
+    )
     with patch.object(
         classifier,
         "predict",
@@ -195,7 +212,13 @@ def test_evaluate_single_item_incorrect_but_in_top5(classifier):
     """Test BasePredictor.evaluate for an incorrect prediction that is in top 5."""
     dummy_image = np.zeros((100, 100, 3), dtype=np.uint8)
     ground_truth = "species2"
-    prediction_result = [("species1", 0.8), ("species2", 0.15), ("species3", 0.05)]
+    prediction_result = ClassificationPrediction(
+        predictions=[
+            Classification(species_name="species1", confidence=0.8),
+            Classification(species_name="species2", confidence=0.15),
+            Classification(species_name="species3", confidence=0.05),
+        ],
+    )
     with patch.object(classifier, "predict", return_value=prediction_result):
         metrics = classifier.evaluate(input_data=dummy_image, ground_truth=ground_truth)
         assert metrics["accuracy"] == 0.0
@@ -208,8 +231,20 @@ def test_evaluate_batch(classifier):
     # Make both ground truths the same class to avoid sklearn warning
     ground_truths = ["species1", "species1"]
     predictions = [
-        [("species1", 0.9), ("species2", 0.08), ("species3", 0.02)],
-        [("species1", 0.8), ("species2", 0.15), ("species3", 0.05)],
+        ClassificationPrediction(
+            predictions=[
+                Classification(species_name="species1", confidence=0.9),
+                Classification(species_name="species2", confidence=0.08),
+                Classification(species_name="species3", confidence=0.02),
+            ],
+        ),
+        ClassificationPrediction(
+            predictions=[
+                Classification(species_name="species1", confidence=0.8),
+                Classification(species_name="species2", confidence=0.15),
+                Classification(species_name="species3", confidence=0.05),
+            ],
+        ),
     ]
     with patch.object(classifier, "predict_batch", return_value=predictions):
         report = classifier.evaluate_batch(

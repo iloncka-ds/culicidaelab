@@ -44,22 +44,25 @@ import pathlib
 import platform
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import Any
 from collections.abc import Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont  # Added Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 from fastai.vision.all import load_learner
 from sklearn.metrics import confusion_matrix, roc_auc_score
 from sklearn.preprocessing import label_binarize
 
 from culicidaelab.core.base_predictor import BasePredictor, ImageInput
+from culicidaelab.core.prediction_models import (
+    Classification,
+    ClassificationPrediction,
+)
 from culicidaelab.core.settings import Settings
 from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
-ClassificationPredictionType: TypeAlias = list[tuple[str, float]]
-ClassificationGroundTruthType: TypeAlias = str
+ClassificationGroundTruthType = str
 
 
 @contextmanager
@@ -86,7 +89,7 @@ def set_posix_windows():
 
 
 class MosquitoClassifier(
-    BasePredictor[ImageInput, ClassificationPredictionType, ClassificationGroundTruthType],
+    BasePredictor[ImageInput, ClassificationPrediction, ClassificationGroundTruthType],
 ):
     """Classifies mosquito species from an image using a FastAI model.
 
@@ -158,7 +161,7 @@ class MosquitoClassifier(
         self,
         input_data: ImageInput,
         **kwargs: Any,
-    ) -> ClassificationPredictionType:
+    ) -> ClassificationPrediction:
         """Classifies the mosquito species in a single image.
 
         Args:
@@ -172,8 +175,8 @@ class MosquitoClassifier(
             **kwargs (Any): Additional arguments (not used).
 
         Returns:
-            A list of (species_name, confidence) tuples, sorted in
-            descending order of confidence.
+            A `ClassificationPrediction` object containing a sorted list of
+            `Classification` instances.
 
         Raises:
             RuntimeError: If the model has not been loaded.
@@ -194,17 +197,19 @@ class MosquitoClassifier(
         species_probs = []
         for idx, prob in enumerate(probabilities):
             species_name = self.species_map.get(idx, f"unknown_{idx}")
-            species_probs.append((species_name, float(prob)))
+            species_probs.append(
+                Classification(species_name=species_name, confidence=float(prob)),
+            )
 
-        species_probs.sort(key=lambda x: x[1], reverse=True)
-        return species_probs
+        species_probs.sort(key=lambda x: x.confidence, reverse=True)
+        return ClassificationPrediction(predictions=species_probs)
 
     def predict_batch(
         self,
         input_data_batch: Sequence[ImageInput],
         show_progress: bool = False,
         **kwargs: Any,
-    ) -> list[ClassificationPredictionType]:
+    ) -> list[ClassificationPrediction]:
         """
         Classifies a batch of mosquito images in a single, efficient pass.
         """
@@ -222,17 +227,19 @@ class MosquitoClassifier(
             species_probs = []
             for idx, prob in enumerate(probs_tensor):
                 species_name = self.species_map.get(idx, f"unknown_{idx}")
-                species_probs.append((species_name, float(prob)))
+                species_probs.append(
+                    Classification(species_name=species_name, confidence=float(prob)),
+                )
 
-            species_probs.sort(key=lambda x: x[1], reverse=True)
-            batch_results.append(species_probs)
+            species_probs.sort(key=lambda x: x.confidence, reverse=True)
+            batch_results.append(ClassificationPrediction(predictions=species_probs))
 
         return batch_results
 
     def visualize(
         self,
         input_data: ImageInput,
-        predictions: ClassificationPredictionType,
+        predictions: ClassificationPrediction,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
         """Creates a composite image with results and the input image.
@@ -255,7 +262,7 @@ class MosquitoClassifier(
         image_pil = self._load_and_validate_image(input_data)
         image_np_rgb = np.array(image_pil)
 
-        if not predictions:
+        if not predictions.predictions:
             raise ValueError("Predictions list cannot be empty")
 
         vis_config = self.config.visualization
@@ -272,7 +279,8 @@ class MosquitoClassifier(
 
         y_offset = 40
         line_height = int(font_scale * 20)
-        for species, conf in predictions[:top_k]:
+        for classification in predictions.predictions[:top_k]:
+            species, conf = classification.species_name, classification.confidence
             display_name = self.labels_map.get(species, species)
             text = f"{display_name}: {conf:.3f}"
             # Load a font (you might want to make this configurable or load once)
@@ -393,11 +401,11 @@ class MosquitoClassifier(
 
     def _evaluate_from_prediction(
         self,
-        prediction: ClassificationPredictionType,
+        prediction: ClassificationPrediction,
         ground_truth: ClassificationGroundTruthType,
     ) -> dict[str, float]:
         """Calculates core evaluation metrics for a single prediction."""
-        if not prediction:
+        if not prediction.predictions:
             return {
                 "accuracy": 0.0,
                 "confidence": 0.0,
@@ -405,10 +413,11 @@ class MosquitoClassifier(
                 "top_5_correct": 0.0,
             }
         ground_truth_species = self.labels_map.get(ground_truth, ground_truth)
-        pred_species = prediction[0][0]
-        confidence = prediction[0][1]
+        top_pred = prediction.top_prediction()
+        pred_species = top_pred.species_name if top_pred else ""
+        confidence = top_pred.confidence if top_pred else 0.0
         top_1_correct = float(pred_species == ground_truth_species)
-        top_5_species = [p[0] for p in prediction[:5]]
+        top_5_species = [p.species_name for p in prediction.predictions[:5]]
         top_5_correct = float(ground_truth_species in top_5_species)
         return {
             "accuracy": top_1_correct,
@@ -420,7 +429,7 @@ class MosquitoClassifier(
     def _finalize_evaluation_report(
         self,
         aggregated_metrics: dict[str, float],
-        predictions: Sequence[ClassificationPredictionType],
+        predictions: Sequence[ClassificationPrediction],
         ground_truths: Sequence[ClassificationGroundTruthType],
     ) -> dict[str, Any]:
         """Calculates and adds confusion matrix and ROC-AUC to the final report."""
@@ -430,17 +439,18 @@ class MosquitoClassifier(
 
         for gt, pred_list in zip(ground_truths, predictions):
             gt_str = self.labels_map.get(gt, gt)
-            if gt_str in species_to_idx and pred_list:
+            if gt_str in species_to_idx and pred_list.predictions:
                 true_idx = species_to_idx[gt_str]
-                pred_str = pred_list[0][0]
+                top_pred = pred_list.top_prediction()
+                pred_str = top_pred.species_name if top_pred else ""
                 pred_idx = species_to_idx.get(pred_str, -1)
                 y_true_indices.append(true_idx)
                 y_pred_indices.append(pred_idx)
                 prob_vector = [0.0] * self.num_classes
-                for species, conf in pred_list:
-                    class_idx = species_to_idx.get(species)
+                for classification in pred_list.predictions:
+                    class_idx = species_to_idx.get(classification.species_name)
                     if class_idx is not None:
-                        prob_vector[class_idx] = conf
+                        prob_vector[class_idx] = classification.confidence
                 y_scores.append(prob_vector)
 
         if y_true_indices and y_pred_indices:

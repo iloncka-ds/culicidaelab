@@ -38,7 +38,7 @@ Example:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, TypeAlias, cast
+from typing import Any, cast, TypeAlias
 from collections.abc import Sequence
 
 import torch
@@ -49,16 +49,15 @@ from fastprogress.fastprogress import progress_bar
 
 
 from culicidaelab.core.base_predictor import BasePredictor, ImageInput
-
+from culicidaelab.core.prediction_models import SegmentationPrediction
 from culicidaelab.core.settings import Settings
 from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
-SegmentationPredictionType: TypeAlias = np.ndarray
 SegmentationGroundTruthType: TypeAlias = np.ndarray
 
 
 class MosquitoSegmenter(
-    BasePredictor[ImageInput, SegmentationPredictionType, SegmentationGroundTruthType],
+    BasePredictor[ImageInput, SegmentationPrediction, SegmentationGroundTruthType],
 ):
     """Segments mosquitos in images using the SAM2 model.
 
@@ -85,7 +84,7 @@ class MosquitoSegmenter(
             load_model=load_model,
         )
 
-    def predict(self, input_data: ImageInput, **kwargs: Any) -> np.ndarray:
+    def predict(self, input_data: ImageInput, **kwargs: Any) -> SegmentationPrediction:
         """
         Generates a segmentation mask for a single image using various prompts.
 
@@ -99,6 +98,8 @@ class MosquitoSegmenter(
                 labels (list | np.ndarray, optional): Labels for points.
                     1 for foreground, 0 for background. Must be provided if 'points'
                     is used. e.g., [1, 0, 1, ...].
+        Returns:
+            A `SegmentationPrediction` object containing the binary mask and pixel count.
         """
         if not self.model_loaded:
             self.load_model()
@@ -157,28 +158,31 @@ class MosquitoSegmenter(
             message = "No valid prompts (boxes, points) provided; returning empty mask."
             self._logger.debug(message)
             print(message)
-            return np.zeros((h, w), dtype=np.uint8)
+            empty_mask = np.zeros((h, w), dtype=np.uint8)
+            return SegmentationPrediction(mask=empty_mask, pixel_count=0)
 
         results = model(image_np, verbose=False, **model_prompts)
         result = results[0]
 
         if result.masks is None:
-            return np.zeros((h, w), dtype=np.uint8)
+            empty_mask = np.zeros((h, w), dtype=np.uint8)
+            return SegmentationPrediction(mask=empty_mask, pixel_count=0)
 
         masks_np = self._to_numpy(result.masks.data)
 
-        return (
+        final_mask = (
             np.logical_or.reduce(masks_np).astype(np.uint8)
             if masks_np.shape[0] > 0
             else np.zeros((h, w), dtype=np.uint8)
         )
+        return SegmentationPrediction(mask=final_mask, pixel_count=int(np.sum(final_mask)))
 
     def predict_batch(
         self,
         input_data_batch: Sequence[ImageInput],
         show_progress: bool = False,
         **kwargs: Any,
-    ) -> list[SegmentationPredictionType]:
+    ) -> list[SegmentationPrediction]:
         """
         Generates segmentation masks for a batch of images by serial processing.
 
@@ -192,6 +196,8 @@ class MosquitoSegmenter(
                     one for each image.
                 labels_batch (list[list], optional): A list of point label
                     lists, one for each image.
+        Returns:
+            A list of `SegmentationPrediction` objects.
         """
         if not self.model_loaded or self._model is None:
             self.load_model()
@@ -215,7 +221,7 @@ class MosquitoSegmenter(
                 f"Labels: {len(labels_batch)}.",
             )
 
-        final_masks: list[SegmentationPredictionType] = []
+        final_masks: list[SegmentationPrediction] = []
         iterator = enumerate(input_data_batch)
         if show_progress:
             iterator = progress_bar(iterator, total=num_images)
@@ -231,13 +237,13 @@ class MosquitoSegmenter(
                 final_masks.append(mask)
             except Exception as e:
                 self._logger.error(f"Failed to process image at index {i}: {e}")
-                final_masks.append(np.zeros((1, 1), dtype=np.uint8))
+                final_masks.append(SegmentationPrediction(mask=np.zeros((1, 1), dtype=np.uint8), pixel_count=0))
         return final_masks
 
     def visualize(
         self,
         input_data: ImageInput,
-        predictions: SegmentationPredictionType,
+        predictions: SegmentationPrediction,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
         """Overlays a segmentation mask on the original image."""
@@ -246,7 +252,7 @@ class MosquitoSegmenter(
 
         colored_mask = Image.new("RGB", image_pil.size, self.config.visualization.overlay_color)
 
-        alpha_mask = Image.fromarray(((1 - predictions) * 255).astype(np.uint8))
+        alpha_mask = Image.fromarray(((1 - predictions.mask) * 255).astype(np.uint8))
         overlay = Image.composite(image_pil, colored_mask, alpha_mask)
 
         if save_path:
@@ -258,19 +264,19 @@ class MosquitoSegmenter(
 
     def _evaluate_from_prediction(
         self,
-        prediction: SegmentationPredictionType,
+        prediction: SegmentationPrediction,
         ground_truth: SegmentationGroundTruthType,
     ) -> dict[str, float]:
         """Calculates segmentation metrics for a single predicted mask."""
-        prediction = prediction.astype(bool)
+        pred_mask = prediction.mask.astype(bool)
         ground_truth = ground_truth.astype(bool)
 
-        if prediction.shape != ground_truth.shape:
+        if pred_mask.shape != ground_truth.shape:
             raise ValueError("Prediction and ground truth must have the same shape.")
 
-        intersection = np.logical_and(prediction, ground_truth).sum()
-        union = np.logical_or(prediction, ground_truth).sum()
-        prediction_sum = prediction.sum()
+        intersection = np.logical_and(pred_mask, ground_truth).sum()
+        union = np.logical_or(pred_mask, ground_truth).sum()
+        prediction_sum = pred_mask.sum()
         ground_truth_sum = ground_truth.sum()
 
         iou = intersection / union if union > 0 else 0.0

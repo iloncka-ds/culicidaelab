@@ -4,6 +4,8 @@ import numpy as np
 from pathlib import Path
 from unittest.mock import MagicMock
 
+from culicidaelab.core.prediction_models import SegmentationPrediction
+
 # --- Mock necessary modules before they are imported by the test subject ---
 try:
     from culicidaelab.core.config_models import PredictorConfig
@@ -100,13 +102,13 @@ def test_predict_raises_if_model_fails(segmenter, mocker):
 
 def test_visualize_shape_mismatch(segmenter):
     input_image = np.zeros((10, 10, 3), dtype=np.uint8)
-    prediction_mask = np.ones((5, 5), dtype=np.uint8)
+    prediction_mask = SegmentationPrediction(mask=np.ones((5, 5), dtype=np.uint8), pixel_count=25)
     with pytest.raises(ValueError):
         segmenter.visualize(input_image, prediction_mask)
 
 
 def test_evaluate_from_prediction_invalid_shapes(segmenter):
-    pred_mask = np.ones((5, 5), dtype=np.uint8)
+    pred_mask = SegmentationPrediction(mask=np.ones((5, 5), dtype=np.uint8), pixel_count=25)
     gt_mask = np.ones((10, 10), dtype=np.uint8)
     with pytest.raises(ValueError, match="Prediction and ground truth must have the same shape"):
         segmenter._evaluate_from_prediction(prediction=pred_mask, ground_truth=gt_mask)
@@ -138,10 +140,11 @@ def test_predict_triggers_load_model(segmenter, mocker):
 
 def test_predict_without_boxes(loaded_segmenter):
     input_image = np.zeros((100, 100, 3), dtype=np.uint8)
-    result_mask = loaded_segmenter.predict(input_image)
+    result = loaded_segmenter.predict(input_image)
     loaded_segmenter.mocked_internal_predictor.assert_not_called()
-    assert result_mask.shape == (100, 100)
-    assert not result_mask.any()
+    assert isinstance(result, SegmentationPrediction)
+    assert result.mask.shape == (100, 100)
+    assert result.pixel_count == 0
 
 
 def test_predict_with_boxes(loaded_segmenter):
@@ -154,19 +157,21 @@ def test_predict_with_boxes(loaded_segmenter):
     mock_masks[1, 40:50, 40:50] = True
     mock_result.masks = MagicMock(data=mock_masks)
     loaded_segmenter.mocked_internal_predictor.return_value = [mock_result]
-    result_mask = loaded_segmenter.predict(input_image, detection_boxes=detection_boxes)
+    result = loaded_segmenter.predict(input_image, detection_boxes=detection_boxes)
     expected_bboxes = [(15, 15, 25, 25), (40, 40, 50, 50)]
     loaded_segmenter.mocked_internal_predictor.assert_called_once()
     call_args, call_kwargs = loaded_segmenter.mocked_internal_predictor.call_args
     np.testing.assert_array_equal(call_args[0], input_image)
     assert call_kwargs == {"bboxes": expected_bboxes, "verbose": False}
     expected_mask = mock_masks.any(axis=0).astype(np.uint8)
-    np.testing.assert_array_equal(result_mask, expected_mask)
+    assert isinstance(result, SegmentationPrediction)
+    np.testing.assert_array_equal(result.mask, expected_mask)
+    assert result.pixel_count == np.sum(expected_mask)
 
 
 def test_visualize(segmenter):
     input_image = np.zeros((10, 10, 3), dtype=np.uint8)
-    prediction_mask = np.ones((10, 10), dtype=np.uint8)
+    prediction_mask = SegmentationPrediction(mask=np.ones((10, 10), dtype=np.uint8), pixel_count=100)
     visualized_output = segmenter.visualize(input_image, prediction_mask)
     assert visualized_output.shape == (10, 10, 3)
     assert visualized_output.dtype == np.uint8
@@ -184,7 +189,7 @@ def test_visualize(segmenter):
     ],
 )
 def test_evaluate_from_prediction(segmenter, name, pred_data, gt_data, exp_iou, exp_prec, exp_rec, exp_f1):
-    pred_mask = np.array(pred_data, dtype=np.uint8)
+    pred_mask = SegmentationPrediction(mask=np.array(pred_data, dtype=np.uint8), pixel_count=np.sum(pred_data))
     gt_mask = np.array(gt_data, dtype=np.uint8)
     metrics = segmenter._evaluate_from_prediction(prediction=pred_mask, ground_truth=gt_mask)
     assert metrics["iou"] == pytest.approx(exp_iou)
@@ -196,7 +201,7 @@ def test_evaluate_from_prediction(segmenter, name, pred_data, gt_data, exp_iou, 
 def test_evaluate_integration(loaded_segmenter, mocker):
     dummy_image = np.zeros((10, 10, 3), dtype=np.uint8)
     gt_mask = np.ones((10, 10), dtype=np.uint8)
-    pred_mask = np.zeros((10, 10), dtype=np.uint8)
+    pred_mask = SegmentationPrediction(mask=np.zeros((10, 10), dtype=np.uint8), pixel_count=0)
     mocker.patch.object(loaded_segmenter, "predict", return_value=pred_mask)
     metrics = loaded_segmenter.evaluate(input_data=dummy_image, ground_truth=gt_mask)
     loaded_segmenter.predict.assert_called_once_with(dummy_image)
