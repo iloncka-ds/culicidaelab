@@ -51,6 +51,9 @@ from .predictors.segmenter import MosquitoSegmenter
 # Data providers
 from .providers.huggingface_provider import HuggingFaceProvider
 
+# Serve function
+from .serve import serve, clear_serve_cache
+
 # Versioning
 try:
     __version__ = version("culicidaelab")
@@ -83,4 +86,6 @@ __all__ = [
     "get_settings",
     "list_datasets",
     "list_models",
+    "serve",
+    "clear_serve_cache",
 ]

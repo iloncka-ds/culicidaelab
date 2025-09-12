@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 from PIL import ImageDraw, ImageFont
@@ -44,6 +44,7 @@ from culicidaelab.core.prediction_models import (
 )
 from culicidaelab.core.settings import Settings
 from culicidaelab.predictors.backend_factory import create_backend
+from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 
 DetectionGroundTruthType = list[tuple[float, float, float, float]]
 
@@ -71,13 +72,21 @@ class MosquitoDetector(
         max_detections (int): The maximum number of detections to return per image.
     """
 
-    def __init__(self, settings: Settings, load_model: bool = False, backend: str | None = None) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        predictor_type="detector",
+        mode: Literal["torch", "serve"] | None = None,
+        load_model: bool = False,
+        backend: BaseInferenceBackend | None = None,
+    ) -> None:
         """Initializes the MosquitoDetector."""
-        predictor_type = "detector"
-        config = settings.get_config(f"predictors.{predictor_type}")
-        backend_name = backend or config.backend or "torch"
 
-        backend_instance = create_backend(settings, predictor_type, backend_name)
+        backend_instance = backend or create_backend(
+            predictor_type=predictor_type,
+            settings=settings,
+            mode=mode,
+        )
 
         super().__init__(
             settings=settings,

@@ -38,16 +38,16 @@ Example:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TypeAlias
+from typing import TypeAlias, Literal
 
 import numpy as np
-from PIL import Image  # Added Image
-
+from PIL import Image
 
 from culicidaelab.core.base_predictor import BasePredictor, ImageInput
 from culicidaelab.core.prediction_models import SegmentationPrediction
 from culicidaelab.core.settings import Settings
 from culicidaelab.predictors.backend_factory import create_backend
+from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 
 SegmentationGroundTruthType: TypeAlias = np.ndarray
 
@@ -67,13 +67,21 @@ class MosquitoSegmenter(
             initialization. Defaults to False.
     """
 
-    def __init__(self, settings: Settings, load_model: bool = False, backend: str | None = None) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        predictor_type="segmenter",
+        mode: Literal["torch", "serve"] | None = None,
+        load_model: bool = False,
+        backend: BaseInferenceBackend | None = None,
+    ) -> None:
         """Initializes the MosquitoSegmenter."""
-        predictor_type = "segmenter"
-        config = settings.get_config(f"predictors.{predictor_type}")
-        backend_name = backend or config.backend or "torch"
 
-        backend_instance = create_backend(settings, predictor_type, backend_name)
+        backend_instance = backend or create_backend(
+            predictor_type=predictor_type,
+            settings=settings,
+            mode=mode,
+        )
 
         super().__init__(
             settings=settings,
