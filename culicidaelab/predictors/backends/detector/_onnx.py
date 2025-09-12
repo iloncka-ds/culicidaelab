@@ -5,15 +5,16 @@ from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
 from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 
 
-class ONNXBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
+class DetectorONNXBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
     def __init__(self, weights_manager: WeightsManagerProtocol):
+        super().__init__(predictor_type="detector")
         self.weights_manager = weights_manager
         self.session = None
 
-    def load_model(self, predictor_type: str, **kwargs: Any):
+    def load_model(self, **kwargs: Any):
         # 1. Backend resolves its OWN path via the manager
         model_path = self.weights_manager.resolve_weights_path(
-            predictor_type=predictor_type,
+            predictor_type=self.predictor_type,
             backend_type="onnx",  # The backend knows its own type
         )
         # 2. Backend loads the model from the resolved path

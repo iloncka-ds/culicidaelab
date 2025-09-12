@@ -241,7 +241,7 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
         if not self.backend.is_loaded:
             self._logger.info(f"Loading model for {self.predictor_type} using {self.backend.__class__.__name__}")
             try:
-                self.backend.load_model(self.predictor_type)
+                self.backend.load_model()
                 self._logger.info(f"Successfully loaded model for {self.predictor_type}")
             except Exception as e:
                 self._logger.error(f"Failed to load model for {self.predictor_type}: {e}")
@@ -268,7 +268,7 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
         """
         if not self.backend.is_loaded:
             try:
-                self.backend.load_model(predictor_type=self.predictor_type)
+                self.backend.load_model()
             except Exception as e:
                 raise RuntimeError(f"Failed to load model: {e}") from e
 

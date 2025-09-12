@@ -85,26 +85,33 @@ def create_backend(
 
     weights_manager = ModelWeightsManager(settings)
 
-    # Safely import and instantiate the backend class. The gatekeeper ensures this is safe.
-    if final_backend_type == "onnx":
-        from culicidaelab.predictors.backends._onnx import ONNXBackend
+    if final_backend_type == "torch":
+        if predictor_type == "classifier":
+            from culicidaelab.predictors.backends.classifier._fastai import ClassifierFastAIBackend
 
-        return ONNXBackend(weights_manager=weights_manager)
+            return ClassifierFastAIBackend(weights_manager=weights_manager)
+        elif predictor_type == "detector":
+            from culicidaelab.predictors.backends.detector._yolo import DetectorYOLOBackend
 
-    # We are now certain that torch is installed if we reach this point.
-    if predictor_type == "classifier":
-        from culicidaelab.predictors.backends._fastai import FastAIBackend
+            return DetectorYOLOBackend(weights_manager=weights_manager)
+        elif predictor_type == "segmenter":
+            from culicidaelab.predictors.backends.segmenter._sam import SegmenterSAMBackend
 
-        return FastAIBackend(weights_manager=weights_manager)
-    elif predictor_type == "detector":
-        from culicidaelab.predictors.backends._yolo import YOLOBackend
+            return SegmenterSAMBackend(weights_manager=weights_manager)
 
-        return YOLOBackend(weights_manager=weights_manager)
-    elif predictor_type == "segmenter":
-        # Ultralytics' SAM model is handled by the same backend as YOLO.
-        from culicidaelab.predictors.backends._yolo import YOLOBackend
+    elif final_backend_type == "onnx":
+        if predictor_type == "classifier":
+            from culicidaelab.predictors.backends.classifier._onnx import ClassifierONNXBackend
 
-        return YOLOBackend(weights_manager=weights_manager)
-    else:
-        # This is a safeguard for future development.
-        raise ValueError(f"Unsupported predictor_type '{predictor_type}' for the 'torch' backend.")
+            return ClassifierONNXBackend(weights_manager=weights_manager)
+        elif predictor_type == "detector":
+            from culicidaelab.predictors.backends.detector._onnx import DetectorONNXBackend
+
+            return DetectorONNXBackend(weights_manager=weights_manager)
+        elif predictor_type == "segmenter":
+            from culicidaelab.predictors.backends.segmenter._onnx import SegmenterONNXBackend
+
+            return SegmenterONNXBackend(weights_manager=weights_manager)
+
+    # This is a safeguard for future development.
+    raise ValueError(f"Could not create a backend for predictor '{predictor_type}' with mode '{final_backend_type}'.")

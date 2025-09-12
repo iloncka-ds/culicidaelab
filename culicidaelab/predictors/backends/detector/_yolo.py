@@ -5,14 +5,15 @@ from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
 from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 
 
-class YOLOBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
+class DetectorYOLOBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
     def __init__(self, weights_manager: WeightsManagerProtocol):
+        super().__init__(predictor_type="detector")
         self.weights_manager = weights_manager
         self.model = None
 
-    def load_model(self, predictor_type: str, **kwargs: Any):
+    def load_model(self, **kwargs: Any):
         model_path = self.weights_manager.resolve_weights_path(
-            predictor_type=predictor_type,
+            predictor_type=self.predictor_type,
             backend_type="torch",
         )
         self.model = YOLO(str(model_path))
@@ -40,7 +41,6 @@ class YOLOBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
     def predict_batch(
         self,
         input_data_batch: list[np.ndarray],
-        predictor_type: str,
         show_progress: bool = False,
         **kwargs: Any,
     ) -> list[np.ndarray]:

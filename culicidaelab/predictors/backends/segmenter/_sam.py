@@ -8,14 +8,15 @@ from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 logger = logging.getLogger(__name__)
 
 
-class SAMBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
+class SegmenterSAMBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
     def __init__(self, weights_manager: WeightsManagerProtocol):
+        super().__init__(predictor_type="segmenter")
         self.weights_manager = weights_manager
         self.model = None
 
-    def load_model(self, predictor_type: str, **kwargs):
+    def load_model(self, **kwargs):
         model_path = self.weights_manager.resolve_weights_path(
-            predictor_type=predictor_type,
+            predictor_type=self.predictor_type,
             backend_type="torch",
         )
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

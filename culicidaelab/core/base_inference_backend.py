@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
 from fastprogress.fastprogress import progress_bar
-from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -20,13 +19,13 @@ class BaseInferenceBackend(Generic[InputDataType, PredictionType], ABC):
 
     def __init__(
         self,
-        weights_manager: WeightsManagerProtocol,
+        predictor_type: str,
     ):
-        self.weights_manager = weights_manager
+        self.predictor_type = predictor_type
         self.model = None
 
     @abstractmethod
-    def load_model(self, predictor_type: str, **kwargs: Any) -> None: ...
+    def load_model(self, **kwargs: Any) -> None: ...
 
     @abstractmethod
     def predict(self, input_data: InputDataType, **kwargs: Any) -> PredictionType:
@@ -43,7 +42,6 @@ class BaseInferenceBackend(Generic[InputDataType, PredictionType], ABC):
     def predict_batch(
         self,
         input_data_batch: list[InputDataType],
-        predictor_type: str,
         show_progress: bool = False,
         **kwargs: Any,
     ) -> list[PredictionType]:
@@ -52,7 +50,7 @@ class BaseInferenceBackend(Generic[InputDataType, PredictionType], ABC):
             return []
 
         if not self.is_loaded:
-            self.load_model(predictor_type)
+            self.load_model()
         iterator = input_data_batch
         if show_progress:
             iterator = progress_bar(input_data_batch, total=len(input_data_batch))
