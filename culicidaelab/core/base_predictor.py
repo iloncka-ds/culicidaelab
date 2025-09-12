@@ -19,8 +19,9 @@ from fastprogress.fastprogress import progress_bar
 import numpy as np
 
 from culicidaelab.core.config_models import PredictorConfig
+from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 from culicidaelab.core.settings import Settings
-from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
+
 
 logger = logging.getLogger(__name__)
 
@@ -35,45 +36,34 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
 
     This class defines the common interface for all predictors (e.g., detector,
     segmenter, classifier). It relies on the main Settings object for
-    configuration and a WeightsManager for model file management.
+    configuration and a backend for model execution.
 
     Args:
         settings (Settings): The main Settings object for the library.
         predictor_type (str): The key for this predictor in the configuration
             (e.g., 'classifier').
-        weights_manager (WeightsManagerProtocol): An object conforming to the
-            WeightsManagerProtocol.
+        backend (BaseInferenceBackend): An object that inherits the
+            BaseInferenceBackend for model loading and inference.
         load_model (bool): If True, loads the model immediately upon initialization.
 
     Attributes:
         settings (Settings): The main settings object.
         predictor_type (str): The type of the predictor.
-        weights_manager (WeightsManagerProtocol): The manager responsible for
-            providing model weights.
+        backend (BaseInferenceBackend): The backend responsible for the model.
     """
 
     def __init__(
         self,
         settings: Settings,
         predictor_type: str,
-        weights_manager: WeightsManagerProtocol,
+        backend: BaseInferenceBackend,
         load_model: bool = False,
     ):
-        """Initializes the predictor.
-
-        Raises:
-            ValueError: If the configuration for the specified `predictor_type`
-                is not found in the settings.
-        """
+        """Initializes the predictor."""
         self.settings = settings
         self.predictor_type = predictor_type
-
-        self._weights_manager = weights_manager
-        self._model_path = self._weights_manager.ensure_weights(self.predictor_type)
+        self.backend = backend
         self._config: PredictorConfig = self._get_predictor_config()
-
-        self._model = None
-        self._model_loaded = False
         self._logger = logging.getLogger(
             f"culicidaelab.predictor.{self.predictor_type}",
         )
@@ -83,13 +73,13 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
 
     def __call__(self, input_data: InputDataType, **kwargs: Any) -> Any:
         """Convenience method that calls `predict()`."""
-        if not self._model_loaded:
+        if not self.backend.is_loaded:
             self.load_model()
         return self.predict(input_data, **kwargs)
 
     def __enter__(self):
         """Context manager entry."""
-        if not self._model_loaded:
+        if not self.backend.is_loaded:
             self.load_model()
         return self
 
@@ -105,12 +95,7 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
     @property
     def model_loaded(self) -> bool:
         """Check if the model is loaded."""
-        return self._model_loaded
-
-    @property
-    def model_path(self) -> Path:
-        """Gets the path to the model weights file."""
-        return self._model_path
+        return self.backend.is_loaded
 
     @contextmanager
     def model_context(self):
@@ -126,13 +111,13 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
             >>> with predictor.model_context():
             ...     predictions = predictor.predict(data)
         """
-        was_loaded = self._model_loaded
+        was_loaded = self.backend.is_loaded
         try:
             if not was_loaded:
                 self.load_model()
             yield self
         finally:
-            if not was_loaded and self._model_loaded:
+            if not was_loaded and self.backend.is_loaded:
                 self.unload_model()
 
     def evaluate(
@@ -247,39 +232,51 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
         """
         return {
             "predictor_type": self.predictor_type,
-            "model_path": str(self._model_path),
-            "model_loaded": self._model_loaded,
+            "model_loaded": self.backend.is_loaded,
             "config": self.config.model_dump(),
         }
 
     def load_model(self) -> None:
-        """Loads the model if it is not already loaded.
+        """Delegates model loading to the configured backend."""
+        if not self.backend.is_loaded:
+            self._logger.info(f"Loading model for {self.predictor_type} using {self.backend.__class__.__name__}")
+            try:
+                self.backend.load_model(self.predictor_type)
+                self._logger.info(f"Successfully loaded model for {self.predictor_type}")
+            except Exception as e:
+                self._logger.error(f"Failed to load model for {self.predictor_type}: {e}")
+                raise RuntimeError(f"Failed to load model for {self.predictor_type}: {e}") from e
 
-        This is a convenience wrapper around `_load_model` that prevents
-        reloading.
+    def predict(
+        self,
+        input_data: InputDataType,
+        **kwargs: Any,
+    ) -> PredictionType:
+        """Makes a prediction on a single input data sample.
+
+        Args:
+            input_data (ImageInput): The input data (e.g., an image as a NumPy
+                array) to make a prediction on.
+            **kwargs (Any): Additional predictor-specific arguments.
+
+        Returns:
+            PredictionType: The prediction result, with a format specific to the
+            predictor type.
 
         Raises:
-            RuntimeError: If model loading fails.
+            RuntimeError: If the model is not loaded before calling this method.
         """
-        if self._model_loaded:
-            self._logger.info(f"Model for {self.predictor_type} already loaded")
-            return
+        if not self.backend.is_loaded:
+            try:
+                self.backend.load_model(predictor_type=self.predictor_type)
+            except Exception as e:
+                raise RuntimeError(f"Failed to load model: {e}") from e
 
-        try:
-            self._logger.info(
-                f"Loading model for {self.predictor_type} from {self._model_path}",
-            )
-            self._load_model()
-            self._model_loaded = True
-            self._logger.info(f"Successfully loaded model for {self.predictor_type}")
-        except Exception as e:
-            self._logger.error(f"Failed to load model for {self.predictor_type}: {e}")
+        image = self._load_and_validate_image(input_data)
 
-            self._model = None
-            self._model_loaded = False
-            raise RuntimeError(
-                f"Failed to load model for {self.predictor_type}: {e}",
-            ) from e
+        raw_output = self.backend.predict(np.array(image), **kwargs)
+
+        return self._convert_raw_to_prediction(raw_output)
 
     def predict_batch(
         self,
@@ -287,49 +284,21 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
         show_progress: bool = False,
         **kwargs: Any,
     ) -> list[PredictionType]:
-        """Makes predictions on a batch of inputs.
-
-        This base implementation processes items serially. Subclasses with
-        native batching capabilities SHOULD override this method.
-
-        Args:
-            input_data_batch (Sequence[InputDataType]): List of input data to make
-                predictions on.
-            show_progress (bool): Whether to show a progress bar.
-            **kwargs (Any): Additional arguments passed to each `predict` call.
-
-        Returns:
-            list[PredictionType]: List of predictions.
-
-        Raises:
-            RuntimeError: If model fails to load or predict.
-        """
+        """Makes predictions on a batch of inputs by delegating to the backend."""
         if not input_data_batch:
             return []
 
-        if not self._model_loaded:
+        if not self.backend.is_loaded:
             self.load_model()
-            if not self._model_loaded:
-                raise RuntimeError("Failed to load model for batch prediction")
 
-        iterator = input_data_batch
-        if show_progress:
-            iterator = progress_bar(
-                input_data_batch,
-                parent=None,
-                display=True,
-            )
-        try:
-            return [self.predict(item, **kwargs) for item in iterator]
-        except Exception as e:
-            self._logger.error(f"Batch prediction failed: {e}", exc_info=True)
-            raise RuntimeError(f"Batch prediction failed: {e}") from e
+        raw_predictions = self.backend.predict_batch(list(input_data_batch), **kwargs)
+        final_predictions = [self._convert_raw_to_prediction(raw_pred) for raw_pred in raw_predictions]
+        return final_predictions
 
     def unload_model(self) -> None:
         """Unloads the model to free memory."""
-        if self._model_loaded:
-            self._model = None
-            self._model_loaded = False
+        if self.backend.is_loaded:
+            self.backend.unload_model()
             self._logger.info(f"Unloaded model for {self.predictor_type}")
 
     # Abstract Methods
@@ -351,33 +320,10 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
         pass
 
     @abstractmethod
-    def _load_model(self) -> None:
-        """Loads the model from the path specified in the configuration.
-
-        This method must be implemented by child classes. It should handle
-        the specifics of loading a model file (e.g., PyTorch, TensorFlow)
-        and assign it to an internal attribute like `self._model`.
-
-        Raises:
-            RuntimeError: If the model file cannot be found or loaded.
+    def _convert_raw_to_prediction(self, raw_prediction: np.ndarray) -> PredictionType:
         """
-        pass
-
-    @abstractmethod
-    def predict(self, input_data: InputDataType, **kwargs: Any) -> PredictionType:
-        """Makes a prediction on a single input data sample.
-
-        Args:
-            input_data (InputDataType): The input data (e.g., an image as a NumPy
-                array) to make a prediction on.
-            **kwargs (Any): Additional predictor-specific arguments.
-
-        Returns:
-            PredictionType: The prediction result, with a format specific to the
-            predictor type.
-
-        Raises:
-            RuntimeError: If the model is not loaded before calling this method.
+        Subclasses MUST implement this to convert a raw numpy array from the
+        backend into the final Pydantic prediction model.
         """
         pass
 
@@ -402,7 +348,6 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
         """
         pass
 
-    # Protected Methods
     def _aggregate_metrics(
         self,
         metrics_list: list[dict[str, float]],
@@ -490,7 +435,7 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
             )
         return config
 
-    def _load_and_validate_image(self, input_data: ImageInput) -> Image.Image:
+    def _load_and_validate_image(self, input_data: InputDataType) -> Image.Image:
         """Loads and validates an input image from various formats.
 
         Args:
@@ -550,7 +495,7 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
 
     def _prepare_batch_images(
         self,
-        input_data_batch: Sequence[ImageInput],
+        input_data_batch: Sequence[InputDataType],
     ) -> tuple[list[Image.Image], list[int]]:
         """Prepares and validates a batch of images for processing.
 

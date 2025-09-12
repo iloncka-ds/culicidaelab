@@ -40,17 +40,14 @@ Example:
 
 from __future__ import annotations
 
-import pathlib
-import platform
-from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 from collections.abc import Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-from fastai.vision.all import load_learner
+
 from sklearn.metrics import confusion_matrix, roc_auc_score
 from sklearn.preprocessing import label_binarize
 
@@ -60,32 +57,10 @@ from culicidaelab.core.prediction_models import (
     ClassificationPrediction,
 )
 from culicidaelab.core.settings import Settings
-from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
-
-ClassificationGroundTruthType = str
+from culicidaelab.predictors.backend_factory import create_backend
 
 
-@contextmanager
-def set_posix_windows():
-    """Temporarily patch pathlib for Windows FastAI model loading.
-
-    This context manager addresses a common issue where FastAI models trained
-    on a POSIX-based system (like Linux or macOS) fail to load on Windows
-    due to differences in path object serialization. It temporarily makes
-    `pathlib.PosixPath` behave like `pathlib.WindowsPath` during model loading.
-
-    Yields:
-        None: Executes the code within the `with` block.
-    """
-    if platform.system() == "Windows":
-        posix_backup = pathlib.PosixPath
-        try:
-            pathlib.PosixPath = pathlib.WindowsPath
-            yield
-        finally:
-            pathlib.PosixPath = posix_backup
-    else:
-        yield
+ClassificationGroundTruthType: TypeAlias = str
 
 
 class MosquitoClassifier(
@@ -108,19 +83,20 @@ class MosquitoClassifier(
         data_dir (Path): The directory where datasets are stored.
         species_map (dict[int, str]): A mapping from class indices to species names.
         num_classes (int): The total number of species classes.
-        learner: The loaded FastAI learner object, available after `load_model()`.
     """
 
-    def __init__(self, settings: Settings, load_model: bool = False) -> None:
+    def __init__(self, settings: Settings, load_model: bool = False, backend: str | None = None) -> None:
         """Initializes the MosquitoClassifier."""
+        predictor_type = "classifier"
+        config = settings.get_config(f"predictors.{predictor_type}")
+        backend_name = backend or config.backend
 
-        weights_manager = ModelWeightsManager(
-            settings=settings,
-        )
+        backend_instance = create_backend(settings, predictor_type, backend_name)
+
         super().__init__(
             settings=settings,
-            predictor_type="classifier",
-            weights_manager=weights_manager,
+            predictor_type=predictor_type,
+            backend=backend_instance,
             load_model=load_model,
         )
         self.arch: str | None = self.config.model_arch
@@ -156,85 +132,6 @@ class MosquitoClassifier(
             list[str]: A list of species names.
         """
         return [self.species_map[i] for i in sorted(self.species_map.keys())]
-
-    def predict(
-        self,
-        input_data: ImageInput,
-        **kwargs: Any,
-    ) -> ClassificationPrediction:
-        """Classifies the mosquito species in a single image.
-
-        Args:
-            input_data: Input image in one of the following formats:
-                - np.ndarray: Image array with shape (H, W, 3) in RGB format.
-                  Values can be uint8 [0, 255] or float32/float64 [0, 1].
-                - str or pathlib.Path: Path to an image file.
-                - PIL.Image.Image: PIL Image object.
-                - bytes: In-memory bytes of an image.
-                - io.BytesIO: A binary stream of an image.
-            **kwargs (Any): Additional arguments (not used).
-
-        Returns:
-            A `ClassificationPrediction` object containing a sorted list of
-            `Classification` instances.
-
-        Raises:
-            RuntimeError: If the model has not been loaded.
-            ValueError: If the input data has an invalid format.
-            FileNotFoundError: If the image file path doesn't exist.
-        """
-        if not self.model_loaded:
-            raise RuntimeError(
-                "Model is not loaded. Call load_model() or use a context manager.",
-            )
-
-        image = self._load_and_validate_image(input_data)
-
-        with set_posix_windows():
-            with self.learner.no_bar():
-                _, _, probabilities = self.learner.predict(image)
-
-        species_probs = []
-        for idx, prob in enumerate(probabilities):
-            species_name = self.species_map.get(idx, f"unknown_{idx}")
-            species_probs.append(
-                Classification(species_name=species_name, confidence=float(prob)),
-            )
-
-        species_probs.sort(key=lambda x: x.confidence, reverse=True)
-        return ClassificationPrediction(predictions=species_probs)
-
-    def predict_batch(
-        self,
-        input_data_batch: Sequence[ImageInput],
-        show_progress: bool = False,
-        **kwargs: Any,
-    ) -> list[ClassificationPrediction]:
-        """
-        Classifies a batch of mosquito images in a single, efficient pass.
-        """
-        if not self.model_loaded:
-            raise RuntimeError("Model is not loaded.")
-
-        images = [self._load_and_validate_image(item) for item in input_data_batch]
-
-        with self.learner.no_bar():
-            dl = self.learner.dls.test_dl(images, with_labels=False)
-            probabilities, _ = self.learner.get_preds(dl=dl, reorder=False)
-
-        batch_results = []
-        for probs_tensor in probabilities:
-            species_probs = []
-            for idx, prob in enumerate(probs_tensor):
-                species_name = self.species_map.get(idx, f"unknown_{idx}")
-                species_probs.append(
-                    Classification(species_name=species_name, confidence=float(prob)),
-                )
-
-            species_probs.sort(key=lambda x: x.confidence, reverse=True)
-            batch_results.append(ClassificationPrediction(predictions=species_probs))
-
-        return batch_results
 
     def visualize(
         self,
@@ -398,6 +295,16 @@ class MosquitoClassifier(
     # --------------------------------------------------------------------------
     # Private Methods
     # --------------------------------------------------------------------------
+    def _convert_raw_to_prediction(self, raw_prediction: np.ndarray) -> ClassificationPrediction:
+        """Implements the conversion for classification predictions."""
+        species_probs = []
+
+        for idx, prob in enumerate(raw_prediction):
+            species_name = self.species_map.get(idx, f"unknown_{idx}")
+            species_probs.append(Classification(species_name=species_name, confidence=float(prob)))
+
+        species_probs.sort(key=lambda x: x.confidence, reverse=True)
+        return ClassificationPrediction(predictions=species_probs)
 
     def _evaluate_from_prediction(
         self,
@@ -473,23 +380,8 @@ class MosquitoClassifier(
                     np.array(y_scores),
                     multi_class="ovr",
                 )
-                aggregated_metrics["roc_auc"] = roc_auc
+                aggregated_metrics["roc_auc"] = roc_auc  # type: ignore
             except ValueError as e:
                 self._logger.warning(f"Could not compute ROC AUC score: {e}")
                 aggregated_metrics["roc_auc"] = 0.0
         return aggregated_metrics
-
-    def _load_model(self) -> None:
-        """Loads the pre-trained FastAI learner model from disk.
-
-        Raises:
-            RuntimeError: If the model file cannot be loaded.
-        """
-        with set_posix_windows():
-            try:
-                self.learner = load_learner(self.model_path)
-                self.learner.to(self.config.device)
-            except Exception as e:
-                raise RuntimeError(
-                    f"Failed to load model from {self.model_path}. " f"Ensure the file is valid. Original error: {e}",
-                ) from e

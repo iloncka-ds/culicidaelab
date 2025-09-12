@@ -40,7 +40,7 @@ dependencies = [
     "toml>=0.10.2",
     "dotenv>=0.9.9",
     "pydantic-settings>=2.9.1",
-
+    "onnxruntime>=1.22.1",
 ]
 
 

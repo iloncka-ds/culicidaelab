@@ -38,7 +38,9 @@ class BaseProvider(ABC):
     @abstractmethod
     def download_model_weights(
         self,
-        model_type: str,
+        repo_id: str,
+        filename: str,
+        local_dir: Path,
         *args: Any,
         **kwargs: Any,
     ) -> Path:

@@ -35,31 +35,36 @@ class ModelWeightsManager(WeightsManagerProtocol):
         self.settings = settings
         self.provider_service = ProviderService(settings)
 
-    def ensure_weights(self, model_type: str) -> Path:
-        """Ensures model weights exist locally, downloading them if needed.
-
-        This method checks for the local existence of a model's weights. If they
-        are not found, it uses the provider service to download them based on
-        the configuration associated with the given model type.
-
-        Args:
-            model_type (str): The type of the model for which to ensure weights,
-                e.g., 'classifier', 'detector'.
-
-        Returns:
-            Path: The absolute, canonical path to the local model weights file.
-
-        Raises:
-            RuntimeError: If the weights cannot be downloaded or if the
-                configuration for the provider is missing or invalid.
+    def resolve_weights_path(self, predictor_type: str, backend_type: str) -> Path:
         """
-        predictor_config = None
+        Ensures weights for a given predictor and backend type are available locally,
+        downloading them if necessary, and returns the absolute path.
+        """
         try:
-            predictor_config = self.settings.get_config(f"predictors.{model_type}")
-            provider = self.provider_service.get_provider(predictor_config.provider_name)
-            return provider.download_model_weights(model_type)
+            # Construct the config key to get the specific weights info
+            weights_config_key = f"predictors.{predictor_type}.weights.{backend_type}"
+            weights_config = self.settings.get_config(weights_config_key)
+
+            # Get the main predictor config to find the repository_id and provider
+            predictor_config = self.settings.get_config(f"predictors.{predictor_type}")
+
+            # The repository can be overridden at the weights level
+            repo_id = weights_config.get("repository_id", predictor_config.get("repository_id"))
+            provider_name = predictor_config.get("provider_name", "huggingface")  # Default provider
+            filename = weights_config.get("filename")
+
+            if not all([repo_id, filename]):
+                raise ValueError(f"Missing 'repository_id' or 'filename' for {weights_config_key}")
+
+            provider = self.provider_service.get_provider(provider_name)
+
+            # Assuming provider has a method to download a specific file
+            # This change will require updating the provider's interface
+            return provider.download_model_weights(
+                repo_id=repo_id,
+                filename=filename,
+                local_dir=self.settings.model_dir,
+            )
         except Exception as e:
-            error_msg = f"Failed to download weights for '{model_type}': {str(e)}"
-            if predictor_config:
-                error_msg += f" with predictor config {predictor_config}"
+            error_msg = f"Failed to resolve weights for '{predictor_type}' with backend '{backend_type}': {e}"
             raise RuntimeError(error_msg) from e

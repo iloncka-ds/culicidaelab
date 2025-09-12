@@ -32,14 +32,9 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Any
-from collections.abc import Sequence
 
 import numpy as np
-from PIL import ImageDraw, ImageFont  # Added Image and ImageFont
-
-# CHANGED: Replaced tqdm with fastprogress for consistency.
-from fastprogress.fastprogress import progress_bar
-from ultralytics import YOLO
+from PIL import ImageDraw, ImageFont
 
 from culicidaelab.core.base_predictor import BasePredictor, ImageInput
 from culicidaelab.core.prediction_models import (
@@ -48,11 +43,11 @@ from culicidaelab.core.prediction_models import (
     DetectionPrediction,
 )
 from culicidaelab.core.settings import Settings
-from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
-
-logger = logging.getLogger(__name__)
+from culicidaelab.predictors.backend_factory import create_backend
 
 DetectionGroundTruthType = list[tuple[float, float, float, float]]
+
+logger = logging.getLogger(__name__)
 
 
 class MosquitoDetector(
@@ -76,16 +71,18 @@ class MosquitoDetector(
         max_detections (int): The maximum number of detections to return per image.
     """
 
-    def __init__(self, settings: Settings, load_model: bool = False) -> None:
+    def __init__(self, settings: Settings, load_model: bool = False, backend: str | None = None) -> None:
         """Initializes the MosquitoDetector."""
+        predictor_type = "detector"
+        config = settings.get_config(f"predictors.{predictor_type}")
+        backend_name = backend or config.backend or "torch"
 
-        weights_manager = ModelWeightsManager(
-            settings=settings,
-        )
+        backend_instance = create_backend(settings, predictor_type, backend_name)
+
         super().__init__(
             settings=settings,
-            predictor_type="detector",
-            weights_manager=weights_manager,
+            predictor_type=predictor_type,
+            backend=backend_instance,
             load_model=load_model,
         )
         self.confidence_threshold: float = self.config.confidence or 0.5
@@ -108,10 +105,8 @@ class MosquitoDetector(
         Raises:
             RuntimeError: If the model fails to load or if prediction fails.
         """
-        if not self.model_loaded or self._model is None:
+        if not self.backend.is_loaded:
             self.load_model()
-            if self._model is None:
-                raise RuntimeError("Failed to load model")
 
         confidence_threshold = kwargs.get(
             "confidence_threshold",
@@ -119,9 +114,10 @@ class MosquitoDetector(
         )
 
         try:
-            input_data = np.array(self._load_and_validate_image(input_data))
-            results = self._model(
-                source=input_data,
+            input_image = np.array(self._load_and_validate_image(input_data))
+            # The backend now returns a standardized NumPy array (N, 5) -> [x1, y1, x2, y2, conf]
+            results_array = self.backend.predict(
+                input_data=input_image,
                 conf=confidence_threshold,
                 iou=self.iou_threshold,
                 max_det=self.max_detections,
@@ -131,82 +127,18 @@ class MosquitoDetector(
             logger.error(f"Prediction failed: {e}", exc_info=True)
             raise RuntimeError(f"Prediction failed: {e}") from e
 
+        return self._convert_raw_to_prediction(results_array)
+
+    def _convert_raw_to_prediction(self, raw_prediction: np.ndarray) -> DetectionPrediction:
+        """ """
         detections: list[Detection] = []
-        if results:
-            boxes = results[0].boxes
-            for box in boxes:
-                xyxy_tensor = box.xyxy[0]
-                x1, y1, x2, y2 = xyxy_tensor.cpu().numpy()
-                conf = float(box.conf[0])
+        if raw_prediction.ndim == 2 and raw_prediction.shape[1] == 5:
+            for row in raw_prediction:
+                x1, y1, x2, y2, conf = row
                 detections.append(
                     Detection(box=BoundingBox(x1=x1, y1=y1, x2=x2, y2=y2), confidence=conf),
                 )
         return DetectionPrediction(detections=detections)
-
-    def predict_batch(
-        self,
-        input_data_batch: Sequence[ImageInput],
-        show_progress: bool = False,
-        **kwargs: Any,
-    ) -> list[DetectionPrediction]:
-        """Detects mosquitos in a batch of images using YOLO's native batching.
-
-        Args:
-            input_data_batch (Sequence[np.ndarray]): A list of input images.
-            show_progress (bool, optional): If True, a progress bar is shown.
-                Defaults to False.
-            **kwargs (Any): Additional arguments (not used).
-
-        Returns:
-            list[DetectionPrediction]: A list where each item is the `DetectionPrediction`
-            object for the corresponding image in the input batch.
-
-        Raises:
-            RuntimeError: If the model is not loaded.
-        """
-        if not self.model_loaded or self._model is None:
-            self.load_model()
-            if self._model is None:
-                raise RuntimeError("Failed to load model")
-        if not input_data_batch:
-            return []
-
-        valid_images, valid_indices = self._prepare_batch_images(input_data_batch)
-
-        if not valid_images:
-            self._logger.warning("No valid images found in the batch to process.")
-            return [DetectionPrediction(detections=[])] * len(input_data_batch)
-
-        yolo_results = self._model(
-            source=valid_images,
-            conf=self.confidence_threshold,
-            iou=self.iou_threshold,
-            max_det=self.max_detections,
-            stream=False,
-            verbose=False,
-        )
-
-        all_predictions: list[DetectionPrediction] = []
-        # CHANGED: Refactored the loop to use progress_bar correctly.
-        iterator = yolo_results
-        if show_progress:
-            iterator = progress_bar(
-                yolo_results,
-                total=len(input_data_batch),
-            )
-
-        for r in iterator:
-            detections = []
-            for box in r.boxes:
-                xyxy_tensor = box.xyxy[0]
-                x1, y1, x2, y2 = xyxy_tensor.cpu().numpy()
-                conf = float(box.conf[0])
-                detections.append(
-                    Detection(box=BoundingBox(x1=x1, y1=y1, x2=x2, y2=y2), confidence=conf),
-                )
-            all_predictions.append(DetectionPrediction(detections=detections))
-
-        return all_predictions
 
     def visualize(
         self,
@@ -378,27 +310,3 @@ class MosquitoDetector(
             "ap": float(ap),
             "mean_iou": mean_iou_val,
         }
-
-    def _load_model(self) -> None:
-        """Loads the YOLO object detection model from the specified path.
-
-        Raises:
-            RuntimeError: If the model cannot be loaded from the path
-                specified in the configuration.
-        """
-        try:
-            logger.info(f"Loading YOLO model from: {self.model_path}")
-            self._model = YOLO(str(self.model_path), task="detect")
-
-            if self._model and hasattr(self.config, "device") and self.config.device:
-                device = str(self.config.device)
-                logger.info(f"Moving model to device: {device}")
-                self._model.to(device)
-
-            logger.info("YOLO model loaded successfully.")
-        except Exception as e:
-            logger.error(f"Failed to load YOLO model: {e}", exc_info=True)
-            self._model = None
-            raise RuntimeError(
-                f"Could not load YOLO model from {self.model_path}.",
-            ) from e

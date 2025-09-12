@@ -132,11 +132,16 @@ def test_download_model_weights_not_found(
 ):
     mock_exists.return_value = False
     mock_settings.cache_dir = Path("/fake/cache")
+    mock_settings.model_dir = Path("/fake/models")
 
-    expected_path = Path("/fake/models/classifier.pt").resolve()
+    expected_path = Path("/fake/models/weights.pt").resolve()
     mock_hf_download.return_value = str(expected_path)
 
-    result_path = hf_provider.download_model_weights("classifier")
+    result_path = hf_provider.download_model_weights(
+        repo_id="org/model_repo",
+        filename="weights.pt",
+        local_dir=mock_settings.model_dir,
+    )
 
     mock_hf_download.assert_called_once()
     assert result_path == expected_path
@@ -150,10 +155,15 @@ def test_download_model_weights_already_exists(
     hf_provider,
 ):
     mock_exists.return_value = True
+    mock_settings.model_dir = Path("/fake/models")
 
-    result_path = hf_provider.download_model_weights("classifier")
+    result_path = hf_provider.download_model_weights(
+        repo_id="org/model_repo",
+        filename="weights.pt",
+        local_dir=mock_settings.model_dir,
+    )
 
-    expected_path = Path("/fake/models/classifier.pt").resolve()
+    expected_path = (mock_settings.model_dir / "weights.pt").resolve()
     assert result_path == expected_path
 
 
@@ -171,11 +181,16 @@ def test_download_model_weights_download_failure(
     mock_hf_download,
     hf_provider,
 ):
+    mock_settings.model_dir = Path("/fake/models")
     with pytest.raises(
         RuntimeError,
-        match="Failed to download weights for 'classifier'",
+        match="Failed to download weights file 'weights.pt' from repo 'org/model_repo'",
     ):
-        hf_provider.download_model_weights("classifier")
+        hf_provider.download_model_weights(
+            repo_id="org/model_repo",
+            filename="weights.pt",
+            local_dir=mock_settings.model_dir,
+        )
 
 
 @patch(
@@ -187,20 +202,6 @@ def test_download_dataset_failure(mock_load_dataset, hf_provider):
         hf_provider.download_dataset("my_dataset", split="train")
 
 
-def test_download_model_weights_missing_config(hf_provider, mock_settings):
-    def broken_predictor_config(path):
-        if "predictors" in path:
-            return PredictorConfig(
-                target="a.b",
-                model_path="/fake/models/classifier.pt",
-                repository_id=None,
-                filename=None,
-                model_config_path="dummy_path",
-                model_config_filename="dummy_file",
-            )
-        return None
-
-    mock_settings.get_config.side_effect = broken_predictor_config
-
-    with pytest.raises(ValueError, match="Cannot download weights for 'classifier'"):
-        hf_provider.download_model_weights("classifier")
+def test_download_model_weights_missing_args(hf_provider):
+    with pytest.raises(ValueError, match="'repo_id' and 'filename' must be provided"):
+        hf_provider.download_model_weights(repo_id="", filename="", local_dir=Path("."))

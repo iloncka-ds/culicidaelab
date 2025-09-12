@@ -1,14 +1,16 @@
 import pytest
 from pathlib import Path
-from unittest.mock import Mock, patch, call
+from unittest.mock import Mock, patch
 
 from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
 
 @pytest.fixture
-def mock_settings() -> Mock:
-    """Fixture providing a mocked Settings instance."""
-    return Mock()
+def mock_settings(tmp_path) -> Mock:
+    """Fixture providing a mocked Settings instance with a valid model_dir."""
+    settings = Mock()
+    settings.model_dir = tmp_path  # Use a real Path object from pytest's tmp_path
+    return settings
 
 
 def test_init(mock_settings: Mock):
@@ -18,71 +20,116 @@ def test_init(mock_settings: Mock):
 
 
 @patch("culicidaelab.predictors.model_weights_manager.ProviderService")
-def test_ensure_weights_successful_download(mock_provider_cls: Mock, mock_settings: Mock):
-    """ensure_weights orchestrates a successful download."""
-    model_type = "classifier"
-    expected_path = Path("/mock/path/to/model.pt")
+def test_resolve_weights_path_successful_download(mock_provider_cls: Mock, mock_settings: Mock):
+    """resolve_weights_path orchestrates a successful download."""
+    predictor_type = "classifier"
+    backend_type = "torch"
+    expected_path = Path("/predictors/model.pkl")
 
-    # Settings returns predictor config with provider_name
-    predictor_cfg = Mock()
-    predictor_cfg.provider_name = "mock_provider"
-    mock_settings.get_config.return_value = predictor_cfg
+    # Setup mock configs
+    predictor_config = {"repository_id": "repo/cls", "provider_name": "huggingface"}
+    weights_config = {"filename": "model.pkl"}
+
+    def get_config_side_effect(key):
+        if key == f"predictors.{predictor_type}":
+            return predictor_config
+        if key == f"predictors.{predictor_type}.weights.{backend_type}":
+            return weights_config
+        return None
+
+    mock_settings.get_config.side_effect = get_config_side_effect
 
     # ProviderService mock setup
     mock_provider_instance = mock_provider_cls.return_value
     mock_provider = mock_provider_instance.get_provider.return_value
     mock_provider.download_model_weights.return_value = expected_path
 
-    # Patch instantiate_from_config to return our mock_provider
-    mock_settings.instantiate_from_config.return_value = mock_provider
-
     wm = ModelWeightsManager(settings=mock_settings)
-    result = wm.ensure_weights(model_type)
+    result = wm.resolve_weights_path(predictor_type, backend_type)
 
-    # Assertions – confirm configuration lookup happened and the expected path is returned.
-    assert call(f"predictors.{model_type}") in mock_settings.get_config.call_args_list
+    # Assertions
     assert result == expected_path
+    mock_provider.download_model_weights.assert_called_once_with(
+        repo_id="repo/cls",
+        filename="model.pkl",
+        local_dir=mock_settings.model_dir,
+    )
 
 
 @patch("culicidaelab.predictors.model_weights_manager.ProviderService")
-def test_ensure_weights_raises_runtime_error_on_provider_failure(mock_provider_cls: Mock, mock_settings: Mock):
-    """ensure_weights wraps provider failures in RuntimeError."""
-    model_type = "detector"
-    predictor_cfg = Mock()
-    predictor_cfg.provider_name = "failing_provider"
-    mock_settings.get_config.return_value = predictor_cfg
+def test_resolve_weights_path_override_repo(mock_provider_cls: Mock, mock_settings: Mock):
+    """resolve_weights_path uses overridden repository_id from weights config."""
+    predictor_type = "detector"
+    backend_type = "onnx"
 
-    # Simulate provider download failure which should be wrapped by ModelWeightsManager
+    predictor_config = {"repository_id": "repo/main", "provider_name": "huggingface"}
+    weights_config = {"filename": "model.onnx", "repository_id": "repo/onnx"}
+
+    def get_config_side_effect(key):
+        if key == f"predictors.{predictor_type}":
+            return predictor_config
+        if key == f"predictors.{predictor_type}.weights.{backend_type}":
+            return weights_config
+        return None
+
+    mock_settings.get_config.side_effect = get_config_side_effect
+
+    mock_provider = mock_provider_cls.return_value.get_provider.return_value
+
+    wm = ModelWeightsManager(settings=mock_settings)
+    wm.resolve_weights_path(predictor_type, backend_type)
+
+    mock_provider.download_model_weights.assert_called_once_with(
+        repo_id="repo/onnx",
+        filename="model.onnx",
+        local_dir=mock_settings.model_dir,
+    )
+
+
+@patch("culicidaelab.predictors.model_weights_manager.ProviderService")
+def test_resolve_weights_path_raises_runtime_error_on_provider_failure(mock_provider_cls: Mock, mock_settings: Mock):
+    """resolve_weights_path wraps provider failures in RuntimeError."""
+    predictor_type = "segmenter"
+    backend_type = "torch"
+
+    predictor_config = {"repository_id": "repo/seg", "provider_name": "huggingface"}
+    weights_config = {"filename": "model.pt"}
+
+    def get_config_side_effect(key):
+        if key == f"predictors.{predictor_type}":
+            return predictor_config
+        if key == f"predictors.{predictor_type}.weights.{backend_type}":
+            return weights_config
+        return None
+
+    mock_settings.get_config.side_effect = get_config_side_effect
+
     mock_provider = mock_provider_cls.return_value.get_provider.return_value
     mock_provider.download_model_weights.side_effect = ConnectionError("network down")
-    mock_settings.instantiate_from_config.return_value = mock_provider
 
     wm = ModelWeightsManager(settings=mock_settings)
-    with pytest.raises(RuntimeError):
-        wm.ensure_weights(model_type)
+    with pytest.raises(RuntimeError, match="Failed to resolve weights"):
+        wm.resolve_weights_path(predictor_type, backend_type)
 
 
 @patch("culicidaelab.predictors.model_weights_manager.ProviderService")
-def test_ensure_weights_raises_runtime_error_on_missing_provider_name(mock_provider_cls: Mock, mock_settings: Mock):
-    """Missing provider_name in config results in RuntimeError."""
-    model_type = "invalid_model"
+def test_resolve_weights_path_raises_value_error_on_missing_filename(mock_provider_cls: Mock, mock_settings: Mock):
+    """resolve_weights_path raises ValueError if filename is missing."""
+    predictor_type = "classifier"
+    backend_type = "torch"
 
-    cfg = Mock()
-    if hasattr(cfg, "provider_name"):
-        del cfg.provider_name
-    mock_settings.get_config.return_value = cfg
+    predictor_config = {"repository_id": "repo/cls"}
+    weights_config = {}
 
-    wm = ModelWeightsManager(settings=mock_settings)
-    with pytest.raises(RuntimeError):
-        wm.ensure_weights(model_type)
+    def get_config_side_effect(key):
+        if key == f"predictors.{predictor_type}":
+            return predictor_config
+        if key == f"predictors.{predictor_type}.weights.{backend_type}":
+            return weights_config
+        return None
 
-
-@patch("culicidaelab.predictors.model_weights_manager.ProviderService")
-def test_ensure_weights_raises_runtime_error_on_none_config(mock_provider_cls: Mock, mock_settings: Mock):
-    """None config should raise RuntimeError."""
-    model_type = "missing_model"
-    mock_settings.get_config.return_value = None
+    mock_settings.get_config.side_effect = get_config_side_effect
 
     wm = ModelWeightsManager(settings=mock_settings)
-    with pytest.raises(RuntimeError):
-        wm.ensure_weights(model_type)
+    with pytest.raises(RuntimeError, match="Missing 'repository_id' or 'filename'"):
+        wm.resolve_weights_path(predictor_type, backend_type)

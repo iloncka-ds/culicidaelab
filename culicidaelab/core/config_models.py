@@ -191,9 +191,10 @@ class PredictorConfig(BaseModel):
     model_path: str
     confidence: float = 0.5
     device: str = "cpu"
+    backend: str | None = None
     params: dict[str, Any] = Field(default_factory=dict)
     repository_id: str | None = None
-    filename: str | None = None
+    weights: dict[str, str] | None = None
     provider_name: str | None = None
     model_arch: str | None = None
     model_config_path: str | None = None

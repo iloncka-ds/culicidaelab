@@ -61,11 +61,14 @@ def mock_config() -> CulicidaeLabConfig:
         predictors={
             "default": PredictorConfig(
                 target="some.dummy.class",
-                model_path="models/default.pt",
+                model_path="models/default.pt",  # Added required field
+                repository_id="mock/repo",
                 provider_name="local",
                 confidence=0.5,
-                model_config_path="dummy/path/config.yaml",
-                model_config_filename="config.yaml",
+                weights={
+                    "torch": {"filename": "models/default.pt"},
+                    "onnx": {"filename": "models/default.onnx"},
+                },
             ),
         },
         species={},
@@ -244,14 +247,3 @@ def test_list_datasets(settings):
         "classification",
         "species_diversity",
     }
-
-
-def test_get_model_weights_path(settings, tmp_path):
-    """Test getting model weights path."""
-    with patch.object(settings._resource_manager, "model_dir", tmp_path):
-        weights_path = settings.get_model_weights_path("default")
-        assert isinstance(weights_path, Path)
-        assert weights_path == tmp_path / "models/default.pt"
-
-    with pytest.raises(ValueError, match="not configured in 'predictors'"):
-        settings.get_model_weights_path("invalid_model")

@@ -10,22 +10,9 @@ from typing import Protocol
 
 
 class WeightsManagerProtocol(Protocol):
-    """Defines the interface for any class that manages model weights.
-
-    This protocol ensures that core components can work with any weights
-    manager without depending on its concrete implementation.
-    """
-
-    def ensure_weights(self, predictor_type: str) -> Path:
-        """Ensures weights for a given predictor type are available locally.
-
-        This method might download the weights if they are missing or simply
-        return the path if they already exist.
-
-        Args:
-            predictor_type (str): The key for the predictor (e.g., 'classifier').
-
-        Returns:
-            Path: The local path to the model weights file.
+    def resolve_weights_path(self, predictor_type: str, backend_type: str) -> Path:
+        """
+        Ensures weights for a given predictor and backend type are available locally,
+        downloading them if necessary, and returns the absolute path.
         """
         ...
