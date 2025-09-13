@@ -1,5 +1,4 @@
 target: culicidaelab.predictors.MosquitoClassifier
-model_path: "placeholder.pkl" # Required for validation, not used by backend
 backend: "torch" # Default backend
 repository_id: "iloncka/culico-net-cls-v1"
 weights:

@@ -5,6 +5,7 @@ serve as the main entry point for accessing application settings, resource
 paths, and other global parameters.
 """
 
+import os
 from pathlib import Path
 from typing import Any, Optional
 from contextlib import contextmanager
@@ -14,6 +15,7 @@ from culicidaelab.core.config_manager import ConfigManager
 from culicidaelab.core.resource_manager import ResourceManager
 from culicidaelab.core.species_config import SpeciesConfig
 from culicidaelab.core.config_models import CulicidaeLabConfig
+from culicidaelab.core.utils import construct_weights_path
 
 
 class Settings:
@@ -184,7 +186,11 @@ class Settings:
         return list(self.config.datasets.keys())
 
     # Model Management
-    def get_model_weights_path(self, model_type: str) -> Path:
+    def get_model_weights_path(
+        self,
+        model_type: str,
+        backend: str | None = None,
+    ) -> Path:
         """Gets the configured path to a model's weights file.
 
         Args:
@@ -196,26 +202,15 @@ class Settings:
         if model_type not in self.config.predictors:
             raise ValueError(f"Model type '{model_type}' not configured in 'predictors'.")
 
-        weights_file = self.config.predictors[model_type].model_path
-        weights_path = Path(weights_file)
-        if not weights_path.is_absolute():
-            weights_path = self.model_dir / weights_path
-
-        return weights_path
+        return construct_weights_path(
+            model_dir=self.model_dir,
+            predictor_config=self.get_config(f"predictors.{model_type}"),
+            backend=backend,
+        )
 
     def list_model_types(self) -> list[str]:
         """Get list of available model types."""
         return list(self.config.predictors.keys())
-
-    def set_model_weights_path(self, model_type: str, weights_path: str | Path) -> None:
-        """Set custom weights path for model type.
-        Args:
-            model_type: The name of the model type (e.g., 'classifier').
-            weights_path: The new path to the model weights file.
-        """
-        if model_type not in self.config.predictors:
-            raise ValueError(f"Cannot set weights for unconfigured model type: '{model_type}'.")
-        self.config.predictors[model_type].model_path = str(weights_path)
 
     # API Key Management
     def get_api_key(self, provider: str) -> str | None:
@@ -229,8 +224,6 @@ class Settings:
             "roboflow": "ROBOFLOW_API_KEY",
         }
         if provider in api_keys:
-            import os
-
             return os.getenv(api_keys[provider])
         return None
 

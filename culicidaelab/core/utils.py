@@ -10,6 +10,7 @@ from collections.abc import Callable
 
 import requests
 import tqdm
+from culicidaelab.core.config_models import PredictorConfig
 
 
 def download_file(
@@ -79,3 +80,35 @@ def download_file(
     except OSError as e:
         logging.error(f"File write error for {dest_path}: {e}")
         raise RuntimeError(f"Failed to write file to {dest_path}: {e}") from e
+
+
+def construct_weights_path(
+    model_dir: Path,
+    predictor_config: PredictorConfig,
+    backend: str | None = None,
+) -> Path:
+    """
+    A pure, static function to construct a model weights path from config data.
+    This function has no dependencies on Settings or Manager instances.
+    Args:
+        model_dir (Path): The Path of the model directory (local folder).
+        predictor_config (PredictorConfig): Predictor config
+        backend (str | None, optional): Backend
+
+
+    Returns:
+        Path: The path to the model weights file.
+
+    Raises:
+        ValueError: If no backend specified for model.
+
+    """
+    final_backend = backend if backend is not None else predictor_config.backend
+    if not final_backend:
+        raise ValueError("No backend specified for model.")
+
+    if not predictor_config.weights or final_backend not in predictor_config.weights:
+        raise ValueError(f"Backend '{final_backend}' not defined in weights config.")
+
+    filename = predictor_config.weights[final_backend].filename
+    return model_dir / filename

@@ -15,7 +15,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # --- Versioning ---
 # A simple string to identify the configuration schema version.
 # When a breaking change is made to any model, this version should be incremented.
-CONFIG_SCHEMA_VERSION = "1.0"
+CONFIG_SCHEMA_VERSION = "2.0"
 
 
 # --- Species Metadata Models ---
@@ -164,6 +164,12 @@ class VisualizationConfig(BaseModel):
 # --- Main Component Models ---
 
 
+class WeightDetails(BaseModel):
+    """Defines the details for a specific backend's weights."""
+
+    filename: str
+
+
 class PredictorConfig(BaseModel):
     """Configuration for a single inference predictor.
 
@@ -188,13 +194,12 @@ class PredictorConfig(BaseModel):
 
     model_config = ConfigDict(extra="allow", protected_namespaces=())
     target: str = Field(..., alias="target")
-    model_path: str
     confidence: float = 0.5
     device: str = "cpu"
     backend: str | None = None
     params: dict[str, Any] = Field(default_factory=dict)
     repository_id: str | None = None
-    weights: dict[str, str] | None = None
+    weights: dict[str, WeightDetails] | None = None
     provider_name: str | None = None
     model_arch: str | None = None
     model_config_path: str | None = None

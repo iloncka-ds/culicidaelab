@@ -18,6 +18,7 @@ from pathlib import Path
 from culicidaelab.core.provider_service import ProviderService
 from culicidaelab.core.settings import Settings
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
+from culicidaelab.core.utils import construct_weights_path
 
 
 class ModelWeightsManager(WeightsManagerProtocol):
@@ -40,22 +41,30 @@ class ModelWeightsManager(WeightsManagerProtocol):
         Ensures weights for a given predictor and backend type are available locally,
         downloading them if necessary, and returns the absolute path.
         """
+
+        predictor_config = self.settings.get_config(f"predictors.{predictor_type}")
+        local_path = construct_weights_path(
+            model_dir=self.settings.model_dir,
+            predictor_config=predictor_config,
+            backend=backend_type,
+        )
+
+        if local_path.exists():
+            return local_path
+
         try:
             # Construct the config key to get the specific weights info
             weights_config_key = f"predictors.{predictor_type}.weights.{backend_type}"
             weights_config = self.settings.get_config(weights_config_key)
 
-            # Get the main predictor config to find the repository_id and provider
-            predictor_config = self.settings.get_config(f"predictors.{predictor_type}")
-
             # The repository can be overridden at the weights level
             repo_id = weights_config.get("repository_id", predictor_config.get("repository_id"))
-            provider_name = predictor_config.get("provider_name", "huggingface")  # Default provider
             filename = weights_config.get("filename")
 
             if not all([repo_id, filename]):
                 raise ValueError(f"Missing 'repository_id' or 'filename' for {weights_config_key}")
 
+            provider_name = predictor_config.get("provider_name", "huggingface")  # Default provider
             provider = self.provider_service.get_provider(provider_name)
 
             # Assuming provider has a method to download a specific file

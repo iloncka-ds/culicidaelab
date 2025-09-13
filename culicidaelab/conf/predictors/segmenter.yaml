@@ -1,5 +1,4 @@
 target: culicidaelab.predictors.MosquitoSegmenter
-model_path: "placeholder.pt" # Required for validation, not used by backend
 backend: "torch" # Default backend
 repository_id: "iloncka/culico-net-segm-v1-nano"
 weights:
