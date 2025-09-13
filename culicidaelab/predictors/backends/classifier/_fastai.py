@@ -51,4 +51,4 @@ class ClassifierFastAIBackend(BaseInferenceBackend):
         with set_posix_windows():
             _, _, probs = self.model.predict(input_data)  # type: ignore
 
-        return np.ndarray(probs)
+        return probs.numpy()

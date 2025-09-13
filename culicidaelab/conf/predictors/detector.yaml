@@ -6,3 +6,22 @@ weights:
     filename: "culico-net-det-v1-nano.pt"
   onnx: # Corresponds to 'onnx' backend_type
     filename: "culico-net-det-v1-nano.onnx"
+provider_name: "huggingface"
+model_config_path: ""
+model_config_filename: ""
+confidence: 0.25
+predict_batch_size: 4
+device: "cpu"
+params:
+  iou_threshold: 0.45
+  max_detections: 1
+model_arch: "yolov11n"
+dataset_repository: "iloncka/mosquito-species-detection-dataset"
+visualization:
+  box_color: "#FF0000"
+  box_thickness: 2
+  font_scale: 1
+  text_color: "#000000"
+  text_thickness: 2
+  format: "png"
+  dpi: 300

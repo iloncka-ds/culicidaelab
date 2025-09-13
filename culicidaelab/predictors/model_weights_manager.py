@@ -58,13 +58,13 @@ class ModelWeightsManager(WeightsManagerProtocol):
             weights_config = self.settings.get_config(weights_config_key)
 
             # The repository can be overridden at the weights level
-            repo_id = weights_config.get("repository_id", predictor_config.get("repository_id"))
-            filename = weights_config.get("filename")
+            repo_id = predictor_config.repository_id
+            filename = weights_config.filename
 
             if not all([repo_id, filename]):
                 raise ValueError(f"Missing 'repository_id' or 'filename' for {weights_config_key}")
 
-            provider_name = predictor_config.get("provider_name", "huggingface")  # Default provider
+            provider_name = predictor_config.provider_name or "huggingface"  # Default provider
             provider = self.provider_service.get_provider(provider_name)
 
             # Assuming provider has a method to download a specific file

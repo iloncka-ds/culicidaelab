@@ -19,7 +19,9 @@ class SegmenterSAMBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
             predictor_type=self.predictor_type,
             backend_type="torch",
         )
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = kwargs.get("device", "")
+        if not device:
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = SAM(str(model_path))
         if self.model:
             self.model.to(device)
@@ -48,7 +50,7 @@ class SegmenterSAMBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
                 )
                 boxes_xyxy = []
 
-            if boxes_xyxy:
+            if len(boxes_xyxy) > 0:
                 logger.debug(f"Using {len(boxes_xyxy)} detection boxes for segmentation.")
                 model_prompts["bboxes"] = boxes_xyxy
 

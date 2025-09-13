@@ -1,3 +1,19 @@
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     custom_cell_magics: kql
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.11.2
+#   kernelspec:
+#     display_name: culicidaelab (3.11.6)
+#     language: python
+#     name: python3
+# ---
+
 # %%
 """
 # Mosquito Detection Tutorial
@@ -64,10 +80,10 @@ print(f"Found {len(objects['bboxes'])} object(s) in this image.")
 
 # The `predict` method returns a list of detections.
 # Each detection is a tuple: (x1, y1, x2, y2, confidence_score)
-detections = detector.predict(detect_image)
+result = detector.predict(detect_image)
 
 # The `visualize` method draws the bounding boxes onto the image for easy inspection.
-annotated_image = detector.visualize(detect_image, detections)
+annotated_image = detector.visualize(detect_image, result)
 
 # Display the result
 plt.figure(figsize=(12, 8))
@@ -78,12 +94,12 @@ plt.show()
 
 # Print the numerical detection results
 print("\nDetection Results:")
-if detections:
-    for i, (x1, y1, x2, y2, conf) in enumerate(detections):
+if result:
+    for i, det in enumerate(result.detections):
         print(
             f"  - Mosquito {i+1}: \
-            Confidence = {conf:.2f}, \
-            Box = (x1={x1:.1f}, y1={y1:.1f}, x2={x2:.1f}, y2={y2:.1f})",
+            Confidence = {det.confidence:.2f}, \
+            Box = (x1={det.box.x1:.1f}, y1={det.box.y1:.1f}, x2={det.box.x2:.1f}, y2={det.box.y2:.1f})",
         )
 else:
     print("  No mosquitoes detected.")
@@ -105,7 +121,7 @@ for bbox in objects["bboxes"]:
 
 # Evaluate using the ground truth from the dataset
 print("--- Evaluating with dataset ground truth ---")
-evaluation = detector.evaluate(ground_truth=ground_truth_boxes, prediction=detections)
+evaluation = detector.evaluate(ground_truth=ground_truth_boxes, prediction=result)
 print(evaluation)
 
 # %%
@@ -128,7 +144,7 @@ detections_batch = detector.predict_batch(image_batch)
 print("Batch prediction complete.")
 
 for i, dets in enumerate(detections_batch):
-    print(f"  - Image {i+1}: Found {len(dets)} detection(s).")
+    print(f"  - Image {i+1}: Found {len(dets.detections)} detection(s).")
 
 # %% [markdown]
 # ## 5. Evaluating a Batch of Predictions with Dataset Ground Truth
@@ -164,14 +180,14 @@ print(batch_evaluation)
 
 # %%
 # Create a function to visualize both ground truth and predictions
-def visualize_comparison(image_rgb, ground_truth_boxes, detection_boxes):
+def visualize_comparison(image_rgb, ground_truth_boxes, detections):
     """
     Visualize ground truth and detection bounding boxes on an image using Pillow.
 
     Args:
         image_rgb: RGB image as numpy array or PIL Image
         ground_truth_boxes: List of ground truth bounding boxes [x_min, y_min, x_max, y_max]
-        detection_boxes: List of detection boxes [x1, y1, x2, y2, confidence]
+        detections: List of detections results
 
     Returns:
         PIL Image with bounding boxes drawn
@@ -227,18 +243,18 @@ def visualize_comparison(image_rgb, ground_truth_boxes, detection_boxes):
         draw.text((text_x, text_y), text, fill="white", font=font)
 
     # Draw detection boxes in blue with confidence
-    for x1, y1, x2, y2, conf in detection_boxes:
-        x_min, y_min, x_max, y_max = int(x1), int(y1), int(x2), int(y2)
+    for det in detections.detections:
+        x_min, y_min, x_max, y_max = int(det.box.x1), int(det.box.y1), int(det.box.x2), int(det.box.y2)
 
         # Draw rectangle
         draw.rectangle(
             [(x_min, y_min), (x_max, y_max)],
-            outline="blue",
+            outline="red",
             width=2,
         )
 
         # Draw confidence label
-        text = f"{conf:.2f}"
+        text = f"{det.confidence:.2f}"
         text_bbox = draw.textbbox((0, 0), text, font=font)
         text_width = text_bbox[2] - text_bbox[0]
         text_height = text_bbox[3] - text_bbox[1]
@@ -250,7 +266,7 @@ def visualize_comparison(image_rgb, ground_truth_boxes, detection_boxes):
         # Draw text background
         draw.rectangle(
             [(text_x, text_y), (text_x + text_width, text_y + text_height)],
-            fill="blue",
+            fill="red",
         )
 
         # Draw text
@@ -260,7 +276,7 @@ def visualize_comparison(image_rgb, ground_truth_boxes, detection_boxes):
 
 
 # Create comparison visualization
-comparison_image = visualize_comparison(np.array(detect_image), ground_truth_boxes, detections)
+comparison_image = visualize_comparison(np.array(detect_image), ground_truth_boxes, result)
 
 # Display the comparison
 plt.figure(figsize=(12, 8))

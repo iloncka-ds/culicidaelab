@@ -265,7 +265,7 @@ class MosquitoClassifier(
             family="monospace",
         )
 
-        im = ax_matrix.imshow(conf_matrix, cmap="Blues", interpolation="nearest")
+        im = ax_matrix.imshow(conf_matrix, cmap="BuGn", interpolation="nearest")
         tick_marks = np.arange(len(class_labels))
         ax_matrix.set_xticks(tick_marks)
         ax_matrix.set_yticks(tick_marks)

@@ -11,6 +11,14 @@ class BoundingBox(BaseModel):
     x2: float = Field(..., description="Bottom-right x-coordinate")
     y2: float = Field(..., description="Bottom-right y-coordinate")
 
+    def to_numpy(self) -> np.ndarray:
+        """Converts the bounding box to a NumPy array of shape (4,).
+
+        Returns:
+            np.ndarray: A NumPy array in the format [x1, y1, x2, y2].
+        """
+        return np.array([self.x1, self.y1, self.x2, self.y2])
+
 
 class Detection(BaseModel):
     box: BoundingBox

@@ -1,8 +1,26 @@
 target: culicidaelab.predictors.MosquitoClassifier
 backend: "torch" # Default backend
+provider_name: "huggingface"
+model_config_path: ""
+model_config_filename: ""
 repository_id: "iloncka/culico-net-cls-v1"
 weights:
   torch: # Corresponds to 'torch' backend_type
-    filename: "model.pkl"
+    filename: "culico-net-cls-v1-17.pkl"
   onnx: # Corresponds to 'onnx' backend_type
-    filename: "model.onnx"
+    filename: "culico-net-cls-v1-17.onnx"
+confidence: 0.5
+device: "cpu"
+predict_batch_size: 4
+params:
+  input_size: 224
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+model_arch: "tiny_vit_21m_224.in1k"
+dataset_repository: "iloncka/mosquito-species-classification-dataset"
+visualization:
+  font_scale: 1
+  text_color: "#000000"
+  text_thickness: 1
+  format: "png"
+  dpi: 300

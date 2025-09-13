@@ -3,6 +3,23 @@ backend: "torch" # Default backend
 repository_id: "iloncka/culico-net-segm-v1-nano"
 weights:
   torch: # Corresponds to 'torch' backend_type
-    filename: "sam2.1_hiera_tiny.pt"
+    filename: "sam2.1_t.pt"
   onnx: # Corresponds to 'onnx' backend_type
-    filename: "sam2.1_hiera_tiny.onnx"
+    filename: "sam2.1_t.onnx"
+provider_name: "huggingface"
+model_config_path: "configs/sam2.1/sam2.1_hiera_t.yaml"
+model_config_filename: "sam2.1_hiera_t.yaml"
+model_arch: "sam2.1_hiera_tiny"
+visualization:
+  overlay_color: "#F00F00"
+  alpha: 0.7
+  format: "png"
+  dpi: 300
+confidence: 0.5 # Default confidence
+device: "cpu"
+predict_batch_size: 4
+params:
+  points_per_side: 32
+  pred_iou_thresh: 0.88
+  stability_score_thresh: 0.95
+dataset_repository: "iloncka/mosquito-species-segmentation-dataset"

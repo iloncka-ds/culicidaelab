@@ -1,3 +1,19 @@
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     custom_cell_magics: kql
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.11.2
+#   kernelspec:
+#     display_name: culicidaelab (3.11.6)
+#     language: python
+#     name: python3
+# ---
+
 # %%
 """
 # Классификация видов комаров
@@ -89,7 +105,8 @@ print(f"Количество образцов в тестовом наборе �
 
 # Давайте выберем один образец для работы.
 # Образец представляет собой словарь, содержащий изображение и его истинную метку.
-sample_index = 287
+classification_test_data = classification_test_data.shuffle(seed=35)
+sample_index = 285
 sample = classification_test_data[sample_index]
 image = sample["image"]
 ground_truth_label = sample["label"]
@@ -114,12 +131,12 @@ plt.show()
 
 # %%
 # Запускаем классификацию на нашем образце изображения
-predictions = classifier.predict(image)
+result = classifier.predict(image)
 
 # Выводим топ-5 предсказаний в читаемом формате
 print("--- Топ-5 предсказаний ---")
-for species, probability in predictions[:5]:
-    print(f"{species}: {probability:.2%}")
+for p in result.predictions[:5]:
+    print(f"{p.species_name}: {p.confidence:.2%}")
 
 # %% [markdown]
 # ## 4. Визуализация и интерпретация результатов
@@ -138,8 +155,8 @@ for species, probability in predictions[:5]:
 plt.figure(figsize=(10, 8))
 
 # Предсказания уже отсортированы, поэтому мы можем их сразу построить
-species_names = [p[0] for p in predictions]
-probabilities = [p[1] for p in predictions]
+species_names = [p.species_name for p in result.predictions]
+probabilities = [p.confidence for p in result.predictions]
 
 # Мы развернем списки (`[::-1]`), чтобы самая высокая вероятность была вверху
 bars = plt.barh(species_names[::-1], probabilities[::-1])
@@ -167,7 +184,7 @@ plt.show()
 
 # %%
 # Теперь давайте используем встроенный визуализатор для получения итогового изображения
-annotated_image = classifier.visualize(image, predictions)
+annotated_image = classifier.visualize(image, result)
 
 plt.figure(figsize=(10, 6))
 plt.imshow(annotated_image)
@@ -253,8 +270,8 @@ batch_predictions = classifier.predict_batch(batch_images, show_progress=True)
 print("\n--- Результаты пакетной классификации (Лучшее предсказание для каждого изображения) ---")
 for i, single_image_preds in enumerate(batch_predictions):
     if single_image_preds:  # Проверяем, что список с результатами не пуст
-        top_pred_species = single_image_preds[0][0]
-        top_pred_conf = single_image_preds[0][1]
+        top_pred_species = single_image_preds.predictions[0].species_name
+        top_pred_conf = single_image_preds.predictions[0].confidence
         print(
             f"  - Изображение {i+1} (Истинная метка: {ground_truths[i]}): "
             f"Предсказан '{top_pred_species}' с уверенностью {top_pred_conf:.2%}.",
