@@ -43,7 +43,7 @@ def test_load_model(segmenter, mock_backend):
     """Test that load_model delegates to the backend."""
     mock_backend.is_loaded = False
     segmenter.load_model()
-    mock_backend.load_model.assert_called_once_with("segmenter")
+    mock_backend.load_model.assert_called_once_with()
 
 
 def test_predict_delegates_to_backend_and_parses_output(segmenter, mock_backend):
@@ -57,7 +57,7 @@ def test_predict_delegates_to_backend_and_parses_output(segmenter, mock_backend)
     # Assert backend was called with correct prompts
     mock_backend.predict.assert_called_once()
     call_kwargs = mock_backend.predict.call_args.kwargs
-    assert call_kwargs["bboxes"] == boxes
+    assert call_kwargs["detection_boxes"] == boxes
 
     # Assert the predictor correctly wrapped the backend's numpy mask
     assert isinstance(prediction, SegmentationPrediction)
@@ -65,15 +65,23 @@ def test_predict_delegates_to_backend_and_parses_output(segmenter, mock_backend)
     assert prediction.pixel_count == np.sum(mock_backend.predict.return_value)
 
 
-def test_predict_no_prompts_returns_empty_mask(segmenter, mock_backend):
-    """Test that predict returns an empty mask if no prompts are given."""
+def test_predict_no_prompts_calls_backend_and_returns_empty_mask(segmenter, mock_backend):
+    """
+    Test that predict calls the backend even with no prompts and returns an
+    empty mask, as the backend is responsible for handling empty prompts.
+    """
     mock_backend.is_loaded = True
+    # Configure the mock backend to return an empty mask when called
+    mock_backend.predict.return_value = np.zeros((100, 100), dtype=np.uint8)
     dummy_image = np.zeros((100, 100, 3), dtype=np.uint8)
 
+    # Call predict without any prompts
     prediction = segmenter.predict(dummy_image)
 
-    # The backend should NOT be called if there are no prompts
-    mock_backend.predict.assert_not_called()
+    # Assert that the backend's predict method WAS called
+    mock_backend.predict.assert_called_once()
+
+    # Assert that the final result is an empty segmentation
     assert isinstance(prediction, SegmentationPrediction)
     assert prediction.mask.shape == (100, 100)
     assert prediction.pixel_count == 0

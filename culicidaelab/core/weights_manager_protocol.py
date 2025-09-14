@@ -10,7 +10,7 @@ from typing import Protocol
 
 
 class WeightsManagerProtocol(Protocol):
-    def resolve_weights_path(self, predictor_type: str, backend_type: str) -> Path:
+    def ensure_weights(self, predictor_type: str, backend_type: str) -> Path:
         """
         Ensures weights for a given predictor and backend type are available locally,
         downloading them if necessary, and returns the absolute path.

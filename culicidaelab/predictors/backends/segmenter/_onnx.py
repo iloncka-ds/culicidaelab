@@ -13,7 +13,7 @@ class SegmenterONNXBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
 
     def load_model(self, **kwargs: Any):
         # 1. Backend resolves its OWN path via the manager
-        model_path = self.weights_manager.resolve_weights_path(
+        model_path = self.weights_manager.ensure_weights(
             predictor_type=self.predictor_type,
             backend_type="onnx",  # The backend knows its own type
         )

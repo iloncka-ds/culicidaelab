@@ -39,7 +39,7 @@ def test_load_model(classifier, mock_backend):
     mock_backend.is_loaded = False
     classifier.load_model()
     # Assert that the predictor tells the backend to load itself
-    mock_backend.load_model.assert_called_once_with("classifier")
+    mock_backend.load_model.assert_called_once_with()
 
 
 def test_load_model_already_loaded(classifier, mock_backend):
@@ -83,7 +83,7 @@ def test_predict_loads_model_if_not_loaded(classifier, mock_backend):
 
     classifier.predict(dummy_image)
 
-    mock_backend.load_model.assert_called_once_with(predictor_type="classifier")
+    mock_backend.load_model.assert_called_once_with()
     mock_backend.predict.assert_called_once()
 
 

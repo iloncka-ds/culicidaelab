@@ -11,6 +11,10 @@ class ConcreteTestPredictor(BasePredictor):
         # This method is called by __call__
         return self.backend.predict(input_data, **kwargs)
 
+    def _convert_raw_to_prediction(self, raw_prediction, **kwargs):
+        # Dummy conversion for testing
+        return raw_prediction
+
     def _evaluate_from_prediction(self, prediction, ground_truth):
         # Simple evaluation for testing
         return {"accuracy": 1.0 if prediction == ground_truth else 0.0}
@@ -51,7 +55,7 @@ def test_load_model_delegates_to_backend(predictor, mock_backend):
     """Test that load_model() calls the backend's load_model()."""
     mock_backend.is_loaded = False
     predictor.load_model()
-    mock_backend.load_model.assert_called_once_with(predictor.predictor_type)
+    mock_backend.load_model.assert_called_once_with()
 
 
 def test_load_model_does_nothing_if_already_loaded(predictor, mock_backend):
@@ -72,7 +76,7 @@ def test_call_method_loads_and_predicts(predictor, mock_backend):
     """Test that calling the predictor instance loads the model and predicts."""
     mock_backend.is_loaded = False
     result = predictor("input_data")
-    mock_backend.load_model.assert_called_once_with(predictor.predictor_type)
+    mock_backend.load_model.assert_called_once_with()
     mock_backend.predict.assert_called_once_with("input_data")
     assert result == "prediction_result"
 
@@ -83,7 +87,7 @@ def test_model_context_manager(predictor, mock_backend):
     with predictor.model_context() as p:
         assert p is predictor
         # Backend is loaded inside the context
-        mock_backend.load_model.assert_called_once_with(predictor.predictor_type)
+        mock_backend.load_model.assert_called_once_with()
         # Let's say is_loaded is now true
         mock_backend.is_loaded = True
     # After exiting, unload_model should be called

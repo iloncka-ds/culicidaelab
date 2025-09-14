@@ -36,23 +36,23 @@ class ModelWeightsManager(WeightsManagerProtocol):
         self.settings = settings
         self.provider_service = ProviderService(settings)
 
-    def resolve_weights_path(self, predictor_type: str, backend_type: str) -> Path:
+    def ensure_weights(self, predictor_type: str, backend_type: str) -> Path:
         """
         Ensures weights for a given predictor and backend type are available locally,
         downloading them if necessary, and returns the absolute path.
         """
 
         predictor_config = self.settings.get_config(f"predictors.{predictor_type}")
-        local_path = construct_weights_path(
-            model_dir=self.settings.model_dir,
-            predictor_config=predictor_config,
-            backend=backend_type,
-        )
-
-        if local_path.exists():
-            return local_path
-
         try:
+            local_path = construct_weights_path(
+                model_dir=self.settings.model_dir,
+                predictor_config=predictor_config,
+                backend=backend_type,
+            )
+
+            if local_path.exists():
+                return local_path
+
             # Construct the config key to get the specific weights info
             weights_config_key = f"predictors.{predictor_type}.weights.{backend_type}"
             weights_config = self.settings.get_config(weights_config_key)
@@ -74,6 +74,7 @@ class ModelWeightsManager(WeightsManagerProtocol):
                 filename=filename,
                 local_dir=self.settings.model_dir,
             )
+
         except Exception as e:
             error_msg = f"Failed to resolve weights for '{predictor_type}' with backend '{backend_type}': {e}"
             raise RuntimeError(error_msg) from e

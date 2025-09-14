@@ -34,7 +34,7 @@ class ClassifierFastAIBackend(BaseInferenceBackend):
         self.model = None
 
     def load_model(self, **kwargs: Any):
-        model_path = self.weights_manager.resolve_weights_path(
+        model_path = self.weights_manager.ensure_weights(
             predictor_type=self.predictor_type,
             backend_type="torch",
         )

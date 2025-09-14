@@ -49,7 +49,7 @@ def test_load_model(detector, mock_backend):
     """Test that load_model delegates to the backend."""
     mock_backend.is_loaded = False
     detector.load_model()
-    mock_backend.load_model.assert_called_once_with("detector")
+    mock_backend.load_model.assert_called_once_with()
 
 
 def test_predict_delegates_to_backend_and_parses_output(detector, mock_backend):

@@ -15,7 +15,7 @@ class SegmenterSAMBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
         self.model = None
 
     def load_model(self, **kwargs):
-        model_path = self.weights_manager.resolve_weights_path(
+        model_path = self.weights_manager.ensure_weights(
             predictor_type=self.predictor_type,
             backend_type="torch",
         )
