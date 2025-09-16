@@ -23,6 +23,14 @@ from culicidaelab.core.config_models import (
     SpeciesModel,
 )
 from culicidaelab.core.species_config import SpeciesConfig
+from culicidaelab.core.prediction_models import (
+    BoundingBox,
+    Detection,
+    DetectionPrediction,
+    SegmentationPrediction,
+    Classification,
+    ClassificationPrediction,
+)
 
 # Services and Managers
 from culicidaelab.core.provider_service import ProviderService
@@ -47,6 +55,13 @@ __all__ = [
     "ProviderConfig",
     "SpeciesModel",
     "SpeciesConfig",
+    # Prediction Models
+    "BoundingBox",
+    "Detection",
+    "DetectionPrediction",
+    "SegmentationPrediction",
+    "Classification",
+    "ClassificationPrediction",
     # Services and Managers
     "ProviderService",
     "ResourceManager",
