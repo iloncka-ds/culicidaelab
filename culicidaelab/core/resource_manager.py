@@ -21,12 +21,6 @@ import appdirs
 logger = logging.getLogger(__name__)
 
 
-class ResourceManagerError(Exception):
-    """Custom exception for ResourceManager operations."""
-
-    pass
-
-
 class ResourceManager:
     """Centralized resource management for models, datasets, and temporary files.
 
@@ -49,7 +43,7 @@ class ResourceManager:
         downloads_dir (Path): Directory for downloaded files.
 
     Raises:
-        ResourceManagerError: If initialization fails.
+        OSError: If initialization fails.
     """
 
     def __init__(
@@ -152,11 +146,14 @@ class ResourceManager:
             str: The hexadecimal checksum string.
 
         Raises:
-            ResourceManagerError: If the file does not exist or creation fails.
+            FileNotFoundError: If the file does not exist.
+            IOError: If checksum creation fails.
         """
         file_path = Path(file_path)
         if not file_path.exists():
-            raise ResourceManagerError(f"File does not exist: {file_path}")
+            msg = f"File does not exist: {file_path}"
+            logger.error(msg)
+            raise FileNotFoundError(msg)
         try:
             hash_obj = hashlib.new(algorithm)
             with open(file_path, "rb") as f:
@@ -164,9 +161,9 @@ class ResourceManager:
                     hash_obj.update(chunk)
             return hash_obj.hexdigest()
         except Exception as e:
-            raise ResourceManagerError(
-                f"Failed to create checksum for {file_path}: {e}",
-            ) from e
+            msg = f"Failed to create checksum for {file_path}: {e}"
+            logger.error(msg)
+            raise OSError(msg) from e
 
     def get_all_directories(self) -> dict[str, Path]:
         """Gets all managed directories.
@@ -281,7 +278,7 @@ class ResourceManager:
         try:
             actual_checksum = self.create_checksum(file_path, algorithm)
             return actual_checksum.lower() == expected_checksum.lower()
-        except ResourceManagerError as e:
+        except (FileNotFoundError, OSError) as e:
             logger.error(f"Checksum verification failed: {e}")
             return False
 
@@ -312,9 +309,9 @@ class ResourceManager:
         try:
             path.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            raise ResourceManagerError(
-                f"Failed to create {dir_type} directory {path}: {e}",
-            ) from e
+            msg = f"Failed to create {dir_type} directory {path}: {e}"
+            logger.error(msg)
+            raise OSError(msg) from e
 
     def _determine_app_name(self, app_name: str | None = None) -> str:
         """Determines the application name from various sources."""
@@ -395,9 +392,9 @@ class ResourceManager:
                 directory.mkdir(parents=True, exist_ok=True)
                 logger.debug(f"Created/verified directory: {directory}")
             except Exception as e:
-                raise ResourceManagerError(
-                    f"Failed to create directory {directory}: {e}",
-                ) from e
+                msg = f"Failed to create directory {directory}: {e}"
+                logger.error(msg)
+                raise OSError(msg) from e
 
         if platform.system() != "Windows":
             self._set_directory_permissions(list(directories))

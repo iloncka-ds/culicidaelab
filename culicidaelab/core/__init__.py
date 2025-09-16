@@ -26,7 +26,7 @@ from culicidaelab.core.species_config import SpeciesConfig
 
 # Services and Managers
 from culicidaelab.core.provider_service import ProviderService
-from culicidaelab.core.resource_manager import ResourceManager, ResourceManagerError
+from culicidaelab.core.resource_manager import ResourceManager
 
 # Settings Facade
 from culicidaelab.core.settings import Settings, get_settings
@@ -50,11 +50,9 @@ __all__ = [
     # Services and Managers
     "ProviderService",
     "ResourceManager",
-    "ResourceManagerError",
     # Settings Facade
     "Settings",
     "get_settings",
     # Utilities
     "download_file",
-    "str_to_bgr",
 ]
