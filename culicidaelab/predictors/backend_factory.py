@@ -84,6 +84,7 @@ def create_backend(
     from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
 
     weights_manager = ModelWeightsManager(settings)
+    predictor_config = settings.get_config(f"predictors.{predictor_type}")
 
     if final_backend_type == "torch":
         if predictor_type == "classifier":
@@ -103,7 +104,7 @@ def create_backend(
         if predictor_type == "classifier":
             from culicidaelab.predictors.backends.classifier._onnx import ClassifierONNXBackend
 
-            return ClassifierONNXBackend(weights_manager=weights_manager)
+            return ClassifierONNXBackend(weights_manager=weights_manager, config=predictor_config)
         elif predictor_type == "detector":
             from culicidaelab.predictors.backends.detector._onnx import DetectorONNXBackend
 

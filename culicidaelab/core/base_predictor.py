@@ -274,7 +274,7 @@ class BasePredictor(Generic[InputDataType, PredictionType, GroundTruthType], ABC
 
         image = self._load_and_validate_image(input_data)
 
-        raw_output = self.backend.predict(np.array(image), **kwargs)
+        raw_output = self.backend.predict(image, **kwargs)
 
         return self._convert_raw_to_prediction(raw_output)
 
