@@ -2,6 +2,7 @@
 from typing import Any
 from fastai.learner import load_learner
 import numpy as np
+from PIL import Image
 
 import platform
 import pathlib
@@ -24,7 +25,7 @@ def set_posix_windows():
         yield
 
 
-class ClassifierFastAIBackend(BaseInferenceBackend):
+class ClassifierFastAIBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
     """A specialized FastAI backend for classification."""
 
     def __init__(self, weights_manager: WeightsManagerProtocol):
@@ -41,7 +42,7 @@ class ClassifierFastAIBackend(BaseInferenceBackend):
         with set_posix_windows():
             self.model = load_learner(model_path)
 
-    def predict(self, input_data: np.ndarray, **kwargs: Any) -> np.ndarray:
+    def predict(self, input_data: Image.Image, **kwargs: Any) -> np.ndarray:
         if not self.model:
             try:
                 self.load_model()

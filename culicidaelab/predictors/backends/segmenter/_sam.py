@@ -1,5 +1,6 @@
 import logging
 from ultralytics import SAM
+from PIL import Image
 import numpy as np
 import torch
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
@@ -8,7 +9,7 @@ from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 logger = logging.getLogger(__name__)
 
 
-class SegmenterSAMBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
+class SegmenterSAMBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
     def __init__(self, weights_manager: WeightsManagerProtocol):
         super().__init__(predictor_type="segmenter")
         self.weights_manager = weights_manager
@@ -26,10 +27,10 @@ class SegmenterSAMBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
         if self.model:
             self.model.to(device)
 
-    def predict(self, input_data: np.ndarray, **kwargs) -> np.ndarray:
+    def predict(self, input_data: Image.Image, **kwargs) -> np.ndarray:
         if not self.model:
             raise RuntimeError("Model is not loaded. Call load_model() first.")
-        h, w = input_data.shape[:2]
+        h, w = input_data.size
         empty_mask = np.zeros((h, w), dtype=np.uint8)
         detection_boxes = kwargs.get("detection_boxes", [])
         points = kwargs.get("points", [])

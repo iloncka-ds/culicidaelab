@@ -1,11 +1,12 @@
 from typing import Any
 from ultralytics import YOLO
+from PIL import Image
 import numpy as np
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
 from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 
 
-class DetectorYOLOBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
+class DetectorYOLOBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
     def __init__(self, weights_manager: WeightsManagerProtocol):
         super().__init__(predictor_type="detector")
         self.weights_manager = weights_manager
@@ -18,7 +19,7 @@ class DetectorYOLOBackend(BaseInferenceBackend[np.ndarray, np.ndarray]):
         )
         self.model = YOLO(str(model_path))
 
-    def predict(self, input_data: np.ndarray, **kwargs: Any) -> np.ndarray:
+    def predict(self, input_data: Image.Image, **kwargs: Any) -> np.ndarray:
         if not self.model:
             raise RuntimeError("Model is not loaded. Call load_model() first.")
 
