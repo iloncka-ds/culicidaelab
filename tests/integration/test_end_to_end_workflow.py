@@ -37,27 +37,27 @@ def test_full_detector_workflow(
 
     mock_weights_manager_instance = MagicMock()
 
-    def ensure_weights_side_effect(model_type_arg):
+    def ensure_weights_side_effect(*args, **kwargs):
         expected_absolute_path.parent.mkdir(parents=True, exist_ok=True)
         expected_absolute_path.touch()
         return expected_absolute_path
 
     mock_weights_manager_instance.ensure_weights.side_effect = ensure_weights_side_effect
     monkeypatch.setattr(
-        "culicidaelab.predictors.detector.ModelWeightsManager",
+        "culicidaelab.predictors.model_weights_manager.ModelWeightsManager",
         MagicMock(return_value=mock_weights_manager_instance),
     )
 
     detector = MosquitoDetector(settings=settings)
 
     # Note: The YOLO patch is correct because it's patching where YOLO is used.
-    with patch("culicidaelab.predictors.detector.YOLO") as mock_yolo_class:
+    with patch("culicidaelab.predictors.backends.detector._yolo.YOLO") as mock_yolo_class:
         mock_yolo_instance = MagicMock()
         mock_yolo_class.return_value = mock_yolo_instance
         detector.load_model()  # This call is now safe because YOLO is mocked.
 
     assert detector.model_loaded
-    mock_yolo_class.assert_called_once_with(str(expected_absolute_path), task="detect")
+    mock_yolo_class.assert_called_once_with(str(expected_absolute_path))
 
 
 def test_full_segmenter_workflow(
@@ -89,7 +89,7 @@ def test_full_segmenter_workflow(
 
     mock_weights_manager_instance = MagicMock()
 
-    def ensure_weights_side_effect(model_type_arg):
+    def ensure_weights_side_effect(*args, **kwargs):
         expected_absolute_path.parent.mkdir(parents=True, exist_ok=True)
         # The empty file is still created, but our mock will prevent it from being used.
         expected_absolute_path.touch()
@@ -97,16 +97,18 @@ def test_full_segmenter_workflow(
 
     mock_weights_manager_instance.ensure_weights.side_effect = ensure_weights_side_effect
     monkeypatch.setattr(
-        "culicidaelab.predictors.segmenter.ModelWeightsManager",
+        "culicidaelab.predictors.model_weights_manager.ModelWeightsManager",
         MagicMock(return_value=mock_weights_manager_instance),
     )
 
     segmenter = MosquitoSegmenter(settings=settings)
 
-    with patch("culicidaelab.predictors.segmenter.SAM") as mock_sam_class:
+    with patch("culicidaelab.predictors.backends.segmenter._sam.SAM") as mock_sam_class:
         mock_sam_instance = MagicMock(name="mock_sam_instance")
         mock_result = MagicMock()
-        mock_masks = MagicMock(data=np.zeros((1, 100, 150), dtype=bool))
+        # Correctly mock the nested structure
+        mock_masks = MagicMock()
+        mock_masks.data.cpu.return_value.numpy.return_value = np.zeros((1, 100, 150), dtype=bool)
         mock_result.masks = mock_masks
         mock_sam_instance.return_value = [mock_result]
         mock_sam_class.return_value = mock_sam_instance
@@ -120,7 +122,7 @@ def test_full_segmenter_workflow(
         )
 
     assert segmenter.model_loaded
-    assert result_mask.shape == (100, 150)
+    assert result_mask.mask.shape == (100, 150)
     # Assert that the mocked SAM class was instantiated.
     mock_sam_class.assert_called_once()
     # Assert that the mocked SAM instance was called by predict().
