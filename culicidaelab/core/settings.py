@@ -202,11 +202,13 @@ class Settings:
         if model_type not in self.config.predictors:
             raise ValueError(f"Model type '{model_type}' not configured in 'predictors'.")
 
-        return construct_weights_path(
+        local_path = construct_weights_path(
             model_dir=self.model_dir,
+            predictor_type=model_type,
             predictor_config=self.get_config(f"predictors.{model_type}"),
             backend=backend,
         )
+        return local_path
 
     def list_model_types(self) -> list[str]:
         """Get list of available model types."""

@@ -21,16 +21,6 @@ def test_initialization(resource_manager):
     assert resource_manager.temp_dir.exists()
 
 
-def test_get_model_path(resource_manager):
-    """Test getting model path creates directory and returns correct path."""
-    model_name = "test_model"
-    model_path = resource_manager.get_model_path(model_name)
-    assert model_path.exists()
-    assert model_path.is_dir()
-    assert model_path.name == model_name
-    assert model_path.parent == resource_manager.model_dir
-
-
 def test_get_dataset_path(resource_manager):
     """Test getting dataset path creates directory and returns correct path."""
     dataset_name = "test_dataset"

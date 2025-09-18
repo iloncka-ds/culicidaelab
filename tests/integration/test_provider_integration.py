@@ -4,7 +4,6 @@ import shutil
 from pathlib import Path
 from .conftest import create_provider_config
 from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
-from culicidaelab.core.resource_manager import ResourceManager
 
 
 def test_weights_manager_successful_download(
@@ -12,7 +11,6 @@ def test_weights_manager_successful_download(
     user_config_dir: Path,
     monkeypatch,
     project_fixtures_dir: Path,
-    resource_manager: ResourceManager,
 ):
     """
     Tests that the ModelWeightsManager correctly orchestrates a download
@@ -57,7 +55,7 @@ def test_weights_manager_successful_download(
 
     final_path = weights_manager.ensure_weights(model_type, backend_type)
 
-    expected_absolute_path = settings.model_dir / filename
+    expected_absolute_path = settings.model_dir / model_type / backend_type / filename
 
     assert final_path.exists()
     assert final_path == expected_absolute_path

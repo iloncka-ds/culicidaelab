@@ -20,84 +20,124 @@ def test_init(mock_settings: Mock):
     assert wm.settings is mock_settings
 
 
+@patch("culicidaelab.predictors.model_weights_manager.construct_weights_path")
 @patch("culicidaelab.predictors.model_weights_manager.ProviderService")
-def test_ensure_weights_successful_download(mock_provider_cls: Mock, mock_settings: Mock):
+def test_ensure_weights_successful_download(
+    mock_provider_cls: Mock,
+    mock_construct_path: Mock,
+    mock_settings: Mock,
+):
     """ensure_weights orchestrates a successful download."""
     predictor_type = "classifier"
     backend_type = "torch"
-    expected_path = Path("/predictors/model.pkl")
 
-    # Setup mock configs
-    predictor_config = PredictorConfig(
-        target="some.class.path",
-        repository_id="repo/cls",
-        provider_name="huggingface",
-        weights={"torch": WeightDetails(filename="model.pkl")},
-    )
-    weights_config = predictor_config.weights[backend_type]
+    # Define the mock base directory
+    mock_base_dir = Path("/mock/models")
+    mock_settings.model_dir = mock_base_dir
 
-    def get_config_side_effect(key):
-        if key == f"predictors.{predictor_type}":
-            return predictor_config
-        if key == f"predictors.{predictor_type}.weights.{backend_type}":
-            return weights_config
-        return None
+    # This is the full path the file will have
+    final_file_path = mock_base_dir / predictor_type / backend_type / "model.pkl"
+    # This is just the directory part
+    expected_local_dir = final_file_path.parent
 
-    mock_settings.get_config.side_effect = get_config_side_effect
+    # --- Mocks Setup ---
+    # Mock the path construction to return our expected final path
+    mock_construct_path.return_value = final_file_path
 
-    # ProviderService mock setup
-    mock_provider_instance = mock_provider_cls.return_value
-    mock_provider = mock_provider_instance.get_provider.return_value
-    mock_provider.download_model_weights.return_value = expected_path
+    with patch("pathlib.Path.exists", return_value=False):
+        # Mock configs
+        predictor_config = PredictorConfig(
+            target="some.class.path",
+            repository_id="repo/cls",
+            provider_name="huggingface",
+            weights={"torch": WeightDetails(filename="model.pkl")},
+        )
+        weights_config = predictor_config.weights[backend_type]
 
-    wm = ModelWeightsManager(settings=mock_settings)
-    result = wm.ensure_weights(predictor_type, backend_type)
+        def get_config_side_effect(key):
+            if key == f"predictors.{predictor_type}":
+                return predictor_config
+            if key == f"predictors.{predictor_type}.weights.{backend_type}":
+                return weights_config
+            return None
 
-    # Assertions
-    assert result == expected_path
-    mock_provider.download_model_weights.assert_called_once_with(
-        repo_id="repo/cls",
-        filename="model.pkl",
-        local_dir=mock_settings.model_dir,
-    )
+        mock_settings.get_config.side_effect = get_config_side_effect
+
+        # ProviderService mock setup
+        mock_provider = mock_provider_cls.return_value.get_provider.return_value
+        mock_provider.download_model_weights.return_value = final_file_path
+
+        # --- Act ---
+        wm = ModelWeightsManager(settings=mock_settings)
+        result = wm.ensure_weights(predictor_type, backend_type)
+
+        # --- Assertions ---
+        assert result == final_file_path
+
+        mock_construct_path.assert_called_once_with(
+            model_dir=mock_base_dir,
+            predictor_type=predictor_type,
+            predictor_config=predictor_config,
+            backend=backend_type,
+        )
+
+        mock_provider.download_model_weights.assert_called_once_with(
+            repo_id="repo/cls",
+            filename="model.pkl",
+            local_dir=expected_local_dir,
+        )
 
 
+@patch("culicidaelab.predictors.model_weights_manager.construct_weights_path")
 @patch("culicidaelab.predictors.model_weights_manager.ProviderService")
-def test_ensure_weights_override_repo(mock_provider_cls: Mock, mock_settings: Mock):
-    """ensure_weights uses overridden repository_id from weights config."""
+def test_ensure_weights_uses_correct_repo(
+    mock_provider_cls: Mock,
+    mock_construct_path: Mock,
+    mock_settings: Mock,
+):
+    """ensure_weights uses the repository_id from the main predictor config."""
     predictor_type = "detector"
     backend_type = "onnx"
 
-    predictor_config = PredictorConfig(
-        target="some.class.path",
-        repository_id="repo/main",
-        provider_name="huggingface",
-        weights={"onnx": WeightDetails(filename="model.onnx")},
-    )
-    # This is the key change: the weights config can override the repo
-    predictor_config.repository_id = "repo/onnx"
+    mock_base_dir = Path("/mock/models")
+    mock_settings.model_dir = mock_base_dir
 
-    weights_config = predictor_config.weights[backend_type]
+    final_file_path = mock_base_dir / predictor_type / backend_type / "model.onnx"
+    expected_local_dir = final_file_path.parent
 
-    def get_config_side_effect(key):
-        if key == f"predictors.{predictor_type}":
-            return predictor_config
-        if key == f"predictors.{predictor_type}.weights.{backend_type}":
-            return weights_config
-        return None
+    # --- Mocks Setup ---
+    mock_construct_path.return_value = final_file_path
 
-    mock_settings.get_config.side_effect = get_config_side_effect
+    with patch("pathlib.Path.exists", return_value=False):
+        predictor_config = PredictorConfig(
+            target="some.class.path",
+            repository_id="repo/main-detector",
+            provider_name="huggingface",
+            weights={"onnx": WeightDetails(filename="model.onnx")},
+        )
+        weights_config = predictor_config.weights[backend_type]
 
-    mock_provider = mock_provider_cls.return_value.get_provider.return_value
+        def get_config_side_effect(key):
+            if key == f"predictors.{predictor_type}":
+                return predictor_config
+            if key == f"predictors.{predictor_type}.weights.{backend_type}":
+                return weights_config
+            return None
 
-    wm = ModelWeightsManager(settings=mock_settings)
-    wm.ensure_weights(predictor_type, backend_type)
+        mock_settings.get_config.side_effect = get_config_side_effect
 
-    mock_provider.download_model_weights.assert_called_once_with(
-        repo_id="repo/onnx",
-        filename="model.onnx",
-        local_dir=mock_settings.model_dir,
-    )
+        mock_provider = mock_provider_cls.return_value.get_provider.return_value
+
+        # --- Act ---
+        wm = ModelWeightsManager(settings=mock_settings)
+        wm.ensure_weights(predictor_type, backend_type)
+
+        # --- Assertions ---
+        mock_provider.download_model_weights.assert_called_once_with(
+            repo_id="repo/main-detector",
+            filename="model.onnx",
+            local_dir=expected_local_dir,
+        )
 
 
 @patch("culicidaelab.predictors.model_weights_manager.ProviderService")

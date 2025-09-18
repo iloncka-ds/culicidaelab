@@ -240,25 +240,6 @@ class ResourceManager:
         }
         return {name: self._get_directory_size(path) for name, path in directories.items()}
 
-    def get_model_path(self, model_name: str, create_if_missing: bool = True) -> Path:
-        """Gets a standardized path for a specific model.
-
-        Args:
-            model_name (str): The name of the model.
-            create_if_missing (bool): Whether to create the directory if it
-                doesn't exist.
-
-        Returns:
-            Path: The absolute path to the model directory.
-        """
-        if not model_name or not model_name.strip():
-            raise ValueError("Model name cannot be empty")
-
-        model_path = self.model_dir / self._sanitize_name(model_name)
-        if create_if_missing:
-            self._create_directory(model_path, "model")
-        return model_path
-
     def verify_checksum(
         self,
         file_path: str | Path,

@@ -9,6 +9,7 @@ from pathlib import Path
 from collections.abc import Callable
 
 import requests
+import re
 import tqdm
 from culicidaelab.core.config_models import PredictorConfig
 
@@ -82,33 +83,59 @@ def download_file(
         raise RuntimeError(f"Failed to write file to {dest_path}: {e}") from e
 
 
+def sanitize_for_path(name: str) -> str:
+    """
+    Sanitizes a string to be safely used as a directory or file name.
+
+    This function replaces reserved characters with underscores and removes
+    leading/trailing whitespace or dots.
+    """
+    if not isinstance(name, str):
+        name = str(name)
+
+    sanitized = re.sub(r'[<>:"/\\|?*]', "_", name).strip(". ")
+    return sanitized or "unnamed"
+
+
 def construct_weights_path(
     model_dir: Path,
+    predictor_type: str,
     predictor_config: PredictorConfig,
     backend: str | None = None,
 ) -> Path:
     """
-    A pure, static function to construct a model weights path from config data.
-    This function has no dependencies on Settings or Manager instances.
-    Args:
-        model_dir (Path): The Path of the model directory (local folder).
-        predictor_config (PredictorConfig): Predictor config
-        backend (str | None, optional): Backend
+    A pure, static function to construct a fully qualified model weights path.
 
+    This is the single source of truth for model path construction, creating a
+    structured path like: .../models/<predictor_type>/<backend>/<filename>.
+
+    Args:
+        model_dir (Path): The base directory for all models (e.g., '.../culicidaelab/models').
+        predictor_type (str): The type of the predictor (e.g., 'classifier'). Used as a subdirectory.
+        predictor_config (PredictorConfig): The Pydantic model for the predictor's configuration.
+        backend (str | None, optional): The target backend (e.g., 'torch', 'onnx').
+                                        If None, uses the default from the config.
 
     Returns:
-        Path: The path to the model weights file.
+        Path: The absolute, structured path to the model weights file.
 
     Raises:
-        ValueError: If no backend specified for model.
-
+        ValueError: If a valid backend or weights filename cannot be determined.
     """
     final_backend = backend if backend is not None else predictor_config.backend
     if not final_backend:
-        raise ValueError("No backend specified for model.")
+        raise ValueError(f"No backend specified for model '{predictor_type}'.")
 
     if not predictor_config.weights or final_backend not in predictor_config.weights:
-        raise ValueError(f"Backend '{final_backend}' not defined in weights config.")
+        raise ValueError(f"Backend '{final_backend}' not defined in weights config for '{predictor_type}'.")
 
     filename = predictor_config.weights[final_backend].filename
-    return model_dir / filename
+    if not filename:
+        raise ValueError(f"Filename for backend '{final_backend}' is missing in config for '{predictor_type}'.")
+
+    # Sanitize the components that will become directories
+    sanitized_predictor_dir = sanitize_for_path(predictor_type)
+    sanitized_backend_dir = sanitize_for_path(final_backend)
+
+    # Assemble the final, structured path
+    return model_dir / sanitized_predictor_dir / sanitized_backend_dir / filename

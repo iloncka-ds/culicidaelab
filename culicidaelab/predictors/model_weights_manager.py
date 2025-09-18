@@ -46,6 +46,7 @@ class ModelWeightsManager(WeightsManagerProtocol):
         try:
             local_path = construct_weights_path(
                 model_dir=self.settings.model_dir,
+                predictor_type=predictor_type,
                 predictor_config=predictor_config,
                 backend=backend_type,
             )
@@ -72,7 +73,7 @@ class ModelWeightsManager(WeightsManagerProtocol):
             return provider.download_model_weights(
                 repo_id=repo_id,
                 filename=filename,
-                local_dir=self.settings.model_dir,
+                local_dir=local_path.parent,
             )
 
         except Exception as e:
