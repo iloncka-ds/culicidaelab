@@ -190,7 +190,7 @@ class HuggingFaceProvider(BaseProvider):
                 filename=filename,
                 cache_dir=str(cache_dir),
                 local_dir=str(local_dir),
-                local_dir_use_symlinks=False,  # Use direct file placement
+                # local_dir_use_symlinks=False,  # Use direct file placement
             )
 
             downloaded_path = Path(downloaded_path_str)

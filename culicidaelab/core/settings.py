@@ -10,12 +10,14 @@ from pathlib import Path
 from typing import Any, Optional
 from contextlib import contextmanager
 import threading
+import hashlib
+import json
 
 from culicidaelab.core.config_manager import ConfigManager
 from culicidaelab.core.resource_manager import ResourceManager
 from culicidaelab.core.species_config import SpeciesConfig
 from culicidaelab.core.config_models import CulicidaeLabConfig
-from culicidaelab.core.utils import construct_weights_path
+from culicidaelab.core.utils import create_safe_path
 
 
 class Settings:
@@ -161,7 +163,49 @@ class Settings:
         return self._species_config
 
     # Dataset Management
-    def get_dataset_path(self, dataset_type: str) -> Path:
+    def get_cache_key_for_split(self, split: str | list[str] | None) -> str:
+        """
+        Generates a unique, deterministic hash for any valid split configuration.
+        Handles None, strings, and lists of strings.
+        """
+        if isinstance(split, list):
+            split.sort()
+
+        # json.dumps correctly handles None, converting it to the string "null"
+        split_str = json.dumps(split, sort_keys=True)
+
+        hasher = hashlib.sha256(split_str.encode("utf-8"))
+        return hasher.hexdigest()[:16]
+
+    def construct_split_path(
+        self,
+        dataset_base_path: Path,
+        split: str | list[str] | None = None,
+    ) -> Path:
+        """
+        Gets the standardized, absolute path for a dataset's directory.
+
+        This is the single source of truth for dataset path construction.
+
+        Args:
+            name (str): The name of the dataset (e.g., 'classification').
+            split (str | list[str] | None, optional): If provided, returns the specific
+                cache path for this split configuration. Otherwise, returns the base
+                directory for the dataset.
+            ensure_exists (bool): If True, ensures the directory is created on disk.
+
+        Returns:
+            Path: The absolute path to the dataset directory.
+        """
+        # Determine the final path (either base or split-specific)
+        final_path = dataset_base_path
+        if split is not None:
+            split_key = self.get_cache_key_for_split(split)
+            final_path = dataset_base_path / split_key
+
+        return final_path
+
+    def get_dataset_path(self, dataset_type: str, split: str | list[str] | None = None) -> Path:
         """Gets the standardized path for a specific dataset directory.
 
         Args:
@@ -174,18 +218,67 @@ class Settings:
             raise ValueError(f"Dataset type '{dataset_type}' not configured.")
 
         dataset_path_str = self.config.datasets[dataset_type].path
-        path = Path(dataset_path_str)
-        if not path.is_absolute():
-            path = self.dataset_dir / path
+        filal_path = Path(dataset_path_str)
+        if not filal_path.is_absolute():
+            filal_path = self.dataset_dir / filal_path
 
-        path.mkdir(parents=True, exist_ok=True)
-        return path
+        filal_path.mkdir(parents=True, exist_ok=True)
+
+        if split is not None:
+            filal_path = self.construct_split_path(
+                dataset_base_path=filal_path,
+                split=split,
+            )
+        return filal_path
 
     def list_datasets(self) -> list[str]:
         """Get list of configured dataset types."""
         return list(self.config.datasets.keys())
 
     # Model Management
+    def construct_weights_path(
+        self,
+        predictor_type: str,
+        backend: str | None = None,
+    ) -> Path:
+        """
+        A pure, static function to construct a fully qualified model weights path.
+
+        This is the single source of truth for model path construction, creating a
+        structured path like: .../models/<predictor_type>/<backend>/<filename>.
+
+        Args:
+            model_dir (Path): The base directory for all models (e.g., '.../culicidaelab/models').
+            predictor_type (str): The type of the predictor (e.g., 'classifier'). Used as a subdirectory.
+            predictor_config (PredictorConfig): The Pydantic model for the predictor's configuration.
+            backend (str | None, optional): The target backend (e.g., 'torch', 'onnx').
+                                            If None, uses the default from the config.
+
+        Returns:
+            Path: The absolute, structured path to the model weights file.
+
+        Raises:
+            ValueError: If a valid backend or weights filename cannot be determined.
+        """
+        predictor_config = self.get_config(f"predictors.{predictor_type}")
+        final_backend = backend if backend is not None else predictor_config.backend
+        if not final_backend:
+            raise ValueError(f"No backend specified for model '{predictor_type}'.")
+
+        if not predictor_config.weights or final_backend not in predictor_config.weights:
+            raise ValueError(f"Backend '{final_backend}' not defined in weights config for '{predictor_type}'.")
+
+        filename = predictor_config.weights[final_backend].filename
+        if not filename:
+            raise ValueError(f"Filename for backend '{final_backend}' is missing in config for '{predictor_type}'.")
+
+        # Sanitize the components that will become directories
+        predictor_dir = create_safe_path(predictor_type)
+        backend_dir = create_safe_path(final_backend)
+
+        # Assemble the final, structured path
+        return self.model_dir / predictor_dir / backend_dir / filename
+
     def get_model_weights_path(
         self,
         model_type: str,
@@ -202,10 +295,8 @@ class Settings:
         if model_type not in self.config.predictors:
             raise ValueError(f"Model type '{model_type}' not configured in 'predictors'.")
 
-        local_path = construct_weights_path(
-            model_dir=self.model_dir,
+        local_path = self.construct_weights_path(
             predictor_type=model_type,
-            predictor_config=self.get_config(f"predictors.{model_type}"),
             backend=backend,
         )
         return local_path

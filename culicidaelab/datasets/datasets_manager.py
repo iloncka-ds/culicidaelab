@@ -8,8 +8,6 @@ for use in the application.
 
 from __future__ import annotations
 
-import hashlib
-import json
 from pathlib import Path
 from typing import Any
 
@@ -116,23 +114,16 @@ class DatasetsManager:
         Returns:
             The loaded dataset object.
         """
-        # 1. Get config and provider
+        # # 1. Get config and provider
         config = self.get_dataset_info(name)
         provider = self.provider_service.get_provider(config.provider_name)
 
-        # If we've already loaded this dataset in this session, prefer the cached path
-        if name in self.loaded_datasets:
-            cached = self.loaded_datasets[name]
-            # Ensure a Path object when calling the provider
-            cached_path = Path(cached) if not isinstance(cached, Path) else cached
-            return provider.load_dataset(cached_path)
+        split_path = self.settings.get_dataset_path(
+            dataset_type=name,
+            split=split,
+        )
 
-        # 2. Determine paths using the hashed cache key (Manager's responsibility)
-        dataset_base_path = self.settings.dataset_dir / config.path
-        split_key = self._get_cache_key_for_split(split)
-        split_path = dataset_base_path / split_key
-
-        # 3. Check cache, otherwise download
+        # Check cache, otherwise download
         downloaded_path = None
         if not split_path.exists():
             # Instruct the provider to download and save to the precise cache path
@@ -144,9 +135,9 @@ class DatasetsManager:
                 split=split,
             )
         else:
-            print(f"Cache hit for split config: {split} (key: {split_key})")
+            print(f"Cache hit for split config: {split} {split_path}")
 
-        # 4. Instruct the provider to load from the appropriate path
+        # Instruct the provider to load from the appropriate path
         load_from = None
         if downloaded_path:
             load_from = Path(downloaded_path) if not isinstance(downloaded_path, Path) else downloaded_path
@@ -155,22 +146,7 @@ class DatasetsManager:
 
         dataset = provider.load_dataset(load_from)
 
-        # 5. Update the session cache
+        # Update the session cache
         self.loaded_datasets[name] = load_from
 
         return dataset
-
-    @staticmethod
-    def _get_cache_key_for_split(split: str | list[str] | None) -> str:
-        """
-        Generates a unique, deterministic hash for any valid split configuration.
-        Handles None, strings, and lists of strings.
-        """
-        if isinstance(split, list):
-            split.sort()
-
-        # json.dumps correctly handles None, converting it to the string "null"
-        split_str = json.dumps(split, sort_keys=True)
-
-        hasher = hashlib.sha256(split_str.encode("utf-8"))
-        return hasher.hexdigest()[:16]

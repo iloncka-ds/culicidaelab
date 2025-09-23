@@ -18,7 +18,6 @@ from pathlib import Path
 from culicidaelab.core.provider_service import ProviderService
 from culicidaelab.core.settings import Settings
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
-from culicidaelab.core.utils import construct_weights_path
 
 
 class ModelWeightsManager(WeightsManagerProtocol):
@@ -42,18 +41,16 @@ class ModelWeightsManager(WeightsManagerProtocol):
         downloading them if necessary, and returns the absolute path.
         """
 
-        predictor_config = self.settings.get_config(f"predictors.{predictor_type}")
         try:
-            local_path = construct_weights_path(
-                model_dir=self.settings.model_dir,
+            local_path = self.settings.construct_weights_path(
                 predictor_type=predictor_type,
-                predictor_config=predictor_config,
                 backend=backend_type,
             )
 
             if local_path.exists():
                 return local_path
 
+            predictor_config = self.settings.get_config(f"predictors.{predictor_type}")
             # Construct the config key to get the specific weights info
             weights_config_key = f"predictors.{predictor_type}.weights.{backend_type}"
             weights_config = self.settings.get_config(weights_config_key)

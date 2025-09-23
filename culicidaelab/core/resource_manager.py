@@ -15,8 +15,9 @@ import toml
 from contextlib import contextmanager
 from pathlib import Path
 from threading import Lock
-
 import appdirs
+
+from culicidaelab.core.utils import create_safe_path
 
 logger = logging.getLogger(__name__)
 
@@ -182,25 +183,6 @@ class ResourceManager:
             "config_dir": self.config_dir,
         }
 
-    def get_cache_path(self, cache_name: str, create_if_missing: bool = True) -> Path:
-        """Gets a path for cache files.
-
-        Args:
-            cache_name (str): The name of the cache.
-            create_if_missing (bool): Whether to create the directory if it
-                doesn't exist.
-
-        Returns:
-            Path: The path to the cache directory.
-        """
-        if not cache_name or not cache_name.strip():
-            raise ValueError("Cache name cannot be empty")
-
-        cache_path = self.user_cache_dir / self._sanitize_name(cache_name)
-        if create_if_missing:
-            self._create_directory(cache_path, "cache")
-        return cache_path
-
     def get_dataset_path(
         self,
         dataset_name: str,
@@ -219,7 +201,7 @@ class ResourceManager:
         if not dataset_name or not dataset_name.strip():
             raise ValueError("Dataset name cannot be empty")
 
-        dataset_path = self.dataset_dir / self._sanitize_name(dataset_name)
+        dataset_path = self.dataset_dir / create_safe_path(dataset_name)
         if create_if_missing:
             self._create_directory(dataset_path, "dataset")
         return dataset_path
@@ -405,13 +387,6 @@ class ResourceManager:
             return any(str(resolved_path).startswith(str(p.resolve())) for p in safe_parents)
         except Exception:
             return False
-
-    def _sanitize_name(self, name: str) -> str:
-        """Sanitizes a name for use as a directory/file name."""
-        import re
-
-        sanitized = re.sub(r'[<>:"/\\|?*]', "_", name).strip(". ")
-        return sanitized or "unnamed"
 
     def _set_directory_permissions(self, directories: list[Path]) -> None:
         """Sets directory permissions on Unix-like systems (0o700)."""

@@ -31,15 +31,6 @@ def test_get_dataset_path(resource_manager):
     assert dataset_path.parent == resource_manager.dataset_dir
 
 
-def test_get_cache_path_and_sanitize(resource_manager):
-    cache_name = "test:cache*name?"
-    cache_path = resource_manager.get_cache_path(cache_name)
-    assert cache_path.exists()
-    assert "_" in cache_path.name
-    with pytest.raises(ValueError):
-        resource_manager.get_cache_path("")
-
-
 def test_temp_workspace_context(resource_manager):
     with resource_manager.temp_workspace(prefix="ctx") as ws:
         assert ws.exists()
@@ -68,11 +59,6 @@ def test_format_bytes(resource_manager):
     assert resource_manager._format_bytes(1024) == "1.0 KB"
     with pytest.raises(ValueError):
         resource_manager._format_bytes(None)
-
-
-def test_sanitize_name(resource_manager):
-    assert resource_manager._sanitize_name("a:b/c*d?") == "a_b_c_d_"
-    assert resource_manager._sanitize_name("   ...   ") == "unnamed"
 
 
 def test_create_and_verify_checksum(resource_manager, tmp_path):
