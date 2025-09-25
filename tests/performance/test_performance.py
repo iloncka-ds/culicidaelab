@@ -9,6 +9,7 @@ from collections.abc import Generator
 from collections import defaultdict
 import psutil
 import numpy as np
+from PIL import Image
 from contextlib import contextmanager
 from tabulate import tabulate
 
@@ -101,6 +102,7 @@ class PerformanceTester:
     def __init__(
         self,
         model_name: str,
+        backend: str,
         device: str,
         image_size: int,
         num_runs: int,
@@ -108,11 +110,12 @@ class PerformanceTester:
         output_dir: Path,
     ):
         self.model_name = model_name
+        self.backend = backend
         self.device = device
         self.image_size = image_size
         self.num_runs = num_runs
         self.warmup_runs = warmup_runs
-        self.output_path = output_dir / f"{model_name}_{device}_performance.json"
+        self.output_path = output_dir / f"{model_name}_{backend}_{device}_performance.json"
         self.results: list[dict] = []
         self.settings = get_settings()
 
@@ -125,15 +128,17 @@ class PerformanceTester:
         if self.model_name not in model_map:
             raise ValueError(f"Model '{self.model_name}' not recognized.")
 
-        config_path = f"predictors.{self.model_name}.device"
-        print(f"Forcing device setting: '{config_path}' = '{self.device}'")
-        self.settings.set_config(config_path, self.device)
-
+        device_config = f"predictors.{self.model_name}.device"
+        print(f"Forcing device setting: '{device_config}' = '{self.device}'")
+        self.settings.set_config(device_config, self.device)
+        backend_config = f"predictors.{self.model_name}.backend"
+        print(f"Forcing device setting: '{backend_config}' = '{self.backend}'")
+        self.settings.set_config(backend_config, self.backend)
         return model_map[self.model_name](settings=self.settings, load_model=load)
 
-    def _generate_mock_data(self, batch_size: int) -> list[np.ndarray] | tuple[list[np.ndarray], list[np.ndarray]]:
+    def _generate_mock_data(self, batch_size: int) -> list[Image.Image] | tuple[list[Image.Image], list[np.ndarray]]:
         shape = (self.image_size, self.image_size, 3)
-        fake_images = [np.random.randint(0, 255, shape, dtype=np.uint8) for _ in range(batch_size)]
+        fake_images = [Image.fromarray(np.random.randint(0, 255, shape, dtype=np.uint8)) for _ in range(batch_size)]
         if self.model_name != "segmenter":
             return fake_images
         else:
@@ -249,6 +254,7 @@ class PerformanceTester:
 def main():
     parser = argparse.ArgumentParser(description="CulicidaeLab Performance Testing Suite")
     parser.add_argument("--model-name", type=str, required=True, choices=["classifier", "detector", "segmenter"])
+    parser.add_argument("--backend", type=str, default="onnx", choices=["torch", "onnx"])
     parser.add_argument("--device", type=str, default="cpu", choices=["cpu", "cuda"])
     parser.add_argument("--batch-sizes", type=int, nargs="+", default=[1, 8])
     parser.add_argument("--image-size", type=int, default=224)
@@ -277,6 +283,7 @@ def main():
 
         tester = PerformanceTester(
             model_name=args.model_name,
+            backend=args.backend,
             device=args.device,
             image_size=args.image_size,
             num_runs=args.num_runs,
