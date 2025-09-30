@@ -12,6 +12,7 @@ Attributes:
 from culicidaelab.core.base_predictor import BasePredictor
 from culicidaelab.core.base_provider import BaseProvider
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
+from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 
 # Configuration
 from culicidaelab.core.config_manager import ConfigManager
@@ -47,6 +48,7 @@ __all__ = [
     "BasePredictor",
     "BaseProvider",
     "WeightsManagerProtocol",
+    "BaseInferenceBackend",
     # Configuration
     "ConfigManager",
     "CulicidaeLabConfig",

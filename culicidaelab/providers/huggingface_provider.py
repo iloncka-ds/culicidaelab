@@ -2,7 +2,7 @@
 
 This module provides the `HuggingFaceProvider` class, which is a concrete
 implementation of `BaseProvider`. It handles downloading datasets and
-model weights from the Hugging Face Hub, as well as loading them
+model weights from the HuggingFace Hub, as well as loading them
 from a local disk cache.
 """
 
@@ -68,22 +68,20 @@ class HuggingFaceProvider(BaseProvider):
         self,
         dataset_name: str,
         save_dir: Path | None = None,
-        config_name: str | None = "default",
+        config_name: str | None = None,
         split: str | None = None,
-        *args: Any,
         **kwargs: Any,
     ) -> Path:
         """Downloads a dataset from HuggingFace.
 
         Args:
             dataset_name (str): Name of the dataset to download (e.g., "segmentation").
-            config_name (str | None, optional): Name of the dataset configuration.
-                Defaults to None.
             save_dir (Path | None, optional): Directory to save the dataset.
                 Defaults to None, using the path from settings.
+            config_name (str | None, optional): Name of the dataset configuration.
+                Defaults to None.
             split (str | None, optional): Dataset split to download (e.g., "train").
                 Defaults to None.
-            *args (Any): Additional positional arguments to pass to `load_dataset`.
             **kwargs (Any): Additional keyword arguments to pass to `load_dataset`.
 
         Returns:

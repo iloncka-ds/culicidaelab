@@ -1,3 +1,5 @@
+"""SAM backend for the segmenter."""
+
 import logging
 from ultralytics import SAM
 from PIL import Image
@@ -10,12 +12,40 @@ logger = logging.getLogger(__name__)
 
 
 class SegmenterSAMBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
+    """A specialized SAM backend for image segmentation.
+
+    This class implements the inference backend for the segmenter using the
+    Segment Anything Model (SAM) from Ultralytics. It handles model loading
+    and prediction based on various prompts like bounding boxes or points.
+
+    Attributes:
+        predictor_type (str): The type of predictor, which is 'segmenter'.
+        weights_manager (WeightsManagerProtocol): An object to manage model weights.
+        model (SAM | None): The loaded SAM model.
+    """
+
     def __init__(self, weights_manager: WeightsManagerProtocol):
+        """Initializes the SegmenterSAMBackend.
+
+        Args:
+            weights_manager: An object that conforms to the
+                WeightsManagerProtocol, used to get the model weights.
+        """
         super().__init__(predictor_type="segmenter")
         self.weights_manager = weights_manager
         self.model = None
 
     def load_model(self, **kwargs):
+        """Loads the SAM segmenter model.
+
+        This method retrieves the model weights path using the weights manager
+        and loads the SAM model. It also moves the model to the appropriate
+        device (GPU if available, otherwise CPU).
+
+        Args:
+            **kwargs: Additional keyword arguments. Can include 'device' to
+                specify the device to load the model on.
+        """
         model_path = self.weights_manager.ensure_weights(
             predictor_type=self.predictor_type,
             backend_type="torch",
@@ -28,6 +58,29 @@ class SegmenterSAMBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
             self.model.to(device)
 
     def predict(self, input_data: Image.Image, **kwargs) -> np.ndarray:
+        """Performs inference on a single input image.
+
+        If the model is not already loaded, this method will raise a RuntimeError.
+        It uses prompts (bounding boxes or points) to generate segmentation masks.
+
+        Args:
+            input_data: The input image for segmentation.
+            **kwargs: Additional keyword arguments.
+                detection_boxes (list): A list of bounding boxes to use as prompts.
+                points (list): A list of points to use as prompts.
+                labels (list): A list of labels for the points (1 for foreground,
+                    0 for background).
+                verbose (bool): Whether to print model output.
+
+        Returns:
+            A numpy array representing the combined segmentation mask. Returns an
+            empty mask if no prompts are provided or no masks are generated.
+
+        Raises:
+            RuntimeError: If the model is not loaded.
+            ValueError: If points are provided without corresponding labels, or if
+                the number of points and labels do not match.
+        """
         if not self.model:
             raise RuntimeError("Model is not loaded. Call load_model() first.")
         h, w = input_data.size

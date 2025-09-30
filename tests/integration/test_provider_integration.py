@@ -72,7 +72,7 @@ def test_weights_manager_handles_download_failure(
     create_provider_config(user_config_dir)
 
     model_type = "detector"
-    backend_type = "yolo"
+    backend_type = "torch"
     filename = "model.pt"
 
     detector_config_value = {

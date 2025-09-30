@@ -3,6 +3,19 @@
 This module provides the `Settings` class and `get_settings` function, which
 serve as the main entry point for accessing application settings, resource
 paths, and other global parameters.
+
+The Settings class implements the Singleton pattern to ensure consistent
+configuration state across the application. It provides methods for:
+- Accessing and modifying configuration values
+- Managing model weights and datasets
+- Handling API keys for external services
+- Managing resource directories and workspace paths
+
+Example:
+    >>> from culicidaelab.core.settings import get_settings
+    >>> settings = get_settings()
+    >>> model_path = settings.get_model_weights_path('classifier')
+    >>> dataset_path = settings.get_dataset_path('classification')
 """
 
 import os
@@ -28,6 +41,23 @@ class Settings:
     resource directories, and application settings. All actual operations
     are delegated to a validated configuration object managed by ConfigManager
     and a ResourceManager.
+
+    The Settings class is implemented as a singleton to ensure consistent
+    configuration state across the application. It manages:
+    - Configuration values through get_config() and set_config()
+    - Resource directories for models, datasets, and cache
+    - Dataset paths and splits
+    - Model weights paths and types
+    - API keys for external services
+    - Temporary workspaces for processing
+
+    Attributes:
+        config (CulicidaeLabConfig): The current configuration object
+        model_dir (Path): Directory for model weights
+        dataset_dir (Path): Directory for datasets
+        cache_dir (Path): Directory for cached data
+        config_dir (Path): Active user configuration directory
+        species_config (SpeciesConfig): Configuration for species detection
     """
 
     _instance: Optional["Settings"] = None
@@ -166,7 +196,23 @@ class Settings:
     def get_cache_key_for_split(self, split: str | list[str] | None) -> str:
         """
         Generates a unique, deterministic hash for any valid split configuration.
-        Handles None, strings, and lists of strings.
+        This hash is used to create unique directory names for dataset splits.
+
+        Args:
+            split (str | list[str] | None): The split configuration to hash.
+                Can be a single split name (e.g., 'train'), a list of splits
+                (e.g., ['train', 'val']), or None.
+
+        Returns:
+            str: A 16-character hexadecimal hash that uniquely identifies the
+                split configuration. This hash is deterministic for the same
+                input.
+
+        Example:
+            >>> settings.get_cache_key_for_split('train')
+            'a1b2c3d4e5f6g7h8'
+            >>> settings.get_cache_key_for_split(['train', 'val'])
+            'h8g7f6e5d4c3b2a1'
         """
         if isinstance(split, list):
             split.sort()
@@ -232,7 +278,17 @@ class Settings:
         return filal_path
 
     def list_datasets(self) -> list[str]:
-        """Get list of configured dataset types."""
+        """Get list of configured dataset types in the application.
+
+        Returns:
+            list[str]: A list of dataset type identifiers that are configured
+                in the application settings. These correspond to the different
+                dataset categories available for training and inference.
+
+        Example:
+            >>> settings.list_datasets()
+            ['classification', 'detection', 'segmentation']
+        """
         return list(self.config.datasets.keys())
 
     # Model Management
@@ -302,14 +358,43 @@ class Settings:
         return local_path
 
     def list_model_types(self) -> list[str]:
-        """Get list of available model types."""
+        """Get list of available model types configured in the application.
+
+        Returns:
+            list[str]: A list of model type identifiers (e.g., ['classifier',
+                'detector', 'segmenter']) that are configured in the application.
+                These types correspond to the different predictors available
+                in the CulicidaeLab system.
+
+        Example:
+            >>> settings.list_model_types()
+            ['classifier', 'detector', 'segmenter']
+        """
         return list(self.config.predictors.keys())
 
     # API Key Management
     def get_api_key(self, provider: str) -> str | None:
         """Get API key for external provider from environment variables.
+
+        The method looks for environment variables in the following format:
+        - KAGGLE_API_KEY for 'kaggle' provider
+        - HUGGINGFACE_API_KEY for 'huggingface' provider
+        - ROBOFLOW_API_KEY for 'roboflow' provider
+
         Args:
-            provider: The name of the provider (e.g., 'kaggle', 'huggingface', 'roboflow').
+            provider (str): The name of the provider. Must be one of:
+                'kaggle', 'huggingface', or 'roboflow'.
+
+        Returns:
+            str | None: The API key if found in environment variables,
+                None if the provider is not supported or the key is not set.
+
+        Example:
+            >>> api_key = settings.get_api_key('huggingface')
+            >>> if api_key:
+            ...     # Use the API key
+            ... else:
+            ...     # Handle missing key
         """
         api_keys = {
             "kaggle": "KAGGLE_API_KEY",
@@ -323,6 +408,24 @@ class Settings:
     # Utility Methods (delegated to ResourceManager)
     @contextmanager
     def temp_workspace(self, prefix: str = "workspace"):
+        """Creates a temporary workspace directory that is automatically cleaned up.
+
+        This context manager creates a temporary directory for processing operations
+        and automatically cleans it up when the context is exited.
+
+        Args:
+            prefix (str, optional): Prefix for the temporary directory name.
+                Defaults to "workspace".
+
+        Yields:
+            Path: Path to the temporary workspace directory.
+
+        Example:
+            >>> with settings.temp_workspace(prefix='processing') as workspace:
+            ...     # Do some work in the temporary directory
+            ...     (workspace / 'output.txt').write_text('results')
+            # Directory is automatically cleaned up after the with block
+        """
         with self._resource_manager.temp_workspace(prefix) as workspace:
             yield workspace
 

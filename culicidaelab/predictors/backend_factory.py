@@ -1,3 +1,11 @@
+"""A factory for creating inference backends.
+
+This module provides a factory function to dynamically create and configure
+inference backends for different predictor types (e.g., classifier, detector).
+It uses a flexible strategy to select the appropriate backend based on user
+settings, configuration files, and the available installed libraries.
+"""
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import importlib.util
@@ -12,8 +20,7 @@ def create_backend(
     predictor_type: str,
     mode: str | None = None,
 ) -> BaseInferenceBackend:
-    """
-    Intelligently creates and returns an inference backend instance.
+    """Intelligently creates and returns an inference backend instance.
 
     This factory is the core of the library's adaptable architecture. It ensures
     that the correct backend is chosen based on a clear order of precedence,
@@ -37,13 +44,14 @@ def create_backend(
           defaults to the 'onnx' backend.
 
     Args:
+        settings: The main library settings object.
         predictor_type: The type of predictor requesting a backend
                         (e.g., 'classifier', 'detector').
-        settings: The main library settings object.
         mode: An optional, high-priority override to force a specific backend.
 
     Returns:
-        An instantiated backend object that conforms to the InferenceBackendProtocol.
+        An instantiated backend object that inherits from the
+        BaseInferenceBackend.
 
     Raises:
         RuntimeError: If the user explicitly requests a 'torch' backend but does
@@ -105,14 +113,6 @@ def create_backend(
             from culicidaelab.predictors.backends.classifier._onnx import ClassifierONNXBackend
 
             return ClassifierONNXBackend(weights_manager=weights_manager, config=predictor_config)
-        elif predictor_type == "detector":
-            from culicidaelab.predictors.backends.detector._onnx import DetectorONNXBackend
-
-            return DetectorONNXBackend(weights_manager=weights_manager)
-        elif predictor_type == "segmenter":
-            from culicidaelab.predictors.backends.segmenter._onnx import SegmenterONNXBackend
-
-            return SegmenterONNXBackend(weights_manager=weights_manager)
 
     # This is a safeguard for future development.
     raise ValueError(f"Could not create a backend for predictor '{predictor_type}' with mode '{final_backend_type}'.")

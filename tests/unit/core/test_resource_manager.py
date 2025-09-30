@@ -55,7 +55,7 @@ def test_get_disk_usage_and_directory_size(resource_manager):
 
 
 def test_format_bytes(resource_manager):
-    assert resource_manager._format_bytes(0) == "0.0 B"
+    assert resource_manager._format_bytes(0) == "0 B"
     assert resource_manager._format_bytes(1024) == "1.0 KB"
     with pytest.raises(ValueError):
         resource_manager._format_bytes(None)

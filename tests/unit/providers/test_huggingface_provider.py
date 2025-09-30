@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 import requests
 
-from culicidaelab.core.config_models import DatasetConfig, PredictorConfig
+from culicidaelab.core.config_models import DatasetConfig, PredictorConfig, WeightDetails
 from culicidaelab.providers.huggingface_provider import HuggingFaceProvider
 
 
@@ -29,9 +29,11 @@ def mock_settings():
         if "predictors" in path:
             return PredictorConfig(
                 target="a.b",
-                model_path="/fake/models/classifier.pt",
+                confidence=0.5,
+                device="cpu",
+                backend="torch",
                 repository_id="org/model_repo",
-                filename="weights.pt",
+                weights={"torch": WeightDetails(filename="weights.pt")},
                 model_config_path="dummy_path",
                 model_config_filename="dummy_file",
             )
@@ -105,7 +107,7 @@ def test_download_dataset(mock_load_dataset, hf_provider, mock_settings):
 
     mock_load_dataset.assert_called_once_with(
         "culicidae/my_dataset_repo",
-        name="default",
+        name=None,
         split="train",
         token="fake_api_key_from_env",
         cache_dir=ANY,

@@ -8,46 +8,59 @@ name = "culicidaelab"
 version = "0.2.2"
 description = "A Python library for mosquito detection, segmentation, and classification in images"
 readme = "README.md"
+license = { text = "AGPL-3.0" }
 authors = [
     { name = "Ilona Kovaleva", email = "iloncka.ds@gmail.com" }
 ]
 requires-python = ">=3.11"
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Image Recognition",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+keywords = ["mosquito", "computer vision", "deep learning",
+            "classification", "detection", "segmentation", "entomology"]
+
+# --- Core Dependencies ---
+# These are the absolute minimum packages required for the library's core
+# functionality: configuration, resource management, and model downloading.
+# This base installation does NOT include any heavy ML frameworks.
 dependencies = [
-    "torch>=2.3.1",
-    "torchvision>=0.18.1",
+
     "numpy>=1.24.4",
     "tqdm>=4.66.1",
     "iopath>=0.1.10",
     "pillow>=9.4.0",
-    "fastai>=2.7.0, <=2.8.0",
-    "timm>=0.9.0",
-    "ultralytics>=8.3.0",
     "pyyaml>=6.0.0",
     "huggingface-hub>=0.16.0",
-    "datasets==4.0.0", # >=2.13.0,<=3.1.0
+    "datasets==4.0.0",
+    "fastprogress==1.0.3",
     "omegaconf>=2.3.0",
     "python-dotenv>=0.21.0",
     "pycocotools>=2.0.7",
     "dill>=0.3.8",
-    "graphviz>=0.20.3",
     "appdirs>=1.4.4",
     "requests>=2.25.1",
     "toml>=0.10.2",
     "dotenv>=0.9.9",
     "pydantic-settings>=2.9.1",
-    "onnxruntime>=1.22.1",
-    "onnx>=1.19.0",
+
 ]
 
 
 [project.urls]
 "Homepage" = "https://github.com/iloncka/culicidaelab"
+"Repository" = "https://github.com/iloncka-ds/culicidaelab"
+"Documentation" = "https://iloncka-ds.github.io/culicidaelab"
 "Bug Tracker" = "https://github.com/iloncka/culicidaelab/issues"
+
 
 
 [tool.setuptools.packages.find]
@@ -64,19 +77,75 @@ exclude = [
 
 
 [project.optional-dependencies]
+
+# --- Optional Dependencies (Extras) ---
+
+# --- Low-Level Inference Backends (Internal Building Blocks) ---
+# These extras are not meant for direct installation by users. They are the
+# fundamental components used to build the user-facing profiles above.
+
+_cpu-torch = [ "torch>=2.3.1  torchvision>=0.18.1 --index-url https://download.pytorch.org/whl/cpu",
+ ]
+_gpu-torch = [ "torch>=2.3.1",
+                "torchvision>=0.18.1",
+  ]
+_cpu-onnx = ["onnxruntime>=1.22.1" ]
+_gpu-onnx = [ "onnxruntime-gpu" ]
+
+
+# --- High-Level Functional Roles & Aliases (User-Facing) ---
+
+# [serve]: For lightweight, production inference.
+# -----------------------------------------------------------------------------
+# Default `serve` uses CPU with the ONNX Runtime backend.
+serve = [ "culicidaelab[_cpu-onnx]" ]
+
+# GPU-accelerated serving with the ONNX Runtime backend.
+serve-gpu = [ "culicidaelab[_gpu-onnx]" ]
+
+
+# [full]: For research, development, and training.
+# -----------------------------------------------------------------------------
+# Default `full` provides CPU support for both PyTorch and ONNX backends.
+full = [
+    "culicidaelab[_cpu-torch, _cpu-onnx]",
+    "fastai>=2.7.0,<=2.8.0",
+    "timm>=0.9.0",
+    "ultralytics>=8.3.0",
+    "graphviz>=0.20.3"
+
+]
+
+# GPU-accelerated `full` installation for both PyTorch and ONNX backends.
+full-gpu = [
+    "culicidaelab[_gpu-torch, _gpu-onnx]",
+    "fastai>=2.7.0,<2.9.0",
+    "ultralytics>=8.2.0",
+    "graphviz>=0.20.3"
+]
+
+
+# --- Development & Tooling Extras ---
+# For contributors and running local tests or documentation.
+
+# `examples`: Dependencies needed to run example notebooks.
+# Note: Install alongside a functional extra, e.g., pip install "culicidaelab[full,examples]"
 examples = [
     "ipykernel==6.16.2",
     "ipywidgets>=8.1.7",
     "jupytext>=1.17.2",
 ]
+
+# `docs`: Dependencies for building the documentation locally.
 docs = [
-    "culicidaelab[examples]",
     "mkdocs[i18n]>=1.6.1",
     "mkdocs-material==9.5.46",
     "mkdocstrings[python]==0.27.0",
     "mkdocs-custom-fences>=0.1.2",
     "mkdocs-gallery>=0.10.4",
 ]
+
+# `test`: Dependencies for running the test suite.
 test = [
     "black==23.3.0",
     "mypy==1.4.1",
@@ -94,7 +163,9 @@ test = [
     "requests-mock>=1.12.1",
     "tabulate>=0.9.0",
 ]
+
+# `dev`: A comprehensive installation for developers (defaults to CPU).
+# For GPU development, use: pip install -e ".[full-gpu,examples,docs,test]"
 dev = [
-    "culicidaelab[docs]",
-    "culicidaelab[test]"
-]
+        "culicidaelab[full,examples,docs,test]",
+       ]

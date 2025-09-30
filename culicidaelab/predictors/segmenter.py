@@ -1,38 +1,8 @@
 """Module for mosquito segmentation using the Segment Anything Model (SAM).
 
 This module provides the MosquitoSegmenter class, which uses a pre-trained
-SAM model (specifically, SAM2) to generate precise segmentation masks for
-mosquitos in an image. It can be prompted with detection bounding boxes
-for targeted segmentation and supports efficient batch processing.
-
-Example:
-    from culicidaelab.core.settings import Settings
-    from culicidaelab.predictors import MosquitoSegmenter
-    import numpy as np
-
-    # Initialize settings and segmenter
-    settings = Settings()
-    segmenter = MosquitoSegmenter(settings, load_model=True)
-
-    # --- Batch Prediction Example ---
-    # Create a dummy batch of images and detection boxes
-    images = [np.random.randint(0, 256, (1024, 1024, 3), dtype=np.uint8) for _ in range(4)]
-    # box = (x1, y1, x2, y2, confidence)
-    detections_batch = [
-        [(512, 512, 100, 100, 0.9)],  # Boxes for image 1
-        [(256, 256, 80, 80, 0.95), (700, 700, 120, 120, 0.88)],  # Boxes for image 2
-        [],  # No boxes for image 3
-        [(100, 800, 50, 50, 0.92)],  # Boxes for image 4
-    ]
-
-    # Get segmentation masks for the whole batch
-    masks = segmenter.predict_batch(images, detection_boxes_batch=detections_batch)
-
-    print(f"Generated {len(masks)} masks for the batch.")
-    print(f"Shape of first mask: {masks[0].shape}")
-
-    # Clean up
-    segmenter.unload_model()
+SAM model to generate precise segmentation masks for mosquitos in an image.
+It can be prompted with detection bounding boxes for targeted segmentation.
 """
 
 from __future__ import annotations
@@ -55,16 +25,24 @@ SegmentationGroundTruthType: TypeAlias = np.ndarray
 class MosquitoSegmenter(
     BasePredictor[ImageInput, SegmentationPrediction, SegmentationGroundTruthType],
 ):
-    """Segments mosquitos in images using the SAM2 model.
+    """Segments mosquitos in images using a SAM model.
 
-    This class provides methods to load a SAM2 model, generate segmentation
+    This class provides methods to load a SAM model, generate segmentation
     masks for entire images or specific regions defined by bounding boxes,
     and visualize the resulting masks.
 
-    Args:
-        settings (Settings): The main settings object for the library.
-        load_model (bool, optional): If True, the model is loaded upon
-            initialization. Defaults to False.
+    Example:
+        >>> from culicidaelab.core.settings import Settings
+        >>> from culicidaelab.predictors import MosquitoSegmenter
+        >>> import numpy as np
+        >>> # This example assumes you have a configured settings object
+        >>> settings = Settings()
+        >>> segmenter = MosquitoSegmenter(settings, load_model=True)
+        >>> image = np.random.randint(0, 256, (1024, 1024, 3), dtype=np.uint8)
+        >>> # Predict without prompts (might not be effective for all backends)
+        >>> prediction = segmenter.predict(image)
+        >>> print(f"Generated mask with {prediction.pixel_count} pixels.")
+
     """
 
     def __init__(
@@ -75,7 +53,17 @@ class MosquitoSegmenter(
         load_model: bool = False,
         backend: BaseInferenceBackend | None = None,
     ) -> None:
-        """Initializes the MosquitoSegmenter."""
+        """Initializes the MosquitoSegmenter.
+
+        Args:
+            settings: The main settings object for the library.
+            predictor_type: The type of predictor. Defaults to "segmenter".
+            mode: The mode to run the predictor in, 'torch' or 'serve'.
+                If None, it's determined by the environment.
+            load_model: If True, load the model upon initialization.
+            backend: An optional backend instance. If not provided, one will be
+                created based on the mode and settings.
+        """
 
         backend_instance = backend or create_backend(
             predictor_type=predictor_type,
@@ -91,7 +79,14 @@ class MosquitoSegmenter(
         )
 
     def _convert_raw_to_prediction(self, raw_prediction: np.ndarray) -> SegmentationPrediction:
-        """ """
+        """Converts a raw numpy mask to a structured segmentation prediction.
+
+        Args:
+            raw_prediction: A 2D numpy array representing the segmentation mask.
+
+        Returns:
+            A SegmentationPrediction object containing the mask and pixel count.
+        """
         return SegmentationPrediction(mask=raw_prediction, pixel_count=int(np.sum(raw_prediction)))
 
     def visualize(
@@ -100,14 +95,37 @@ class MosquitoSegmenter(
         predictions: SegmentationPrediction,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
-        """Overlays a segmentation mask on the original image."""
+        """Overlays a segmentation mask on the original image.
+
+        Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.predictors import MosquitoSegmenter
+            >>> # This example assumes you have a configured settings object
+            >>> settings = Settings()
+            >>> segmenter = MosquitoSegmenter(settings, load_model=True)
+            >>> image = "path/to/your/image.jpg"
+            >>> # Assuming you have a prediction from segmenter.predict()
+            >>> prediction = segmenter.predict(image)
+            >>> viz_image = segmenter.visualize(image, prediction, save_path="viz.jpg")
+
+        Args:
+            input_data: The original image.
+            predictions: The `SegmentationPrediction` from `predict`.
+            save_path: If provided, the output image is saved to this path.
+
+        Returns:
+            A numpy array of the image with the segmentation mask overlaid.
+        """
 
         image_pil = self._load_and_validate_image(input_data)
 
         colored_mask = Image.new("RGB", image_pil.size, self.config.visualization.overlay_color)
 
-        alpha_mask = Image.fromarray(((1 - predictions.mask) * 255).astype(np.uint8))
-        overlay = Image.composite(image_pil, colored_mask, alpha_mask)
+        # Create an alpha mask where the segmentation is transparent
+        alpha_mask = Image.fromarray((predictions.mask * 255).astype(np.uint8))
+
+        # Composite the images
+        overlay = Image.composite(colored_mask, image_pil, alpha_mask)
 
         if save_path:
             save_path = Path(save_path)
@@ -121,7 +139,20 @@ class MosquitoSegmenter(
         prediction: SegmentationPrediction,
         ground_truth: SegmentationGroundTruthType,
     ) -> dict[str, float]:
-        """Calculates segmentation metrics for a single predicted mask."""
+        """Calculates segmentation metrics for a single predicted mask.
+
+        Computes Intersection over Union (IoU), precision, recall, and F1-score.
+
+        Args:
+            prediction: The `SegmentationPrediction` object.
+            ground_truth: A 2D numpy array of the ground truth mask.
+
+        Returns:
+            A dictionary containing the calculated metrics.
+
+        Raises:
+            ValueError: If prediction and ground truth masks have different shapes.
+        """
         pred_mask = prediction.mask.astype(bool)
         ground_truth = ground_truth.astype(bool)
 

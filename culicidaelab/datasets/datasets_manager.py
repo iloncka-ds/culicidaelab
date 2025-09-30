@@ -34,7 +34,7 @@ class DatasetsManager:
         """Initializes the DatasetsManager with its dependencies.
 
         Args:
-            settings (Settings): The main Settings object for the library.
+            settings: The main Settings object for the library.
         """
         self.settings = settings
         self.provider_service = ProviderService(settings)
@@ -43,23 +43,26 @@ class DatasetsManager:
     def get_dataset_info(self, dataset_name: str) -> DatasetConfig:
         """Retrieves the configuration for a specific dataset.
 
-        Args:
-            dataset_name (str): The name of the dataset (e.g., 'classification').
-
-        Returns:
-            DatasetConfig: A Pydantic model instance containing the dataset's
-                validated configuration.
-
-        Raises:
-            KeyError: If the specified dataset is not found in the configuration.
-
         Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.datasets import DatasetsManager
+            >>> settings = Settings()
             >>> manager = DatasetsManager(settings)
             >>> try:
             ...     info = manager.get_dataset_info('classification')
             ...     print(info.provider_name)
             ... except KeyError as e:
             ...     print(e)
+
+        Args:
+            dataset_name: The name of the dataset (e.g., 'classification').
+
+        Returns:
+            A Pydantic model instance containing the dataset's
+            validated configuration.
+
+        Raises:
+            KeyError: If the specified dataset is not found in the configuration.
         """
         dataset_config = self.settings.get_config(f"datasets.{dataset_name}")
         if not dataset_config:
@@ -69,28 +72,34 @@ class DatasetsManager:
     def list_datasets(self) -> list[str]:
         """Lists all available dataset names from the configuration.
 
-        Returns:
-            list[str]: A list of configured dataset names.
-
         Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.datasets import DatasetsManager
+            >>> settings = Settings()
             >>> manager = DatasetsManager(settings)
             >>> available_datasets = manager.list_datasets()
             >>> print(available_datasets)
+
+        Returns:
+            A list of configured dataset names.
         """
         return self.settings.list_datasets()
 
     def list_loaded_datasets(self) -> list[str]:
         """Lists all datasets that have been loaded during the session.
 
-        Returns:
-            list[str]: A list of names for datasets that are currently cached.
-
         Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.datasets import DatasetsManager
+            >>> settings = Settings()
             >>> manager = DatasetsManager(settings)
             >>> _ = manager.load_dataset('classification', split='train')
             >>> loaded = manager.list_loaded_datasets()
             >>> print(loaded)
             ['classification']
+
+        Returns:
+            A list of names for datasets that are currently cached.
         """
         return list(self.loaded_datasets.keys())
 
@@ -100,21 +109,34 @@ class DatasetsManager:
         split: str | list[str] | None = None,
         config_name: str | None = "default",
     ) -> Any:
-        """
-        Loads a dataset, handling complex splits and caching automatically.
+        """Loads a dataset, handling complex splits and caching automatically.
+
+        Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.datasets import DatasetsManager
+            >>> # This example assumes you have a configured settings object
+            >>> settings = Settings()
+            >>> manager = DatasetsManager(settings)
+            >>> # Load the training split of the classification dataset
+            >>> train_dataset = manager.load_dataset('classification', split='train')
+            >>> # Load all splits
+            >>> all_splits = manager.load_dataset('classification')
 
         Args:
-            name (str): The name of the dataset to load.
-            split (str | list[str] | None, optional): The split(s) to load.
+            name: The name of the dataset to load.
+            split: The split(s) to load.
                 - str: A single split name (e.g., "train", "test").
                 - None: Loads ALL available splits into a `DatasetDict`.
                 - Advanced: Can be a slice ("train[:100]") or a list for
                   cross-validation.
+            config_name: The name of the dataset configuration to use.
+                Defaults to "default".
 
         Returns:
-            The loaded dataset object.
+            The loaded dataset object, which could be a `Dataset` or `DatasetDict`
+            depending on the provider and splits requested.
         """
-        # # 1. Get config and provider
+        # 1. Get config and provider
         config = self.get_dataset_info(name)
         provider = self.provider_service.get_provider(config.provider_name)
 
@@ -127,7 +149,6 @@ class DatasetsManager:
         downloaded_path = None
         if not split_path.exists():
             # Instruct the provider to download and save to the precise cache path
-            # Some providers may return the actual saved path; prefer that when present.
             downloaded_path = provider.download_dataset(
                 dataset_name=name,
                 config_name=config_name,
@@ -138,11 +159,7 @@ class DatasetsManager:
             print(f"Cache hit for split config: {split} {split_path}")
 
         # Instruct the provider to load from the appropriate path
-        load_from = None
-        if downloaded_path:
-            load_from = Path(downloaded_path) if not isinstance(downloaded_path, Path) else downloaded_path
-        else:
-            load_from = split_path
+        load_from = downloaded_path or split_path
 
         dataset = provider.load_dataset(load_from)
 

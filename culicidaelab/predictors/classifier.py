@@ -1,41 +1,9 @@
-"""Module for mosquito species classification using FastAI.
+"""Module for mosquito species classification.
 
-This module provides the MosquitoClassifier class for identifying mosquito species
-from an image. It leverages the FastAI framework and can use various model
-architectures available in the `timm` library. The classifier is designed to be
-initialized with project-wide settings and can be used to predict species for
-single images or batches.
-
-Example:
-    from culicidaelab.core.settings import Settings
-    from culicidaelab.predictors import MosquitoClassifier
-    import numpy as np
-    import io
-
-    # Initialize settings and classifier
-    settings = Settings()
-    classifier = MosquitoClassifier(settings, load_model=True)
-
-    # Create a dummy image and in-memory byte stream
-    image_array = np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)
-    success, encoded_image = cv2.imencode(".png", image_array)
-    image_bytes = encoded_image.tobytes()
-    image_stream = io.BytesIO(image_bytes)
-
-
-    # Get predictions from bytes
-    predictions_from_bytes = classifier.predict(image_bytes)
-    print("Top prediction from bytes: ",
-    f"{predictions_from_bytes[0][0]} with confidence {predictions_from_bytes[0][1]:.4f}")
-
-    # Get predictions from stream
-    predictions_from_stream = classifier.predict(image_stream)
-    print("Top prediction from stream: ",
-    f"{predictions_from_stream[0][0]} with confidence {predictions_from_stream[0][1]:.4f}")
-
-
-    # Clean up (if not using a context manager)
-    classifier.unload_model()
+This module provides the MosquitoClassifier for identifying mosquito species
+from an image. It can use various model backends (e.g., PyTorch, ONNX)
+and is designed to be initialized with project-wide settings. It supports
+prediction for single images or batches, evaluation, and visualization.
 """
 
 from __future__ import annotations
@@ -67,17 +35,11 @@ ClassificationGroundTruthType: TypeAlias = str
 class MosquitoClassifier(
     BasePredictor[ImageInput, ClassificationPrediction, ClassificationGroundTruthType],
 ):
-    """Classifies mosquito species from an image using a FastAI model.
+    """Classifies mosquito species from an image.
 
     This class provides methods to load a pre-trained model, predict species
     from single or batches of images, evaluate model performance, and visualize
     the classification results.
-
-    Args:
-        settings (Settings): The main settings object for the library, which
-            contains configuration for paths, models, and species.
-        load_model (bool, optional): If True, the model weights are loaded
-            immediately upon initialization. Defaults to False.
 
     Attributes:
         arch (str): The model architecture (e.g., 'convnext_tiny').
@@ -94,7 +56,17 @@ class MosquitoClassifier(
         load_model: bool = False,
         backend: BaseInferenceBackend | None = None,
     ) -> None:
-        """Initializes the MosquitoClassifier."""
+        """Initializes the MosquitoClassifier.
+
+        Args:
+            settings: The main settings object for the library.
+            predictor_type: The type of predictor. Defaults to "classifier".
+            mode: The mode to run the predictor in, 'torch' or 'serve'.
+                If None, it's determined by the environment.
+            load_model: If True, load the model upon initialization.
+            backend: An optional backend instance. If not provided, one will be
+                created based on the mode and settings.
+        """
 
         backend_instance = backend or create_backend(
             predictor_type=predictor_type,
@@ -126,10 +98,10 @@ class MosquitoClassifier(
         """Retrieves the class index for a given species name.
 
         Args:
-            species_name (str): The name of the species.
+            species_name: The name of the species.
 
         Returns:
-            int | None: The corresponding class index if found, otherwise None.
+            The corresponding class index if found, otherwise None.
         """
         return self.settings.species_config.get_index_by_species(species_name)
 
@@ -139,7 +111,7 @@ class MosquitoClassifier(
         The list is ordered by the class index.
 
         Returns:
-            list[str]: A list of species names.
+            A list of species names.
         """
         return [self.species_map[i] for i in sorted(self.species_map.keys())]
 
@@ -153,6 +125,16 @@ class MosquitoClassifier(
 
         This method generates a visualization by placing the top-k predictions
         in a separate panel to the left of the image.
+
+        Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.predictors import MosquitoClassifier
+            >>> # This example assumes you have a configured settings object
+            >>> settings = Settings()
+            >>> classifier = MosquitoClassifier(settings, load_model=True)
+            >>> image = "path/to/your/image.jpg"
+            >>> prediction = classifier.predict(image)
+            >>> viz_image = classifier.visualize(image, prediction, save_path="viz.jpg")
 
         Args:
             input_data: The input image (NumPy array, path, or PIL Image).
@@ -192,7 +174,7 @@ class MosquitoClassifier(
             text = f"{display_name}: {conf:.3f}"
             # Load a font (you might want to make this configurable or load once)
             try:
-                font_pil = ImageFont.truetype("arial.ttf", int(font_scale * 15))  # Adjust font size as needed
+                font_pil = ImageFont.truetype("arial.ttf", int(font_scale * 15))
             except OSError:
                 font_pil = ImageFont.load_default()
             draw.text((padding, y_offset), text, fill=vis_config.text_color, font=font_pil)
@@ -306,7 +288,7 @@ class MosquitoClassifier(
     # Private Methods
     # --------------------------------------------------------------------------
     def _convert_raw_to_prediction(self, raw_prediction: np.ndarray) -> ClassificationPrediction:
-        """Implements the conversion for classification predictions."""
+        """Converts raw model output to a structured classification prediction."""
         species_probs = []
 
         for idx, prob in enumerate(raw_prediction):

@@ -1,30 +1,7 @@
-"""Module for mosquito object detection in images using YOLO.
+"""Module for mosquito object detection in images.
 
 This module provides the MosquitoDetector class, which uses a pre-trained
-YOLO model from the `ultralytics` library to find bounding boxes of
-mosquitos in an image.
-
-Example:
-    from culicidaelab.core.settings import Settings
-    from culicidaelab.predictors import MosquitoDetector
-    import numpy as np
-
-    # Initialize settings and detector
-    settings = Settings()
-    detector = MosquitoDetector(settings, load_model=True)
-
-    # Create a dummy image
-    image = np.random.randint(0, 256, (640, 640, 3), dtype=np.uint8)
-
-    # Get detections
-    # Each detection is (center_x, center_y, width, height, confidence)
-    detections = detector.predict(image)
-    if detections:
-        print(f"Found {len(detections)} mosquitos.")
-        print(f"Top detection box: {detections[0]}")
-
-    # Clean up
-    detector.unload_model()
+model (e.g., YOLO) to find bounding boxes of mosquitos in an image.
 """
 
 from __future__ import annotations
@@ -56,14 +33,9 @@ class MosquitoDetector(
 ):
     """Detects mosquitos in images using a YOLO model.
 
-    This class loads a YOLO model and provides methods for predicting bounding
+    This class loads a model and provides methods for predicting bounding
     boxes on single or batches of images, visualizing results, and evaluating
     detection performance against ground truth data.
-
-    Args:
-        settings (Settings): The main settings object for the library.
-        load_model (bool, optional): If True, the model is loaded upon
-            initialization. Defaults to False.
 
     Attributes:
         confidence_threshold (float): The minimum confidence score for a
@@ -80,7 +52,17 @@ class MosquitoDetector(
         load_model: bool = False,
         backend: BaseInferenceBackend | None = None,
     ) -> None:
-        """Initializes the MosquitoDetector."""
+        """Initializes the MosquitoDetector.
+
+        Args:
+            settings: The main settings object for the library.
+            predictor_type: The type of predictor. Defaults to "detector".
+            mode: The mode to run the predictor in, 'torch' or 'serve'.
+                If None, it's determined by the environment.
+            load_model: If True, load the model upon initialization.
+            backend: An optional backend instance. If not provided, one will be
+                created based on the mode and settings.
+        """
 
         backend_instance = backend or create_backend(
             predictor_type=predictor_type,
@@ -101,14 +83,25 @@ class MosquitoDetector(
     def predict(self, input_data: ImageInput, **kwargs: Any) -> DetectionPrediction:
         """Detects mosquitos in a single image.
 
+        Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.predictors import MosquitoDetector
+            >>> # This example assumes you have a configured settings object
+            >>> settings = Settings()
+            >>> detector = MosquitoDetector(settings, load_model=True)
+            >>> image = "path/to/your/image.jpg"
+            >>> detections = detector.predict(image)
+            >>> for detection in detections.detections:
+            ...     print(detection.box, detection.confidence)
+
         Args:
-            input_data (ImageInput): The input image as a NumPy array or other supported format.
-            **kwargs (Any): Optional keyword arguments, including:
+            input_data: The input image as a NumPy array or other supported format.
+            **kwargs: Optional keyword arguments, including:
                 confidence_threshold (float): Override the default confidence
                     threshold for this prediction.
 
         Returns:
-            DetectionPrediction: A `DetectionPrediction` object containing a list of
+            A `DetectionPrediction` object containing a list of
             `Detection` instances. Returns an empty list if no mosquitos are found.
 
         Raises:
@@ -123,7 +116,7 @@ class MosquitoDetector(
         )
 
         try:
-            input_image = np.array(self._load_and_validate_image(input_data))
+            input_image = self._load_and_validate_image(input_data)
             # The backend now returns a standardized NumPy array (N, 5) -> [x1, y1, x2, y2, conf]
             results_array = self.backend.predict(
                 input_data=input_image,
@@ -139,7 +132,15 @@ class MosquitoDetector(
         return self._convert_raw_to_prediction(results_array)
 
     def _convert_raw_to_prediction(self, raw_prediction: np.ndarray) -> DetectionPrediction:
-        """ """
+        """Converts raw model output to a structured detection prediction.
+
+        Args:
+            raw_prediction: A numpy array with shape (N, 5) where each row is
+                [x1, y1, x2, y2, confidence].
+
+        Returns:
+            A DetectionPrediction object containing a list of Detection objects.
+        """
         detections: list[Detection] = []
         if raw_prediction.ndim == 2 and raw_prediction.shape[1] == 5:
             for row in raw_prediction:
@@ -157,21 +158,27 @@ class MosquitoDetector(
     ) -> np.ndarray:
         """Draws predicted bounding boxes on an image.
 
+        Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.predictors import MosquitoDetector
+            >>> # This example assumes you have a configured settings object
+            >>> settings = Settings()
+            >>> detector = MosquitoDetector(settings, load_model=True)
+            >>> image = "path/to/your/image.jpg"
+            >>> detections = detector.predict(image)
+            >>> viz_image = detector.visualize(image, detections, save_path="viz.jpg")
+
         Args:
-            input_data (ImageInput): The original image.
-            predictions (DetectionPrediction): The `DetectionPrediction` from `predict`.
-            save_path (str | Path | None, optional): If provided, the output
-                image is saved to this path. Defaults to None.
+            input_data: The original image.
+            predictions: The `DetectionPrediction` from `predict`.
+            save_path: If provided, the output image is saved to this path.
 
         Returns:
-            np.ndarray: A new image array with bounding boxes and confidence
-            scores drawn on it.
+            A new image array with bounding boxes and confidence scores drawn on it.
         """
         vis_img = self._load_and_validate_image(input_data).copy()
         draw = ImageDraw.Draw(vis_img)
         vis_config = self.config.visualization
-        # box_color = str_to_bgr(vis_config.box_color) # Removed
-        # text_color = str_to_bgr(vis_config.text_color) # Removed
         font_scale = vis_config.font_scale
         thickness = vis_config.box_thickness
 
@@ -184,9 +191,8 @@ class MosquitoDetector(
                 width=thickness,
             )
             text = f"{conf:.2f}"
-            # Load a font (you might want to make this configurable or load once)
             try:
-                font = ImageFont.truetype("arial.ttf", int(font_scale * 20))  # Adjust font size as needed
+                font = ImageFont.truetype("arial.ttf", int(font_scale * 20))
             except OSError:
                 font = ImageFont.load_default()
             draw.text((int(box.x1), int(box.y1 - 10)), text, fill=vis_config.text_color, font=font)
@@ -202,11 +208,11 @@ class MosquitoDetector(
         """Calculates Intersection over Union (IoU) for two boxes.
 
         Args:
-            box1_xyxy (tuple): The first box in (x1, y1, x2, y2) format.
-            box2_xyxy (tuple): The second box in (x1, y1, x2, y2) format.
+            box1_xyxy: The first box in (x1, y1, x2, y2) format.
+            box2_xyxy: The second box in (x1, y1, x2, y2) format.
 
         Returns:
-            float: The IoU score between 0.0 and 1.0.
+            The IoU score between 0.0 and 1.0.
         """
         b1_x1, b1_y1, b1_x2, b1_y2 = box1_xyxy
         b2_x1, b2_y1, b2_x2, b2_y2 = box2_xyxy
@@ -231,12 +237,11 @@ class MosquitoDetector(
         and mean IoU for a set of predicted boxes against ground truth boxes.
 
         Args:
-            prediction (DetectionPrediction): A `DetectionPrediction` object.
-            ground_truth (DetectionGroundTruthType): A list of ground truth
-                boxes: `[(x, y, w, h), ...]`.
+            prediction: A `DetectionPrediction` object.
+            ground_truth: A list of ground truth boxes: `[(x, y, w, h), ...]`.
 
         Returns:
-            dict[str, float]: A dictionary containing the calculated metrics.
+            A dictionary containing the calculated metrics.
         """
         if not ground_truth and not prediction.detections:
             return {
