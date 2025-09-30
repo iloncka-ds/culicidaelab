@@ -241,9 +241,9 @@ sequenceDiagram
     participant HuggingFaceProvider
     participant ResourceManager
     participant HuggingFaceHub
-    participant FastAI
+    participant ClassifierFastAIBackend
 
-	Note over User, FastAI: Инициализация модели
+	Note over User, ClassifierFastAIBackend: Инициализация модели
 
     User->>MosquitoClassifier: MosquitoClassifier(settings, load_model=True)
     activate MosquitoClassifier
@@ -269,20 +269,20 @@ sequenceDiagram
     deactivate HuggingFaceProvider
     ModelWeightsManager-->>MosquitoClassifier: /path/to/model.pth
     deactivate ModelWeightsManager
-    MosquitoClassifier->>FastAI: load_learner(/path/to/model.pth)
-    activate FastAI
-    FastAI-->>MosquitoClassifier: learner
-    deactivate FastAI
+    MosquitoClassifier->>ClassifierFastAIBackend: load_learner(/path/to/model.pth)
+    activate ClassifierFastAIBackend
+    ClassifierFastAIBackend-->>MosquitoClassifier: learner
+    deactivate ClassifierFastAIBackend
     deactivate MosquitoClassifier
 
-    Note over User, FastAI: Предсказание
+    Note over User, ClassifierFastAIBackend: Предсказание
 
     User->>MosquitoClassifier: predict(image)
     activate MosquitoClassifier
-    MosquitoClassifier->>FastAI: Perform Inference
-    activate FastAI
-    FastAI-->>MosquitoClassifier: Predictions
-    deactivate FastAI
+    MosquitoClassifier->>ClassifierFastAIBackend: Perform Inference
+    activate ClassifierFastAIBackend
+    ClassifierFastAIBackend-->>MosquitoClassifier: Predictions
+    deactivate ClassifierFastAIBackend
     MosquitoClassifier-->>User: Predictions
     deactivate MosquitoClassifier
 
