@@ -175,7 +175,11 @@ This integrated approach enables comprehensive mosquito research, from data coll
 
 **Memory (RAM):** Minimum 2 GB. 8 GB or more is recommended for processing large datasets or using more complex models.
 
-**Graphics Card (GPU):** An NVIDIA GPU with CUDA support is highly recommended for a significant performance increase in deep learning model operations, especially for detection and segmentation but not essential for classification (see [performance logs](https://github.com/iloncka-ds/culicidaelab/tree/main/tests/performance/performance_logs) ang [notebook](https://colab.research.google.com/drive/1JdfxSQmtrJND4mNUctOkY7Kt0yvbO0eV?usp=sharing)). For the SAM model, a GPU is virtually essential for acceptable performance. Minimum video memory is 2 GB; 4 GB or more is recommended.
+**Graphics Card (GPU):** An NVIDIA GPU with CUDA support is highly recommended for a significant performance increase in deep learning model operations, especially for detection and segmentation but not essential for classification (see [performance logs](https://github.com/iloncka-ds/culicidaelab/tree/main/tests/performance/performance_logs) ang [notebook](https://colab.research.google.com/drive/1JdfxSQmtrJND4mNUctOkY7Kt0yvbO0eV?usp=sharing)). For the SAM model, a GPU is virtually essential for acceptable performance. Minimum video memory is 2 GB; 4 GB or more is recommended. For serve-gpu installation profile, CUDA 12.X is required, for CUDA 11.X use installation instructions below.
+```bash
+pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-11/pypi/simple/
+pip install culicidaelab
+```
 
 **Hard Drive:** At least 10 GB of free space to install the library, dependencies, download pre-trained models, and store processed data.
 
@@ -236,7 +240,7 @@ pip install culicidaelab[serve]
 
 **CPU-based development** (includes PyTorch, FastAI, Ultralytics, and ONNX):
 ```bash
-pip install culicidaelab[full]
+pip install culicidaelab[full] --extra-index-url https://download.pytorch.org/whl/cpu
 ```
 
 **GPU-accelerated development** (includes PyTorch GPU, FastAI, Ultralytics, and ONNX GPU):
@@ -248,19 +252,23 @@ pip install culicidaelab[full-gpu]
 
 **Run example notebooks locally:**
 ```bash
-pip install culicidaelab[examples]
-# Or combine with other extras:
+pip install culicidaelab[full,examples] --extra-index-url https://download.pytorch.org/whl/cpu
+# Or for GPU development:
 pip install culicidaelab[full-gpu,examples]
 ```
 
 **Build documentation locally:**
 ```bash
-pip install culicidaelab[docs]
+pip install culicidaelab[full,docs] --extra-index-url https://download.pytorch.org/whl/cpu
+# Or for GPU development:
+pip install culicidaelab[full-gpu,docs]
 ```
 
 **Run tests:**
 ```bash
-pip install culicidaelab[test]
+pip install culicidaelab[full,test] --extra-index-url https://download.pytorch.org/whl/cpu
+# Or for GPU development:
+pip install culicidaelab[full-gpu,test]
 ```
 
 ### Development Setup
@@ -296,10 +304,7 @@ Or with `pip`:
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install --upgrade pip
-# CPU development
 pip install -e .[dev]
-# For GPU development, use:
-# pip install -e .[full-gpu,docs,test]
 pip cache purge
 ```
 
@@ -329,13 +334,13 @@ classifier = MosquitoClassifier(settings, load_model=True)
 
 # 3. Make a prediction
 # The model is lazy-loaded (downloaded and loaded into memory) here.
-predictions = classifier.predict("path/to/your/image.jpg")
+result = classifier.predict("path/to/your/image.jpg")
 
 # 5. Print the results
 # The output is a list of (species_name, confidence_score) tuples.
 print("Top 3 Predictions:")
-for species, confidence in predictions[:3]:
-    print(f"- {species}: {confidence:.4f}")
+for p in result.predictions[:3]:
+    print(f"- {p.species}: {p.confidence:.4f}")
 
 # Example Output:
 # Top 3 Predictions:
