@@ -98,15 +98,15 @@ def create_backend(
         if predictor_type == "classifier":
             from culicidaelab.predictors.backends.classifier._fastai import ClassifierFastAIBackend
 
-            return ClassifierFastAIBackend(weights_manager=weights_manager)
+            return ClassifierFastAIBackend(weights_manager=weights_manager, config=predictor_config)
         elif predictor_type == "detector":
             from culicidaelab.predictors.backends.detector._yolo import DetectorYOLOBackend
 
-            return DetectorYOLOBackend(weights_manager=weights_manager)
+            return DetectorYOLOBackend(weights_manager=weights_manager, config=predictor_config)
         elif predictor_type == "segmenter":
             from culicidaelab.predictors.backends.segmenter._sam import SegmenterSAMBackend
 
-            return SegmenterSAMBackend(weights_manager=weights_manager)
+            return SegmenterSAMBackend(weights_manager=weights_manager, config=predictor_config)
 
     elif final_backend_type == "onnx":
         if predictor_type == "classifier":
@@ -114,5 +114,4 @@ def create_backend(
 
             return ClassifierONNXBackend(weights_manager=weights_manager, config=predictor_config)
 
-    # This is a safeguard for future development.
     raise ValueError(f"Could not create a backend for predictor '{predictor_type}' with mode '{final_backend_type}'.")

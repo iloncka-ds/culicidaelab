@@ -3,6 +3,7 @@
 
 from typing import Any
 from fastai.learner import load_learner
+import torch
 import numpy as np
 from PIL import Image
 
@@ -11,6 +12,7 @@ import pathlib
 from contextlib import contextmanager
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
 from culicidaelab.core.base_inference_backend import BaseInferenceBackend
+from culicidaelab.core.config_models import PredictorConfig
 
 
 @contextmanager
@@ -37,39 +39,35 @@ def set_posix_windows():
 
 
 class ClassifierFastAIBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
-    """A specialized FastAI backend for classification.
+    """FastAI backend for mosquito species classification.
 
-    This class implements the inference backend for the classifier using the
-    FastAI library. It handles model loading and prediction.
+    This class implements the inference backend using a `fastai.learner.Learner`.
+    It handles loading the model from a pickle file and moving it to the
+    device specified in the configuration (`cpu` or `cuda`). It includes a
+    workaround for loading models trained on POSIX systems on Windows.
 
     Attributes:
-        predictor_type (str): The type of predictor, which is 'classifier'.
-        weights_manager (WeightsManagerProtocol): An object to manage model weights.
-        model: The loaded FastAI learner model.
+        weights_manager (WeightsManagerProtocol): An object for managing model weights.
+        config (PredictorConfig): The configuration for the predictor.
+        model (fastai.learner.Learner | None): The loaded FastAI learner object.
+
     """
 
-    def __init__(self, weights_manager: WeightsManagerProtocol):
+    def __init__(self, weights_manager: WeightsManagerProtocol, config: PredictorConfig):
         """Initializes the ClassifierFastAIBackend.
 
         Args:
-            weights_manager: An object that conforms to the
-                WeightsManagerProtocol, used to get the model weights.
+            weights_manager (WeightsManagerProtocol): An object for managing model weights.
+            config (PredictorConfig): The configuration for the predictor, which
+                includes the target `device`.
         """
-        self.predictor_type = "classifier"
-        super().__init__(predictor_type=self.predictor_type)
+        super().__init__(predictor_type="classifier")
         self.weights_manager = weights_manager
+        self.config = config
         self.model = None
 
     def load_model(self, **kwargs: Any):
-        """Loads the FastAI classifier model.
-
-        This method retrieves the model weights path using the weights manager
-        and loads the FastAI learner. It uses a workaround for loading models
-        trained on POSIX systems on Windows.
-
-        Args:
-            **kwargs: Additional keyword arguments (not used).
-        """
+        """Loads the FastAI classifier model and moves it to the configured device."""
         model_path = self.weights_manager.ensure_weights(
             predictor_type=self.predictor_type,
             backend_type="torch",
@@ -77,30 +75,27 @@ class ClassifierFastAIBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
         with set_posix_windows():
             self.model = load_learner(model_path)
 
+        if not self.config.device:
+            self.config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.config.device)
+
     def predict(self, input_data: Image.Image, **kwargs: Any) -> np.ndarray:
         """Performs inference on the input image.
 
-        If the model is not already loaded, this method will load it first.
-        It then uses the FastAI learner to predict the class probabilities
-        for the input image.
-
         Args:
-            input_data: The input image for classification.
-            **kwargs: Additional keyword arguments (not used).
+            input_data (Image.Image): The input image for classification.
+            **kwargs: Additional arguments (not used).
 
         Returns:
-            A numpy array of class probabilities.
+            np.ndarray: A numpy array of class probabilities.
 
         Raises:
-            RuntimeError: If the model cannot be loaded.
+            RuntimeError: If the model is not loaded.
         """
         if not self.model:
-            try:
-                self.load_model()
-            except Exception as e:
-                raise RuntimeError("Model is not loaded. Call load_model() first.", e)
+            self.load_model()
 
         with set_posix_windows():
-            _, _, probs = self.model.predict(input_data)  # type: ignore
+            _, _, probs = self.model.predict(input_data)
 
         return probs.numpy()

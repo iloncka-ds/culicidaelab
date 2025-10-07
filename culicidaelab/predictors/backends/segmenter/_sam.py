@@ -7,6 +7,7 @@ import numpy as np
 import torch
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
 from culicidaelab.core.base_inference_backend import BaseInferenceBackend
+from culicidaelab.core.config_models import PredictorConfig
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class SegmenterSAMBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
         model (SAM | None): The loaded SAM model.
     """
 
-    def __init__(self, weights_manager: WeightsManagerProtocol):
+    def __init__(self, weights_manager: WeightsManagerProtocol, config: PredictorConfig):
         """Initializes the SegmenterSAMBackend.
 
         Args:
@@ -33,6 +34,7 @@ class SegmenterSAMBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
         """
         super().__init__(predictor_type="segmenter")
         self.weights_manager = weights_manager
+        self.config = config
         self.model = None
 
     def load_model(self, **kwargs):
@@ -50,12 +52,12 @@ class SegmenterSAMBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
             predictor_type=self.predictor_type,
             backend_type="torch",
         )
-        device = kwargs.get("device", "")
-        if not device:
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        if not self.config.device:
+            self.config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = SAM(str(model_path))
         if self.model:
-            self.model.to(device)
+            self.model.to(self.config.device)
 
     def predict(self, input_data: Image.Image, **kwargs) -> np.ndarray:
         """Performs inference on a single input image.

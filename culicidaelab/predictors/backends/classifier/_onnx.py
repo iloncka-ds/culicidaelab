@@ -10,13 +10,14 @@ from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 
 
 class ClassifierONNXBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
-    """A specialized ONNX backend for classification.
+    """ONNX backend for mosquito species classification.
 
     This class implements the inference backend for the classifier using the
-    ONNX Runtime. It handles model loading, prediction, and data pre/post-processing.
+    ONNX Runtime. It handles model loading, prediction, data pre/post-processing,
+    and respects the device setting (`cpu` or `cuda`) from the configuration
+    to select the appropriate execution provider.
 
     Attributes:
-        predictor_type (str): The type of predictor, which is 'classifier'.
         weights_manager (WeightsManagerProtocol): An object to manage model weights.
         config (PredictorConfig): The configuration for the predictor.
         session (onnxruntime.InferenceSession | None): The ONNX Runtime session.
@@ -30,9 +31,10 @@ class ClassifierONNXBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
         """Initializes the ClassifierONNXBackend.
 
         Args:
-            weights_manager: An object that conforms to the
+            weights_manager (WeightsManagerProtocol): An object that conforms to the
                 WeightsManagerProtocol, used to get the model weights.
-            config: The configuration for the predictor.
+            config (PredictorConfig): The configuration for the predictor, containing
+                parameters like `device` and preprocessing values.
         """
         super().__init__(predictor_type="classifier")
         self.weights_manager = weights_manager
@@ -42,24 +44,37 @@ class ClassifierONNXBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
     def load_model(self, **kwargs: Any):
         """Loads the ONNX classifier model.
 
-        This method retrieves the model weights path using the weights manager
-        and creates an ONNX Runtime inference session.
+        This method retrieves the model weights path, checks the configured
+        device, and creates an ONNX Runtime inference session with the
+        appropriate execution provider (CUDA or CPU).
 
         Args:
-            **kwargs: Additional keyword arguments (not used).
+            **kwargs: Additional keyword arguments may be used.
         """
-        # 1. Backend resolves its OWN path via the manager
         model_path = self.weights_manager.ensure_weights(
             predictor_type=self.predictor_type,
-            backend_type="onnx",  # The backend knows its own type
+            backend_type="onnx",
         )
-        # 2. Backend loads the model from the resolved path
-        self.session = onnxruntime.InferenceSession(str(model_path))
+
+        available_providers = onnxruntime.get_available_providers()
+        providers = []
+
+        if self.config.device == "cuda" and "CUDAExecutionProvider" in available_providers:
+            providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+        else:
+            providers = ["CPUExecutionProvider"]
+            if self.config.device == "cuda":
+                print(
+                    "WARNING: Device 'cuda' requested, but CUDAExecutionProvider "
+                    "is not available. Falling back to CPU.",
+                )
+
+        self.session = onnxruntime.InferenceSession(str(model_path), providers=providers)
 
     def predict(self, input_data: Image.Image, **kwargs: Any) -> np.ndarray:
         """Performs inference on the input image.
 
-        If the model is not already loaded, this method will raise a RuntimeError.
+        If the model is not loaded, this method will raise a RuntimeError.
         It preprocesses the image, runs inference, and postprocesses the output.
 
         Args:
@@ -67,16 +82,14 @@ class ClassifierONNXBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
             **kwargs: Additional keyword arguments (not used).
 
         Returns:
-            A numpy array of class probabilities.
+            np.ndarray: A numpy array of class probabilities.
 
-        Raises:
-            RuntimeError: If the model is not loaded.
         """
         if not self.session:
-            raise RuntimeError("Model is not loaded. Call load_model() first.")
+            self.load_model()
 
-        input_name = self.session.get_inputs()[0].name
-        output_name = self.session.get_outputs()[0].name
+        input_name = self.session.get_inputs()[0].name  # type: ignore
+        output_name = self.session.get_outputs()[0].name  # type: ignore
         preprocessed_data = self._preprocess(input_data)
         model_outputs = self.session.run([output_name], {input_name: preprocessed_data})[0]  # type: ignore
         logits_array = cast(list[Any], model_outputs)[0]
@@ -89,75 +102,29 @@ class ClassifierONNXBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
 
     @property
     def is_loaded(self) -> bool:
-        """Checks if the model is loaded.
-
-        Returns:
-            True if the model is loaded, False otherwise.
-        """
+        """Checks if the model is loaded."""
         return self.session is not None
 
     def _preprocess(self, image: Image.Image) -> np.ndarray:
-        """Preprocesses the input PIL Image to the format expected by the ONNX model.
-
-        This involves resizing, converting to a float tensor, normalizing,
-        and adding a batch dimension.
-
-        Args:
-            image: The input PIL Image.
-
-        Returns:
-            The preprocessed image as a numpy array.
-        """
-        # 1. Get preprocessing parameters from the configuration
+        """Preprocesses the input PIL Image to the format expected by the ONNX model."""
         params = self.config.params
         input_size = params["input_size"]
         mean = np.array(params["mean"], dtype=np.float32)
         std = np.array(params["std"], dtype=np.float32)
-
-        # 2. Ensure image is in RGB format
         if image.mode != "RGB":
             image = image.convert("RGB")
-
-        # 3. Resize the image
         image_resized = image.resize((input_size, input_size))
-
-        # 4. Convert to NumPy array, change data type to float32, and scale pixels to [0, 1]
         input_array = np.array(image_resized, dtype=np.float32) / 255.0
-
-        # 5. Normalize the tensor using the specified mean and std
         normalized_array = (input_array - mean) / std
-
-        # 6. Transpose dimensions from (Height, Width, Channels) to (Channels, Height, Width)
         transposed_array = normalized_array.transpose((2, 0, 1))
-
-        # 7. Add a batch dimension to create a final shape of (1, C, H, W)
         batch_array = np.expand_dims(transposed_array, axis=0)
-
         return batch_array
 
     def _postprocess(self, logits: np.ndarray) -> np.ndarray:
-        """Postprocesses the output of the ONNX model to get probabilities.
-
-        Args:
-            logits: The raw output (logits) from the model.
-
-        Returns:
-            A numpy array of probabilities.
-        """
+        """Postprocesses the output of the ONNX model to get probabilities."""
         return self._softmax(logits)
 
     def _softmax(self, logits: np.ndarray) -> np.ndarray:
-        """Computes softmax probabilities from a 1D array of logits.
-
-        This implementation is numerically stable to prevent overflow.
-
-        Args:
-            logits: A 1D numpy array of logits.
-
-        Returns:
-            A 1D numpy array of probabilities.
-        """
-        # Subtract the maximum logit for numerical stability
+        """Computes softmax probabilities from a 1D array of logits."""
         exp_logits = np.exp(logits - np.max(logits))
-        # Normalize to get probabilities
         return exp_logits / np.sum(exp_logits)
