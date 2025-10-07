@@ -17,6 +17,7 @@ repos:
     -   id: name-tests-test
         stages: [commit]
         args: [--pytest-test-first]
+        exclude: ^tests/integration/notebooks/
     -   id: requirements-txt-fixer
         stages: [commit]
     -   id: check-added-large-files
