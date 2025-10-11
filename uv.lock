@@ -585,7 +585,7 @@ wheels = [
 
 [[package]]
 name = "culicidaelab"
-version = "0.2.2"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "appdirs" },
@@ -640,29 +640,16 @@ dev = [
     { name = "ultralytics" },
 ]
 docs = [
-    { name = "fastai" },
-    { name = "ipykernel" },
-    { name = "ipywidgets" },
-    { name = "jupytext" },
     { name = "mkdocs", extra = ["i18n"] },
     { name = "mkdocs-custom-fences" },
     { name = "mkdocs-gallery" },
     { name = "mkdocs-material" },
     { name = "mkdocstrings", extra = ["python"] },
-    { name = "timm" },
-    { name = "torch" },
-    { name = "torchvision" },
-    { name = "ultralytics" },
 ]
 examples = [
-    { name = "fastai" },
     { name = "ipykernel" },
     { name = "ipywidgets" },
     { name = "jupytext" },
-    { name = "timm" },
-    { name = "torch" },
-    { name = "torchvision" },
-    { name = "ultralytics" },
 ]
 full = [
     { name = "fastai" },
@@ -674,6 +661,7 @@ full = [
 full-gpu = [
     { name = "fastai" },
     { name = "onnxruntime-gpu" },
+    { name = "timm" },
     { name = "torch" },
     { name = "torchvision" },
     { name = "ultralytics" },
@@ -687,7 +675,6 @@ serve-gpu = [
 test = [
     { name = "bandit" },
     { name = "black" },
-    { name = "fastai" },
     { name = "gputil" },
     { name = "mypy" },
     { name = "pre-commit" },
@@ -697,14 +684,10 @@ test = [
     { name = "requests-mock" },
     { name = "ruff" },
     { name = "tabulate" },
-    { name = "timm" },
-    { name = "torch" },
-    { name = "torchvision" },
     { name = "twine" },
     { name = "types-pyyaml" },
     { name = "types-requests" },
     { name = "types-toml" },
-    { name = "ultralytics" },
 ]
 torch = [
     { name = "torch" },
@@ -717,10 +700,7 @@ requires-dist = [
     { name = "bandit", marker = "extra == 'test'", specifier = "==1.8.5" },
     { name = "black", marker = "extra == 'test'", specifier = "==23.3.0" },
     { name = "culicidaelab", marker = "extra == 'serve'" },
-    { name = "culicidaelab", extras = ["docs", "test"], marker = "extra == 'dev'" },
-    { name = "culicidaelab", extras = ["examples"], marker = "extra == 'docs'" },
-    { name = "culicidaelab", extras = ["full"], marker = "extra == 'examples'" },
-    { name = "culicidaelab", extras = ["full"], marker = "extra == 'test'" },
+    { name = "culicidaelab", extras = ["full", "examples", "docs", "test"], marker = "extra == 'dev'" },
     { name = "culicidaelab", extras = ["gpu-onnx"], marker = "extra == 'serve-gpu'" },
     { name = "culicidaelab", extras = ["torch"], marker = "extra == 'full'" },
     { name = "culicidaelab", extras = ["torch", "gpu-onnx"], marker = "extra == 'full-gpu'" },
@@ -728,7 +708,7 @@ requires-dist = [
     { name = "dill", specifier = ">=0.3.8" },
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "fastai", marker = "extra == 'full'", specifier = ">=2.7.0,<=2.8.0" },
-    { name = "fastai", marker = "extra == 'full-gpu'", specifier = ">=2.7.0,<2.9.0" },
+    { name = "fastai", marker = "extra == 'full-gpu'", specifier = ">=2.7.0,<=2.8.0" },
     { name = "fastprogress", specifier = "==1.0.3" },
     { name = "gputil", marker = "extra == 'test'", specifier = "==1.4.0" },
     { name = "huggingface-hub", specifier = ">=0.16.0" },
@@ -747,6 +727,7 @@ requires-dist = [
     { name = "onnxruntime", specifier = ">=1.22.1" },
     { name = "onnxruntime-gpu", marker = "extra == 'gpu-onnx'" },
     { name = "pillow", specifier = ">=9.4.0" },
+    { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "pre-commit", marker = "extra == 'test'", specifier = "==2.21.0" },
     { name = "pycocotools", specifier = ">=2.0.7" },
     { name = "pydantic-settings", specifier = ">=2.9.1" },
@@ -760,6 +741,7 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'test'", specifier = "==0.8.0" },
     { name = "tabulate", marker = "extra == 'test'", specifier = ">=0.9.0" },
     { name = "timm", marker = "extra == 'full'", specifier = ">=0.9.0" },
+    { name = "timm", marker = "extra == 'full-gpu'", specifier = ">=0.9.0" },
     { name = "toml", specifier = ">=0.10.2" },
     { name = "torch", marker = "extra == 'torch'", specifier = ">=2.3.1" },
     { name = "torchvision", marker = "extra == 'torch'", specifier = ">=0.18.1" },
@@ -769,7 +751,7 @@ requires-dist = [
     { name = "types-requests", marker = "extra == 'test'", specifier = "==2.32.4.20250611" },
     { name = "types-toml", marker = "extra == 'test'", specifier = "==0.10.8.20240310" },
     { name = "ultralytics", marker = "extra == 'full'", specifier = ">=8.3.0" },
-    { name = "ultralytics", marker = "extra == 'full-gpu'", specifier = ">=8.2.0" },
+    { name = "ultralytics", marker = "extra == 'full-gpu'", specifier = ">=8.3.0" },
 ]
 provides-extras = ["torch", "gpu-onnx", "serve", "serve-gpu", "full", "full-gpu", "examples", "docs", "test", "dev"]
 
