@@ -84,9 +84,11 @@ class ClassifierONNXBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
         Returns:
             np.ndarray: A numpy array of class probabilities.
 
+        Raises:
+            RuntimeError: If the model is not loaded.
         """
         if not self.session:
-            self.load_model()
+            raise RuntimeError("Model is not loaded. Call load_model() first.")
 
         input_name = self.session.get_inputs()[0].name  # type: ignore
         output_name = self.session.get_outputs()[0].name  # type: ignore

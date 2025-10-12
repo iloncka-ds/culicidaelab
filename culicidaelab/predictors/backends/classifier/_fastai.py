@@ -3,7 +3,6 @@
 
 from typing import Any
 from fastai.learner import load_learner
-import torch
 import numpy as np
 from PIL import Image
 
@@ -75,8 +74,6 @@ class ClassifierFastAIBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
         with set_posix_windows():
             self.model = load_learner(model_path)
 
-        if not self.config.device:
-            self.config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.config.device)
 
     def predict(self, input_data: Image.Image, **kwargs: Any) -> np.ndarray:
@@ -93,7 +90,7 @@ class ClassifierFastAIBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
             RuntimeError: If the model is not loaded.
         """
         if not self.model:
-            self.load_model()
+            raise RuntimeError("Model is not loaded. Call load_model() first.")
 
         with set_posix_windows():
             _, _, probs = self.model.predict(input_data)

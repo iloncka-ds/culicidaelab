@@ -4,7 +4,6 @@ import logging
 from ultralytics import SAM
 from PIL import Image
 import numpy as np
-import torch
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
 from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 from culicidaelab.core.config_models import PredictorConfig
@@ -53,8 +52,6 @@ class SegmenterSAMBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
             backend_type="torch",
         )
 
-        if not self.config.device:
-            self.config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = SAM(str(model_path))
         if self.model:
             self.model.to(self.config.device)
@@ -83,8 +80,10 @@ class SegmenterSAMBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
             ValueError: If points are provided without corresponding labels, or if
                 the number of points and labels do not match.
         """
+
         if not self.model:
             raise RuntimeError("Model is not loaded. Call load_model() first.")
+
         h, w = input_data.size
         empty_mask = np.zeros((h, w), dtype=np.uint8)
         detection_boxes = kwargs.get("detection_boxes", [])

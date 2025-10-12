@@ -2,7 +2,6 @@
 
 from typing import Any
 from ultralytics import YOLO
-import torch
 from PIL import Image
 import numpy as np
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
@@ -44,8 +43,7 @@ class DetectorYOLOBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
             predictor_type=self.predictor_type,
             backend_type="torch",
         )
-        if not self.config.device:
-            self.config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         self.model = YOLO(str(model_path))
         self.model.to(self.config.device)
 
@@ -62,9 +60,11 @@ class DetectorYOLOBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
             each row is `[x1, y1, x2, y2, confidence]`. Returns an empty
             array if no objects are detected.
 
+        Raises:
+            RuntimeError: If the model is not loaded.
         """
         if not self.model:
-            self.load_model()
+            raise RuntimeError("Model is not loaded. Call load_model() first.")
 
         results = self.model(source=input_data, **kwargs)
 
@@ -78,7 +78,7 @@ class DetectorYOLOBackend(BaseInferenceBackend[Image.Image, np.ndarray]):
 
     def predict_batch(
         self,
-        input_data_batch: list[np.ndarray],
+        input_data_batch: list[Image.Image],
         show_progress: bool = False,
         **kwargs: Any,
     ) -> list[np.ndarray]:
