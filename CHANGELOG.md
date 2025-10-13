@@ -23,6 +23,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Automatic ONNX backend selection** for lightweight, fast inference
 - **In-memory predictor caching** eliminates model loading overhead
 
+#### Multiple Input Format Support Added
+
+**Enhancement**: CulicidaeLab predictors now accept multiple image input formats instead of only NumPy arrays:
+
+1. **File Paths** (str or Path): `"image.jpg"` or `Path("image.jpg")`
+2. **PIL Images**: `Image.open("image.jpg")` (automatically in RGB)
+3. **NumPy Arrays**: `np.array(image)` (RGB format)
+4. **Image Bytes**: Raw image bytes for web API integration
+
+This enhancement applies to:
+- All predictor `.predict()` methods (`MosquitoDetector`, `MosquitoClassifier`, `MosquitoSegmenter`)
+- The high-performance `serve()` API
+- Batch processing methods (`.predict_batch()`)
+
+**Benefits**:
+- **Simplified Integration**: No need to convert images to NumPy arrays manually
+- **Web API Friendly**: Direct support for image bytes from HTTP uploads
+- **Flexible Development**: Use the most convenient format for your workflow
+- **Backward Compatible**: Existing NumPy array code continues to work
+
 #### Structured Prediction Outputs
 - **Added Pydantic-based prediction models** for type-safe, validated outputs:
   - `ClassificationPrediction` with `Classification` objects
