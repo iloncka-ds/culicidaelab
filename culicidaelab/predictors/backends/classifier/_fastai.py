@@ -1,4 +1,3 @@
-# _fastai.py
 """FastAI backend for the classifier."""
 
 from typing import Any
