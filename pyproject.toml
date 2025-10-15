@@ -10,7 +10,7 @@ description = "A Python library for mosquito detection, segmentation, and classi
 readme = "README.md"
 license = { text = "AGPL-3.0" }
 authors = [
-    { name = "Ilona Kovaleva", email = "iloncka.ds@gmail.com" }
+    { name = "Ilona Kovaleva", email = "culicidaelab@gmail.com" }
 ]
 requires-python = ">=3.11"
 classifiers = [
