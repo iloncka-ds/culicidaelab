@@ -116,7 +116,7 @@ An open-source system for mosquito research and analysis includes components:
 
 - **Data**:
 
-  - Base [diversity dataset (46 species, 3139 images](https://huggingface.co/datasets/iloncka/mosquito_dataset_46_3139)) under CC-BY-SA-4.0 license.
+  - Base [diversity dataset (46 species, 3139 images](https://huggingface.co/datasets/iloncka/mosquito_dataset_46_3139) under CC-BY-SA-4.0 license.
   - Specialized derivatives: [classification](https://huggingface.co/datasets/iloncka/mosquito-species-classification-dataset), [detection](https://huggingface.co/datasets/iloncka/mosquito-species-detection-dataset), and [segmentation](https://huggingface.co/datasets/iloncka/mosquito-species-segmentation-dataset) datasets under CC-BY-SA-4.0 licenses.
 - **Models**:
 
@@ -175,7 +175,11 @@ This integrated approach enables comprehensive mosquito research, from data coll
 
 **Memory (RAM):** Minimum 2 GB. 8 GB or more is recommended for processing large datasets or using more complex models.
 
-**Graphics Card (GPU):** An NVIDIA GPU with CUDA support is highly recommended for a significant performance increase in deep learning model operations, especially for detection and segmentation but not essential for classification (see [performance logs](https://github.com/iloncka-ds/culicidaelab/tree/main/tests/performance/performance_logs) ang [notebook](https://colab.research.google.com/drive/1JdfxSQmtrJND4mNUctOkY7Kt0yvbO0eV?usp=sharing)). For the SAM model, a GPU is virtually essential for acceptable performance. Minimum video memory is 2 GB; 4 GB or more is recommended.
+**Graphics Card (GPU):** An NVIDIA GPU with CUDA support is highly recommended for a significant performance increase in deep learning model operations, especially for detection and segmentation but not essential for classification (see [performance logs](https://github.com/iloncka-ds/culicidaelab/tree/main/tests/performance/performance_logs) ang [notebook](https://colab.research.google.com/drive/1JdfxSQmtrJND4mNUctOkY7Kt0yvbO0eV?usp=sharing)). For the SAM model, a GPU is virtually essential for acceptable performance. Minimum video memory is 2 GB; 4 GB or more is recommended. For serve-gpu installation profile, CUDA 12.X is required, for CUDA 11.X use installation instructions below.
+```bash
+pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-11/pypi/simple/
+pip install culicidaelab
+```
 
 **Hard Drive:** At least 10 GB of free space to install the library, dependencies, download pre-trained models, and store processed data.
 
@@ -207,31 +211,69 @@ For full list of dependencies, see the [pyproject.toml](https://github.com/ilonc
 
 ## Installation
 
-For general usage with Python scripts or in Google Colab, you can install `culicidaelab` using pip:
+### Basic Installation
+
+For most users, the default installation provides full inference capabilities:
 
 ```bash
 pip install culicidaelab
 ```
 
-If needed run examples in the Jupyter notebooks in local environment:
+This includes CPU-based inference using ONNX Runtime, giving you everything needed for fast lightweight mosquito classification inference, and includes all core functionality without heavy ML frameworks, such as configuration management, resource handling, and model downloading capabilities.
 
+### Installation Profiles
+
+Choose an installation profile based on your use case:
+
+#### **For Production/Serving (Lightweight Inference)**
+**GPU-accelerated inference:**
 ```bash
-pip install culicidaelab[examples]
+pip install culicidaelab[serve-gpu]
 ```
 
-If needed build documentation in local environment:
-
+**Lightweight serve alias** (equivalent to default):
 ```bash
-pip install culicidaelab[docs]
+pip install culicidaelab[serve]
 ```
 
-If needed run tests in local environment:
+#### **For Research/Development**
 
+**CPU-based development** (includes PyTorch, FastAI, Ultralytics, and ONNX):
 ```bash
-pip install culicidaelab[test]
+pip install culicidaelab[full] --extra-index-url https://download.pytorch.org/whl/cpu
 ```
 
-To get a **development environment** running:
+**GPU-accelerated development** (includes PyTorch GPU, FastAI, Ultralytics, and ONNX GPU):
+```bash
+pip install culicidaelab[full-gpu]
+```
+
+### Additional Options
+
+**Run example notebooks locally:**
+```bash
+pip install culicidaelab[full,examples] --extra-index-url https://download.pytorch.org/whl/cpu
+# Or for GPU development:
+pip install culicidaelab[full-gpu,examples]
+```
+
+**Build documentation locally:**
+```bash
+pip install culicidaelab[full,docs] --extra-index-url https://download.pytorch.org/whl/cpu
+# Or for GPU development:
+pip install culicidaelab[full-gpu,docs]
+```
+
+**Run tests:**
+```bash
+pip install culicidaelab[full,test] --extra-index-url https://download.pytorch.org/whl/cpu
+# Or for GPU development:
+pip install culicidaelab[full-gpu,test]
+```
+
+### Development Setup
+
+To set up a **development environment** with all tools:
 
 1. Clone the repository:
 
@@ -243,33 +285,36 @@ cd culicidaelab
 2. Install dependencies with `uv` (recommended):
 
 ```bash
-  uv venv -p 3.11
-  source .venv/bin/activate
+uv venv -p 3.11
+source .venv/bin/activate
 
-  # On Windows: .venv\Scripts\activate
-  uv sync -p 3.11
-  uv cache clean
-  # This installs the library in editable mode and includes all dev tools
-  uv pip install -e .[dev]
+# On Windows: .venv\Scripts\activate
+uv sync -p 3.11
+uv cache clean
+# This installs the library in editable mode with all dev tools (CPU version)
+uv pip install -e .[dev]
+
+# For GPU development, use:
+# uv pip install -e .[full-gpu,docs,test]
 ```
 
-  Or with `pip`:
+Or with `pip`:
 
 ```bash
-  python -m venv .venv
-  source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-  pip install --upgrade pip
-  pip install -e .[dev]
-  pip cache purge
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install --upgrade pip
+pip install -e .[dev]
+pip cache purge
 ```
 
-  3. Set up pre-commit hooks:
+3. Set up pre-commit hooks:
 
 ```bash
 pre-commit install
 ```
 
-  This will run linters and formatters automatically on each commit to ensure code quality and consistency.
+This will run linters and formatters automatically on each commit to ensure code quality and consistency.
 
 ## Quick Start
 
@@ -289,13 +334,13 @@ classifier = MosquitoClassifier(settings, load_model=True)
 
 # 3. Make a prediction
 # The model is lazy-loaded (downloaded and loaded into memory) here.
-predictions = classifier.predict("path/to/your/image.jpg")
+result = classifier.predict("path/to/your/image.jpg")
 
 # 5. Print the results
 # The output is a list of (species_name, confidence_score) tuples.
 print("Top 3 Predictions:")
-for species, confidence in predictions[:3]:
-    print(f"- {species}: {confidence:.4f}")
+for p in result.predictions[:3]:
+    print(f"- {p.species}: {p.confidence:.4f}")
 
 # Example Output:
 # Top 3 Predictions:

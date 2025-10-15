@@ -1,10 +1,9 @@
-name: ci
+name: doc_deploy
 on:
   pull_request:
-    types: [closed]
-    branches:
-      - master
-      - main
+    tags: [ 'docs*' ]
+  push:
+    tags: [ 'docs*' ]
 permissions:
   contents: write
 jobs:

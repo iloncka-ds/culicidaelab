@@ -1,145 +1,131 @@
 import pytest
 import numpy as np
 from unittest.mock import Mock, patch
-import torch
+from PIL import Image
 
-from culicidaelab.core.config_models import PredictorConfig
 from culicidaelab.predictors.detector import MosquitoDetector
+from culicidaelab.core.prediction_models import BoundingBox, Detection, DetectionPrediction
 
 
+# 1. Mock Backend Fixture
 @pytest.fixture
-def mock_predictor_config():
-    """Provides a valid PredictorConfig instance for the detector."""
-    return PredictorConfig(
-        target="some.dummy.detector.class",
-        model_path="dummy/path/yolo.pt",
-        provider="mock_yolo_provider",
-        confidence=0.25,
-        params={
-            "iou_threshold": 0.45,
-            "max_detections": 100,
-        },
-        visualization={
-            "box_color": "green",
-            "text_color": "white",
-            "font_scale": 0.5,
-            "thickness": 2,
-        },
-        model_config_path="dummy/path/config.yaml",
-        model_config_filename="config.yaml",
+def mock_backend():
+    """Mocks the inference backend for a detector."""
+    backend = Mock()
+    backend.is_loaded = False
+    # The backend's predict method now returns a simple numpy array
+    # Shape: (N, 5) -> [x1, y1, x2, y2, confidence]
+    backend.predict.return_value = np.array(
+        [
+            [10.0, 20.0, 110.0, 120.0, 0.9],
+            [30.0, 40.0, 130.0, 140.0, 0.8],
+        ],
     )
+    return backend
 
 
+# 2. Patched Detector Fixture
 @pytest.fixture
-def mock_settings(mock_predictor_config):
-    """Mocks the main Settings object."""
-    settings = Mock()
-
-    def get_config_side_effect(path: str, default=None):
-        if path == "predictors.detector":
-            return mock_predictor_config
-        if path == "providers.mock_yolo_provider":
-            return Mock(target="culicidaelab.core.providers.local.LocalProvider")
-        return default
-
-    settings.get_config.side_effect = get_config_side_effect
-    return settings
+def detector(mock_settings, mock_backend):
+    """Provides a MosquitoDetector instance with a mocked backend."""
+    with patch("culicidaelab.predictors.detector.create_backend", return_value=mock_backend):
+        det = MosquitoDetector(settings=mock_settings, load_model=False)
+        return det
 
 
-@pytest.fixture
-def mock_weights_manager(tmp_path):
-    """Provides a mocked ModelWeightsManager."""
-    manager = Mock()
-    manager.ensure_weights.return_value = tmp_path / "dummy_yolo.pt"
-    return manager
+# 3. New Test Cases
 
 
-@pytest.fixture
-def detector(mock_settings):
-    """Provides a MosquitoDetector instance with mocked dependencies."""
-    with patch("culicidaelab.predictors.detector.YOLO") as _:
-        with patch(
-            "culicidaelab.predictors.detector.ModelWeightsManager",
-        ) as MockWeightsManager:
-            instance = MockWeightsManager.return_value
-            instance.ensure_weights.return_value = "dummy/path/yolo.pt"
-            det = MosquitoDetector(settings=mock_settings, load_model=False)
-            det._model = Mock()
-            det._model.return_value = []
-            det._model_loaded = True
-            return det
-
-
-def test_detector_initialization(detector, mock_settings):
+def test_init(detector, mock_settings, mock_backend):
     """Test that the detector initializes correctly."""
+    assert detector.settings is mock_settings
     assert detector.predictor_type == "detector"
-    mock_settings.get_config.assert_called_with("predictors.detector")
-    assert detector.confidence_threshold == 0.25
-    assert detector.iou_threshold == 0.45
+    assert detector.backend is mock_backend
+    assert detector.confidence_threshold == 0.5  # Default from conftest
+    assert not mock_backend.load_model.called
 
 
-def test_predict_single_image(detector):
-    """Test the predict method on a single image."""
-    dummy_image = np.zeros((640, 640, 3), dtype=np.uint8)
+def test_load_model(detector, mock_backend):
+    """Test that load_model delegates to the backend."""
+    mock_backend.is_loaded = False
+    detector.load_model()
+    mock_backend.load_model.assert_called_once_with()
 
-    mock_result = Mock()
-    mock_box = Mock()
-    mock_box.xyxy = torch.tensor([[10.0, 20.0, 110.0, 120.0]])
-    mock_box.conf = torch.tensor([0.9])
-    mock_result.boxes = [mock_box]
-    detector._model.return_value = [mock_result]
 
-    predictions = detector.predict(dummy_image)
+def test_predict_delegates_to_backend_and_parses_output(detector, mock_backend):
+    """Test that predict calls the backend and correctly parses the standardized output."""
+    mock_backend.is_loaded = True
+    dummy_image = np.zeros((200, 200, 3), dtype=np.uint8)
 
-    detector._model.assert_called_once()
-    assert isinstance(predictions, list)
-    assert len(predictions) == 1
-    x1, y1, x2, y2, conf = predictions[0]
-    assert x1 == pytest.approx(10.0)
-    assert y1 == pytest.approx(20.0)
-    assert x2 == pytest.approx(110.0)
-    assert y2 == pytest.approx(120.0)
-    assert conf == pytest.approx(0.9)
+    prediction = detector.predict(dummy_image)
+
+    mock_backend.predict.assert_called_once()
+    assert isinstance(prediction, DetectionPrediction)
+    assert len(prediction.detections) == 2
+
+    # Check first detection
+    assert prediction.detections[0].box.x1 == pytest.approx(10.0)
+    assert prediction.detections[0].confidence == pytest.approx(0.9)
+
+    # Check second detection
+    assert prediction.detections[1].box.x2 == pytest.approx(130.0)
+    assert prediction.detections[1].confidence == pytest.approx(0.8)
+
+
+def test_predict_batch_uses_backend_batching(detector, mock_backend):
+    """Test that predict_batch calls the backend once for the whole batch."""
+    mock_backend.is_loaded = True
+    dummy_images = [np.zeros((200, 200, 3))] * 2
+
+    # The YOLO backend is efficient and takes the whole batch in one go.
+    # It returns a list of standardized numpy arrays.
+    mock_backend.predict_batch.return_value = [
+        np.array([[10.0, 20.0, 110.0, 120.0, 0.9]]),
+        np.array([[30.0, 40.0, 130.0, 140.0, 0.8]]),
+    ]
+
+    predictions = detector.predict_batch(dummy_images)
+
+    mock_backend.predict_batch.assert_called_once()
+    assert len(predictions) == 2
+    assert isinstance(predictions[0], DetectionPrediction)
+    assert len(predictions[0].detections) == 1
+    assert len(predictions[1].detections) == 1
+    assert predictions[1].detections[0].confidence == pytest.approx(0.8)
 
 
 @pytest.mark.parametrize(
-    "gt, pred, expected_ap",
+    "gt_boxes, pred_boxes, expected_ap",
     [
-        ([(60, 70, 100, 100)], [(60, 70, 100, 100, 0.9)], 1.0),
-        ([(60, 70, 100, 100)], [], 0.0),
-        ([], [(60, 70, 100, 100, 0.9)], 0.0),
+        # Perfect match
+        ([(10, 10, 50, 50)], [Detection(box=BoundingBox(x1=10, y1=10, x2=50, y2=50), confidence=0.9)], 1.0),
+        # No predictions
+        ([(10, 10, 50, 50)], [], 0.0),
+        # No ground truth
+        ([], [Detection(box=BoundingBox(x1=10, y1=10, x2=50, y2=50), confidence=0.9)], 0.0),
+        # No GT, no predictions
         ([], [], 1.0),
     ],
 )
-def test_evaluate_from_prediction(detector, gt, pred, expected_ap):
-    """Test the core evaluation logic with different scenarios."""
-    metrics = detector._evaluate_from_prediction(pred, gt)
+def test_evaluate_from_prediction(detector, gt_boxes, pred_boxes, expected_ap):
+    """Test the internal evaluation logic with various scenarios."""
+    # Set a consistent IoU threshold for the test
+    detector.iou_threshold = 0.5
+    prediction = DetectionPrediction(detections=pred_boxes)
+    metrics = detector._evaluate_from_prediction(prediction, gt_boxes)
     assert metrics["ap"] == pytest.approx(expected_ap)
 
 
-def test_predict_batch_efficiently(detector):
-    """Test the batch prediction method."""
-    dummy_images = [np.zeros((640, 640, 3), dtype=np.uint8)] * 2
+def test_visualize(detector):
+    """Test the visualization logic."""
+    dummy_image = Image.fromarray(np.zeros((100, 100, 3), dtype=np.uint8))
+    prediction = DetectionPrediction(
+        detections=[
+            Detection(box=BoundingBox(x1=10, y1=10, x2=90, y2=90), confidence=0.9),
+        ],
+    )
 
-    mock_result1 = Mock()
-    mock_box1 = Mock()
-    mock_box1.xyxy = torch.tensor([[10.0, 20.0, 110.0, 120.0]])
-    mock_box1.conf = torch.tensor([0.9])
-    mock_result1.boxes = [mock_box1]
+    vis_img = detector.visualize(dummy_image, prediction)
 
-    mock_result2 = Mock()
-    mock_box2 = Mock()
-    mock_box2.xyxy = torch.tensor([[30.0, 40.0, 130.0, 140.0]])
-    mock_box2.conf = torch.tensor([0.8])
-    mock_result2.boxes = [mock_box2]
-
-    detector._model.return_value = [mock_result1, mock_result2]
-
-    predictions_batch = detector.predict_batch(dummy_images, show_progress=False)
-
-    detector._model.assert_called_once()
-    assert isinstance(predictions_batch, list)
-    assert len(predictions_batch) == 2
-    assert len(predictions_batch[0]) == 1
-    assert len(predictions_batch[1]) == 1
-    assert predictions_batch[1][0][-1] == pytest.approx(0.8)
+    assert isinstance(vis_img, np.ndarray)
+    assert vis_img.shape == (100, 100, 3)

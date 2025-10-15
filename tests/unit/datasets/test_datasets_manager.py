@@ -12,8 +12,8 @@ from culicidaelab.core.config_models import DatasetConfig
 def mock_settings():
     """Fixture for a mocked Settings object."""
     settings = Mock(spec=Settings)
-    settings.cache_dir = Path("/fake/cache")
-    settings.dataset_dir = Path("/fake/datasets")
+    settings.cache_dir = Path("C:/fake/cache")
+    settings.dataset_dir = Path("C:/fake/datasets")
 
     # Mock dataset config
     mock_dataset_config = Mock(spec=DatasetConfig)
@@ -35,6 +35,15 @@ def mock_settings():
 
     settings.get_config.side_effect = get_config_side_effect
     settings.list_datasets.return_value = ["classification"]
+
+    def get_dataset_path_side_effect(dataset_type, split):
+        if split == "train":
+            return Path("C:/fake/datasets/some/path/to/classification/80d5b9c7c81ecfa4")
+        elif split == "test":
+            return Path("C:/fake/datasets/some/path/to/classification/4d967a30111bf29f")
+        return Path("C:/fake/datasets/some/path/to/classification")
+
+    settings.get_dataset_path.side_effect = get_dataset_path_side_effect
     return settings
 
 
@@ -42,7 +51,7 @@ def mock_settings():
 def mock_provider():
     """Fixture for a mocked BaseProvider object."""
     provider = Mock()
-    provider.download_dataset.return_value = Path("/fake/path/classification_dataset")
+    provider.download_dataset.return_value = Path("C:/fake/path/classification_dataset")
     provider.load_dataset.return_value = {"data": "mock_dataset_content"}
     return provider
 
@@ -104,7 +113,7 @@ def test_load_dataset_first_time(
     mock_provider_service.get_provider.assert_called_once_with("mock_provider")
 
     # Use str(Path()) to normalize path separators for the platform
-    expected_path = Path("/fake/datasets/some/path/to/classification/80d5b9c7c81ecfa4")
+    expected_path = Path("C:/fake/datasets/some/path/to/classification/80d5b9c7c81ecfa4")
     mock_provider.download_dataset.assert_called_once_with(
         dataset_name="classification",
         config_name="default",
@@ -119,13 +128,13 @@ def test_load_dataset_first_time(
     assert actual_call is not None
     actual_arg = actual_call[0][0] if actual_call[0] else None
     actual_path = Path(actual_arg) if actual_arg is not None else None
-    provider_expected = Path("/fake/path/classification_dataset")
+    provider_expected = Path("C:/fake/path/classification_dataset")
     assert actual_path in (provider_expected, expected_load_path)
 
     assert dataset == {"data": "mock_dataset_content"}
     assert dataset_name in datasets_manager.loaded_datasets
     assert datasets_manager.loaded_datasets[dataset_name] == Path(
-        "/fake/path/classification_dataset",
+        "C:/fake/path/classification_dataset",
     )
 
 
@@ -133,7 +142,7 @@ def test_load_dataset_cached(datasets_manager, mock_provider):
     """Test that loading a cached dataset does not trigger a new download."""
     dataset_name = "classification"
     # Set up the same paths that would be created in load_dataset
-    split_path = Path("/fake/datasets/some/path/to/classification/4d967a30111bf29f")
+    split_path = Path("C:/fake/datasets/some/path/to/classification/4d967a30111bf29f")
 
     # Mock that the cache directory exists
     from unittest.mock import patch
@@ -169,5 +178,5 @@ def test_list_loaded_datasets_empty(datasets_manager):
 def test_list_loaded_datasets_after_loading(datasets_manager):
     """Test that listing loaded datasets works after loading a dataset."""
     dataset_name = "classification"
-    datasets_manager.loaded_datasets[dataset_name] = Path("/fake/path")
+    datasets_manager.loaded_datasets[dataset_name] = Path("C:/fake/path")
     assert datasets_manager.list_loaded_datasets() == [dataset_name]

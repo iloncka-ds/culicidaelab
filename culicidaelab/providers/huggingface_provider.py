@@ -2,7 +2,7 @@
 
 This module provides the `HuggingFaceProvider` class, which is a concrete
 implementation of `BaseProvider`. It handles downloading datasets and
-model weights from the Hugging Face Hub, as well as loading them
+model weights from the HuggingFace Hub, as well as loading them
 from a local disk cache.
 """
 
@@ -68,22 +68,20 @@ class HuggingFaceProvider(BaseProvider):
         self,
         dataset_name: str,
         save_dir: Path | None = None,
-        config_name: str | None = "default",
+        config_name: str | None = None,
         split: str | None = None,
-        *args: Any,
         **kwargs: Any,
     ) -> Path:
         """Downloads a dataset from HuggingFace.
 
         Args:
             dataset_name (str): Name of the dataset to download (e.g., "segmentation").
-            config_name (str | None, optional): Name of the dataset configuration.
-                Defaults to None.
             save_dir (Path | None, optional): Directory to save the dataset.
                 Defaults to None, using the path from settings.
+            config_name (str | None, optional): Name of the dataset configuration.
+                Defaults to None.
             split (str | None, optional): Dataset split to download (e.g., "train").
                 Defaults to None.
-            *args (Any): Additional positional arguments to pass to `load_dataset`.
             **kwargs (Any): Additional keyword arguments to pass to `load_dataset`.
 
         Returns:
@@ -152,89 +150,68 @@ class HuggingFaceProvider(BaseProvider):
                 shutil.rmtree(save_path)
             raise RuntimeError(f"Failed to download dataset {repo_id}: {str(e)}") from e
 
-    def download_model_weights(self, model_type: str, *args: Any, **kwargs: Any) -> Path:
-        """Downloads and caches model weights from the HuggingFace Hub.
+    def download_model_weights(self, repo_id: str, filename: str, local_dir: Path) -> Path:
+        """Downloads and caches a specific model weights file from the HuggingFace Hub.
 
-        Checks if the weights exist locally. If not, it downloads them
-        from the repository specified in the configuration and saves them
-        to the appropriate directory.
+        Checks if the file exists locally. If not, it downloads it from the specified
+        repository and saves it to the given local directory.
 
         Args:
-            model_type (str): The type of model ('detector', 'segmenter', or 'classifier').
-            *args (Any): Additional positional arguments (unused).
-            **kwargs (Any): Additional keyword arguments (unused).
+            repo_id (str): The Hugging Face repository ID (e.g., 'user/repo-name').
+            filename (str): The specific weights file to download (e.g., 'model.onnx').
+            local_dir (Path): The local directory to save the file in.
 
         Returns:
-            Path: The path to the model weights file.
+            Path: The absolute path to the downloaded model weights file.
 
         Raises:
-            ValueError: If the model type is not found in config or if `repository_id`
-                or `filename` are missing.
+            ValueError: If `repo_id` or `filename` are not provided.
             RuntimeError: If the download fails for any reason.
-            NotADirectoryError: If the destination directory could not be created.
         """
-        local_path = self.settings.get_model_weights_path(model_type).resolve()
-        dest_dir = local_path.parent.resolve()
-        cache_path = str(self.settings.cache_dir / model_type)
-        if local_path.exists():
-            if local_path.is_symlink():
-                try:
-                    real_path = local_path.resolve(strict=True)
-                    print(f"Symlink found at {local_path}, resolved to real file: {real_path}")
-                    return real_path
-                except FileNotFoundError:
-                    print(f"Warning: Broken symlink found at {local_path}. It will be removed.")
-                    local_path.unlink()
-            else:
-                print(f"Weights file found at: {local_path}")
-                return local_path
-
-        print(f"Model weights for '{model_type}' not found. Attempting to download...")
-
-        predictor_config = self.settings.get_config(f"predictors.{model_type}")
-        repo_id = predictor_config.repository_id
-        filename = predictor_config.filename
-
         if not repo_id or not filename:
-            raise ValueError(
-                f"Cannot download weights for '{model_type}'. "
-                f"Configuration is missing 'repository_id' or 'filename'. "
-                f"Please place the file manually at: {local_path}",
-            )
+            raise ValueError("'repo_id' and 'filename' must be provided.")
+
+        local_path = (local_dir / filename).resolve()
+        cache_dir = self.settings.cache_dir / f"{repo_id.replace('/', '_')}_{filename}"
+
+        if local_path.exists():
+            print(f"Weights file found at: {local_path}")
+            return local_path
+
+        print(f"Model weights '{filename}' not found locally. Attempting to download from {repo_id}...")
 
         try:
-            print(f"Ensuring destination directory exists: {dest_dir}")
+            local_dir.mkdir(parents=True, exist_ok=True)
 
-            dest_dir.mkdir(parents=True, exist_ok=True)
-            if not dest_dir.is_dir():
-                raise NotADirectoryError(f"Failed to create directory: {dest_dir}")
-
-            downloaded_path = hf_hub_download(
+            downloaded_path_str = hf_hub_download(
                 repo_id=repo_id,
                 filename=filename,
-                cache_dir=cache_path,
-                local_dir=str(local_path.parent),
+                cache_dir=str(cache_dir),
+                local_dir=str(local_dir),
+                # local_dir_use_symlinks=False,  # Use direct file placement
             )
-            print(f"Downloaded weights to: {downloaded_path}")
 
-            if str(downloaded_path) != str(local_path):
-                try:
-                    shutil.move(downloaded_path, local_path)
-                except Exception as e:
-                    print(f"Error move to {local_path} from {downloaded_path}: {e}")
+            downloaded_path = Path(downloaded_path_str)
 
-            shutil.rmtree(cache_path, ignore_errors=True)
+            # hf_hub_download might place it in a subfolder structure, so we ensure it's moved to the final destination
+            if downloaded_path.resolve() != local_path.resolve():
+                shutil.move(str(downloaded_path), str(local_path))
+                print(f"Moved weights to final destination: {local_path}")
+            else:
+                print(f"Downloaded weights directly to: {local_path}")
 
-            return Path(local_path)
+            # Clean up the cache directory if it was used
+            if cache_dir.exists():
+                shutil.rmtree(cache_dir, ignore_errors=True)
+
+            return local_path
 
         except Exception as e:
+            # Clean up any partial download
             if local_path.exists():
                 local_path.unlink()
-            dir_status = "exists" if dest_dir.exists() else "missing"
-            dir_type = "directory" if dest_dir.is_dir() else "not-a-directory"
             raise RuntimeError(
-                f"Failed to download weights for '{model_type}' to {local_path}. "
-                f"Directory status: {dir_status} ({dir_type}). Error: {e}",
+                f"Failed to download weights file '{filename}' from repo '{repo_id}'. Error: {e}",
             ) from e
 
     def get_dataset_metadata(self, dataset_name: str) -> dict[str, Any]:

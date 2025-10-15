@@ -11,6 +11,7 @@ import shutil
 from unittest.mock import Mock
 
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
+from culicidaelab.core.config_models import PredictorConfig
 
 
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -71,11 +72,39 @@ def mock_provider_service() -> Mock:
 
 @pytest.fixture
 def mock_settings(tmp_path: Path) -> Mock:
-    """Fixture to provide a mock Settings object."""
+    """
+    Provides a mock Settings object that returns a valid, structured
+    PredictorConfig instance when its get_config method is called.
+    """
     settings_mock = Mock()
-    settings_mock.get_config.return_value = Mock()
-    settings_mock.get_resource_dir.return_value = tmp_path
-    settings_mock.cache_dir = tmp_path / "cache"
-    settings_mock.user_data_dir = tmp_path / "user_data"
+
+    # Create a proper Pydantic model instance for the mock to return.
+    mock_predictor_config_instance = PredictorConfig(
+        target="some.dummy.class.path",
+        model_path="mock/model.pkl",  # Added the required model_path
+        backend="torch",
+        repository_id="mock/repo",
+        model_arch="test_arch",
+        confidence=0.5,
+        params={},
+        weights={
+            "torch": {"filename": "model.pkl"},
+            "onnx": {"filename": "model.onnx"},
+        },
+    )
+
+    # Mock the species config part
+    species_config_mock = Mock()
+    species_config_mock.species_map = {0: "species_A", 1: "species_B"}
+    species_config_mock.class_to_full_name_map = {"species_A": "Species A", "species_B": "Species B"}
+    inverse_map = {v: k for k, v in species_config_mock.species_map.items()}
+    species_config_mock.get_index_by_species.side_effect = lambda name: inverse_map.get(name)
+
+    # Configure the main settings mock
+    settings_mock.species_config = species_config_mock
+    settings_mock.get_config.return_value = mock_predictor_config_instance
+    settings_mock.dataset_dir = tmp_path / "datasets"
     settings_mock.model_dir = tmp_path / "models"
+    settings_mock.cache_dir = tmp_path / "cache"
+
     return settings_mock

@@ -1,7 +1,11 @@
-target: "culicidaelab.predictors.detector.MosquitoDetector"
-model_path: "weights/detection/culico-net-det-v1-nano.pt"
+target: culicidaelab.predictors.MosquitoDetector
+backend: "torch" # Default backend
 repository_id: "iloncka/culico-net-det-v1"
-filename: "culico-net-det-v1-nano.pt"
+weights:
+  torch: # Corresponds to 'torch' backend_type
+    filename: "culico-net-det-v1-nano.pt"
+  onnx: # Corresponds to 'onnx' backend_type
+    filename: "culico-net-det-v1-nano.onnx"
 provider_name: "huggingface"
 model_config_path: ""
 model_config_filename: ""
@@ -16,7 +20,7 @@ dataset_repository: "iloncka/mosquito-species-detection-dataset"
 visualization:
   box_color: "#FF0000"
   box_thickness: 2
-  font_scale: 0.5
+  font_scale: 1
   text_color: "#000000"
   text_thickness: 2
   format: "png"

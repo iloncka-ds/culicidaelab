@@ -3,12 +3,23 @@
 This module provides the `ConfigManager` class, which handles YAML configuration
 files by merging default and user-provided settings and validating them against
 Pydantic models.
+
+Example:
+    >>> from culicidaelab.core.config_manager import ConfigManager
+    >>> # Initialize with default settings
+    >>> manager = ConfigManager()
+    >>> config = manager.get_config()
+    >>> print(config.app_settings.environment)
+
+    >>> # Override with user settings
+    >>> user_manager = ConfigManager(user_config_dir="/path/to/user/conf")
+    >>> user_config = user_manager.get_config()
 """
 
 from __future__ import annotations
 
-from importlib import resources
 import inspect
+from importlib import resources
 from pathlib import Path
 from types import ModuleType
 from typing import Any, TypeAlias, TypeVar, Union, cast
@@ -20,12 +31,25 @@ from pydantic import ValidationError
 from culicidaelab.core.config_models import CulicidaeLabConfig
 
 ConfigDict: TypeAlias = dict[str, Any]
+"""Type alias for a dictionary representing a configuration."""
+
 ConfigPath: TypeAlias = Union[Path, ModuleType, str, None]
+"""Type alias for a path to a configuration file or directory."""
+
 T = TypeVar("T")
+"""Generic type variable."""
 
 
 def _deep_merge(source: dict, destination: dict) -> dict:
-    """Recursively merges two dictionaries. Source values overwrite destination."""
+    """Recursively merges two dictionaries. Source values overwrite destination.
+
+    Args:
+        source (dict): The dictionary with values to merge.
+        destination (dict): The dictionary to be merged into.
+
+    Returns:
+        dict: The merged dictionary.
+    """
     for key, value in source.items():
         if isinstance(value, dict):
             node = destination.setdefault(key, {})
@@ -44,10 +68,6 @@ class ConfigManager:
     3. Merges the user's configuration on top of the defaults.
     4. Validates the final merged configuration against Pydantic models.
 
-    Args:
-        user_config_dir (str | Path, optional): Path to a directory containing
-            user-defined YAML configuration files. These will override the defaults.
-
     Attributes:
         user_config_dir (Path | None): The user configuration directory.
         default_config_path (Path): The path to the default config directory.
@@ -55,7 +75,13 @@ class ConfigManager:
     """
 
     def __init__(self, user_config_dir: str | Path | None = None):
-        """Initializes the ConfigManager."""
+        """Initializes the ConfigManager.
+
+        Args:
+            user_config_dir (str | Path, optional): Path to a directory containing
+                user-defined YAML configuration files. These will override the
+                defaults. Defaults to None.
+        """
         self.user_config_dir = Path(user_config_dir) if user_config_dir else None
         self.default_config_path = self._get_default_config_path()
         self.config: CulicidaeLabConfig = self._load()
@@ -141,7 +167,14 @@ class ConfigManager:
         OmegaConf.save(config=config_dict, f=path)
 
     def _get_default_config_path(self) -> Path:
-        """Reliably finds the path to the bundled 'conf' directory."""
+        """Reliably finds the path to the bundled 'conf' directory.
+
+        Returns:
+            Path: The absolute path to the default configuration directory.
+
+        Raises:
+            FileNotFoundError: If the default 'conf' directory cannot be found.
+        """
         try:
             files = resources.files("culicidaelab")
             # Check for Traversable with _path (for installed packages)
@@ -162,7 +195,14 @@ class ConfigManager:
             )
 
     def _load(self) -> CulicidaeLabConfig:
-        """Executes the full load, merge, and validation process."""
+        """Executes the full load, merge, and validation process.
+
+        Returns:
+            CulicidaeLabConfig: The validated configuration object.
+
+        Raises:
+            ValidationError: If the merged configuration fails Pydantic validation.
+        """
         default_config_dict = self._load_config_from_dir(
             cast(Path, self.default_config_path),
         )
@@ -183,6 +223,8 @@ class ConfigManager:
 
     def _load_config_from_dir(self, config_dir: Path | None) -> ConfigDict:
         """Loads all YAML files from a directory into a nested dictionary.
+
+        The dictionary structure mirrors the directory structure.
 
         Args:
             config_dir (Path | None): Directory containing YAML config files, or None.

@@ -42,7 +42,6 @@ def test_get_provider_instantiates_on_first_call(mock_settings):
     mock_settings.get_config.assert_called_once_with(f"providers.{provider_name}")
     mock_settings.instantiate_from_config.assert_called_once_with(
         f"providers.{provider_name}",
-        settings=mock_settings,
     )
     assert provider == mock_provider_instance
 

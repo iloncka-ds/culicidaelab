@@ -17,6 +17,7 @@ repos:
     -   id: name-tests-test
         stages: [commit]
         args: [--pytest-test-first]
+        exclude: ^tests/integration/notebooks/
     -   id: requirements-txt-fixer
         stages: [commit]
     -   id: check-added-large-files
@@ -44,6 +45,7 @@ repos:
     rev: 7.1.1
     hooks:
     -   id: flake8
+        args: ["--ignore", "E704"]
         stages: [commit]
 -   repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.13.0
@@ -71,10 +73,4 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
         types_or: [python, pyi]
         require_serial: true
-        stages: [commit]
--   repo: https://github.com/psf/black
-    rev: 22.10.0
-    hooks:
-    -   id: black
-        args: ["--line-length", "120"]
         stages: [commit]

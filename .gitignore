@@ -11,6 +11,8 @@ wheels/
 .mypy_cache
 .pytest_cache
 .ruff_cache
+develop*/
+.ge*/
 # Virtual environments
 .venv
 # Environment variables
@@ -25,6 +27,7 @@ md_*/
 scripts*/
 .VSCodeCounter
 tree-maker/
+commit_message.txt
 
 # Documentation files
 docs/en/generated/*

@@ -1,127 +1,87 @@
-"""Module for mosquito species classification using FastAI.
+"""Module for mosquito species classification.
 
-This module provides the MosquitoClassifier class for identifying mosquito species
-from an image. It leverages the FastAI framework and can use various model
-architectures available in the `timm` library. The classifier is designed to be
-initialized with project-wide settings and can be used to predict species for
-single images or batches.
-
-Example:
-    from culicidaelab.core.settings import Settings
-    from culicidaelab.predictors import MosquitoClassifier
-    import numpy as np
-    import io
-
-    # Initialize settings and classifier
-    settings = Settings()
-    classifier = MosquitoClassifier(settings, load_model=True)
-
-    # Create a dummy image and in-memory byte stream
-    image_array = np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)
-    success, encoded_image = cv2.imencode(".png", image_array)
-    image_bytes = encoded_image.tobytes()
-    image_stream = io.BytesIO(image_bytes)
-
-
-    # Get predictions from bytes
-    predictions_from_bytes = classifier.predict(image_bytes)
-    print("Top prediction from bytes: ",
-    f"{predictions_from_bytes[0][0]} with confidence {predictions_from_bytes[0][1]:.4f}")
-
-    # Get predictions from stream
-    predictions_from_stream = classifier.predict(image_stream)
-    print("Top prediction from stream: ",
-    f"{predictions_from_stream[0][0]} with confidence {predictions_from_stream[0][1]:.4f}")
-
-
-    # Clean up (if not using a context manager)
-    classifier.unload_model()
+This module provides the MosquitoClassifier for identifying mosquito species
+from an image. It can use various model backends (e.g., PyTorch, ONNX)
+and is designed to be initialized with project-wide settings. It supports
+prediction for single images or batches, evaluation, and visualization.
 """
 
 from __future__ import annotations
 
-import pathlib
-import platform
-from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import Any, TypeAlias, Literal
 from collections.abc import Sequence
 
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from fastai.vision.all import load_learner
+from PIL import Image, ImageDraw, ImageFont
+
 from sklearn.metrics import confusion_matrix, roc_auc_score
 from sklearn.preprocessing import label_binarize
 
 from culicidaelab.core.base_predictor import BasePredictor, ImageInput
+from culicidaelab.core.prediction_models import (
+    Classification,
+    ClassificationPrediction,
+)
 from culicidaelab.core.settings import Settings
-from culicidaelab.core.utils import str_to_bgr
-from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
+from culicidaelab.predictors.backend_factory import create_backend
+from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 
-ClassificationPredictionType: TypeAlias = list[tuple[str, float]]
+
 ClassificationGroundTruthType: TypeAlias = str
 
 
-@contextmanager
-def set_posix_windows():
-    """Temporarily patch pathlib for Windows FastAI model loading.
-
-    This context manager addresses a common issue where FastAI models trained
-    on a POSIX-based system (like Linux or macOS) fail to load on Windows
-    due to differences in path object serialization. It temporarily makes
-    `pathlib.PosixPath` behave like `pathlib.WindowsPath` during model loading.
-
-    Yields:
-        None: Executes the code within the `with` block.
-    """
-    if platform.system() == "Windows":
-        posix_backup = pathlib.PosixPath
-        try:
-            pathlib.PosixPath = pathlib.WindowsPath
-            yield
-        finally:
-            pathlib.PosixPath = posix_backup
-    else:
-        yield
-
-
 class MosquitoClassifier(
-    BasePredictor[ImageInput, ClassificationPredictionType, ClassificationGroundTruthType],
+    BasePredictor[ImageInput, ClassificationPrediction, ClassificationGroundTruthType],
 ):
-    """Classifies mosquito species from an image using a FastAI model.
+    """Classifies mosquito species from an image.
 
     This class provides methods to load a pre-trained model, predict species
     from single or batches of images, evaluate model performance, and visualize
     the classification results.
-
-    Args:
-        settings (Settings): The main settings object for the library, which
-            contains configuration for paths, models, and species.
-        load_model (bool, optional): If True, the model weights are loaded
-            immediately upon initialization. Defaults to False.
 
     Attributes:
         arch (str): The model architecture (e.g., 'convnext_tiny').
         data_dir (Path): The directory where datasets are stored.
         species_map (dict[int, str]): A mapping from class indices to species names.
         num_classes (int): The total number of species classes.
-        learner: The loaded FastAI learner object, available after `load_model()`.
     """
 
-    def __init__(self, settings: Settings, load_model: bool = False) -> None:
-        """Initializes the MosquitoClassifier."""
+    def __init__(
+        self,
+        settings: Settings,
+        predictor_type="classifier",
+        mode: Literal["torch", "serve"] | None = None,
+        load_model: bool = False,
+        backend: BaseInferenceBackend | None = None,
+    ) -> None:
+        """Initializes the MosquitoClassifier.
 
-        weights_manager = ModelWeightsManager(
+        Args:
+            settings: The main settings object for the library.
+            predictor_type: The type of predictor. Defaults to "classifier".
+            mode: The mode to run the predictor in, 'torch' or 'serve'.
+                If None, it's determined by the environment.
+            load_model: If True, load the model upon initialization.
+            backend: An optional backend instance. If not provided, one will be
+                created based on the mode and settings.
+        """
+
+        backend_instance = backend or create_backend(
+            predictor_type=predictor_type,
             settings=settings,
+            mode=mode,
         )
+
         super().__init__(
             settings=settings,
-            predictor_type="classifier",
-            weights_manager=weights_manager,
+            predictor_type=predictor_type,
+            backend=backend_instance,
             load_model=load_model,
         )
         self.arch: str | None = self.config.model_arch
+
         self.data_dir: Path = self.settings.dataset_dir
         self.species_map: dict[int, str] = self.settings.species_config.species_map
         self.labels_map: dict[
@@ -138,10 +98,10 @@ class MosquitoClassifier(
         """Retrieves the class index for a given species name.
 
         Args:
-            species_name (str): The name of the species.
+            species_name: The name of the species.
 
         Returns:
-            int | None: The corresponding class index if found, otherwise None.
+            The corresponding class index if found, otherwise None.
         """
         return self.settings.species_config.get_index_by_species(species_name)
 
@@ -151,95 +111,30 @@ class MosquitoClassifier(
         The list is ordered by the class index.
 
         Returns:
-            list[str]: A list of species names.
+            A list of species names.
         """
         return [self.species_map[i] for i in sorted(self.species_map.keys())]
-
-    def predict(
-        self,
-        input_data: ImageInput,
-        **kwargs: Any,
-    ) -> ClassificationPredictionType:
-        """Classifies the mosquito species in a single image.
-
-        Args:
-            input_data: Input image in one of the following formats:
-                - np.ndarray: Image array with shape (H, W, 3) in RGB format.
-                  Values can be uint8 [0, 255] or float32/float64 [0, 1].
-                - str or pathlib.Path: Path to an image file.
-                - PIL.Image.Image: PIL Image object.
-                - bytes: In-memory bytes of an image.
-                - io.BytesIO: A binary stream of an image.
-            **kwargs (Any): Additional arguments (not used).
-
-        Returns:
-            A list of (species_name, confidence) tuples, sorted in
-            descending order of confidence.
-
-        Raises:
-            RuntimeError: If the model has not been loaded.
-            ValueError: If the input data has an invalid format.
-            FileNotFoundError: If the image file path doesn't exist.
-        """
-        if not self.model_loaded:
-            raise RuntimeError(
-                "Model is not loaded. Call load_model() or use a context manager.",
-            )
-
-        image = self._load_and_validate_image(input_data)
-
-        with set_posix_windows():
-            with self.learner.no_bar():
-                _, _, probabilities = self.learner.predict(image)
-
-        species_probs = []
-        for idx, prob in enumerate(probabilities):
-            species_name = self.species_map.get(idx, f"unknown_{idx}")
-            species_probs.append((species_name, float(prob)))
-
-        species_probs.sort(key=lambda x: x[1], reverse=True)
-        return species_probs
-
-    def predict_batch(
-        self,
-        input_data_batch: Sequence[ImageInput],
-        show_progress: bool = False,
-        **kwargs: Any,
-    ) -> list[ClassificationPredictionType]:
-        """
-        Classifies a batch of mosquito images in a single, efficient pass.
-        """
-        if not self.model_loaded:
-            raise RuntimeError("Model is not loaded.")
-
-        images = [self._load_and_validate_image(item) for item in input_data_batch]
-
-        with self.learner.no_bar():
-            dl = self.learner.dls.test_dl(images, with_labels=False)
-            probabilities, _ = self.learner.get_preds(dl=dl, reorder=False)
-
-        batch_results = []
-        for probs_tensor in probabilities:
-            species_probs = []
-            for idx, prob in enumerate(probs_tensor):
-                species_name = self.species_map.get(idx, f"unknown_{idx}")
-                species_probs.append((species_name, float(prob)))
-
-            species_probs.sort(key=lambda x: x[1], reverse=True)
-            batch_results.append(species_probs)
-
-        return batch_results
 
     def visualize(
         self,
         input_data: ImageInput,
-        predictions: ClassificationPredictionType,
+        predictions: ClassificationPrediction,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
         """Creates a composite image with results and the input image.
 
         This method generates a visualization by placing the top-k predictions
         in a separate panel to the left of the image.
+
+        Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.predictors import MosquitoClassifier
+            >>> # This example assumes you have a configured settings object
+            >>> settings = Settings()
+            >>> classifier = MosquitoClassifier(settings, load_model=True)
+            >>> image = "path/to/your/image.jpg"
+            >>> prediction = classifier.predict(image)
+            >>> viz_image = classifier.visualize(image, prediction, save_path="viz.jpg")
 
         Args:
             input_data: The input image (NumPy array, path, or PIL Image).
@@ -256,49 +151,43 @@ class MosquitoClassifier(
         image_pil = self._load_and_validate_image(input_data)
         image_np_rgb = np.array(image_pil)
 
-        if not predictions:
+        if not predictions.predictions:
             raise ValueError("Predictions list cannot be empty")
 
         vis_config = self.config.visualization
         font_scale = vis_config.font_scale
-        thickness = vis_config.text_thickness if vis_config.text_thickness is not None else 1
-        text_color_bgr = str_to_bgr(vis_config.text_color)
         top_k = self.config.params.get("top_k", 5)
-        font = cv2.FONT_HERSHEY_SIMPLEX
 
         img_h, img_w, _ = image_np_rgb.shape
-        text_panel_width = 350
+        text_panel_width = 250
         padding = 20
         canvas_h = img_h
         canvas_w = text_panel_width + img_w
-        canvas = np.full((canvas_h, canvas_w, 3), 255, dtype=np.uint8)
+        canvas = Image.new("RGB", (canvas_w, canvas_h), color="white")
+        draw = ImageDraw.Draw(canvas)
 
         y_offset = 40
-        line_height = int(font_scale * 40)
-        for species, conf in predictions[:top_k]:
+        line_height = int(font_scale * 20)
+        for classification in predictions.predictions[:top_k]:
+            species, conf = classification.species_name, classification.confidence
             display_name = self.labels_map.get(species, species)
             text = f"{display_name}: {conf:.3f}"
-            cv2.putText(
-                canvas,
-                text,
-                (padding, y_offset),
-                font,
-                font_scale,
-                text_color_bgr,
-                thickness,
-                lineType=cv2.LINE_AA,
-            )
+            # Load a font (you might want to make this configurable or load once)
+            try:
+                font_pil = ImageFont.truetype("arial.ttf", int(font_scale * 15))
+            except OSError:
+                font_pil = ImageFont.load_default()
+            draw.text((padding, y_offset), text, fill=vis_config.text_color, font=font_pil)
             y_offset += line_height
 
-        canvas[:, text_panel_width:] = image_np_rgb
+        canvas.paste(image_pil, (text_panel_width, 0))
 
         if save_path:
             save_path = Path(save_path)
             save_path.parent.mkdir(parents=True, exist_ok=True)
-            save_img_bgr = cv2.cvtColor(canvas, cv2.COLOR_RGB2BGR)
-            cv2.imwrite(str(save_path), save_img_bgr)
+            canvas.save(str(save_path))
 
-        return canvas
+        return np.array(canvas)
 
     def visualize_report(
         self,
@@ -333,7 +222,7 @@ class MosquitoClassifier(
         fig, (ax_text, ax_matrix) = plt.subplots(
             1,
             2,
-            figsize=(20, 8),
+            figsize=(15, 10),
             gridspec_kw={"width_ratios": [1, 2.5]},
         )
         fig.suptitle("Model Evaluation Report", fontsize=20, y=1.02)
@@ -354,17 +243,17 @@ class MosquitoClassifier(
             ha="left",
             va="top",
             transform=ax_text.transAxes,
-            fontsize=14,
+            fontsize=16,
             family="monospace",
         )
 
-        im = ax_matrix.imshow(conf_matrix, cmap="Blues", interpolation="nearest")
+        im = ax_matrix.imshow(conf_matrix, cmap="BuGn", interpolation="nearest")
         tick_marks = np.arange(len(class_labels))
         ax_matrix.set_xticks(tick_marks)
         ax_matrix.set_yticks(tick_marks)
         ax_matrix.set_xticklabels(
             class_labels,
-            rotation=45,
+            rotation=30,
             ha="right",
             rotation_mode="anchor",
         )
@@ -398,14 +287,24 @@ class MosquitoClassifier(
     # --------------------------------------------------------------------------
     # Private Methods
     # --------------------------------------------------------------------------
+    def _convert_raw_to_prediction(self, raw_prediction: np.ndarray) -> ClassificationPrediction:
+        """Converts raw model output to a structured classification prediction."""
+        species_probs = []
+
+        for idx, prob in enumerate(raw_prediction):
+            species_name = self.species_map.get(idx, f"unknown_{idx}")
+            species_probs.append(Classification(species_name=species_name, confidence=float(prob)))
+
+        species_probs.sort(key=lambda x: x.confidence, reverse=True)
+        return ClassificationPrediction(predictions=species_probs)
 
     def _evaluate_from_prediction(
         self,
-        prediction: ClassificationPredictionType,
+        prediction: ClassificationPrediction,
         ground_truth: ClassificationGroundTruthType,
     ) -> dict[str, float]:
         """Calculates core evaluation metrics for a single prediction."""
-        if not prediction:
+        if not prediction.predictions:
             return {
                 "accuracy": 0.0,
                 "confidence": 0.0,
@@ -413,10 +312,11 @@ class MosquitoClassifier(
                 "top_5_correct": 0.0,
             }
         ground_truth_species = self.labels_map.get(ground_truth, ground_truth)
-        pred_species = prediction[0][0]
-        confidence = prediction[0][1]
+        top_pred = prediction.top_prediction()
+        pred_species = top_pred.species_name if top_pred else ""
+        confidence = top_pred.confidence if top_pred else 0.0
         top_1_correct = float(pred_species == ground_truth_species)
-        top_5_species = [p[0] for p in prediction[:5]]
+        top_5_species = [p.species_name for p in prediction.predictions[:5]]
         top_5_correct = float(ground_truth_species in top_5_species)
         return {
             "accuracy": top_1_correct,
@@ -428,7 +328,7 @@ class MosquitoClassifier(
     def _finalize_evaluation_report(
         self,
         aggregated_metrics: dict[str, float],
-        predictions: Sequence[ClassificationPredictionType],
+        predictions: Sequence[ClassificationPrediction],
         ground_truths: Sequence[ClassificationGroundTruthType],
     ) -> dict[str, Any]:
         """Calculates and adds confusion matrix and ROC-AUC to the final report."""
@@ -438,17 +338,18 @@ class MosquitoClassifier(
 
         for gt, pred_list in zip(ground_truths, predictions):
             gt_str = self.labels_map.get(gt, gt)
-            if gt_str in species_to_idx and pred_list:
+            if gt_str in species_to_idx and pred_list.predictions:
                 true_idx = species_to_idx[gt_str]
-                pred_str = pred_list[0][0]
+                top_pred = pred_list.top_prediction()
+                pred_str = top_pred.species_name if top_pred else ""
                 pred_idx = species_to_idx.get(pred_str, -1)
                 y_true_indices.append(true_idx)
                 y_pred_indices.append(pred_idx)
                 prob_vector = [0.0] * self.num_classes
-                for species, conf in pred_list:
-                    class_idx = species_to_idx.get(species)
+                for classification in pred_list.predictions:
+                    class_idx = species_to_idx.get(classification.species_name)
                     if class_idx is not None:
-                        prob_vector[class_idx] = conf
+                        prob_vector[class_idx] = classification.confidence
                 y_scores.append(prob_vector)
 
         if y_true_indices and y_pred_indices:
@@ -471,23 +372,8 @@ class MosquitoClassifier(
                     np.array(y_scores),
                     multi_class="ovr",
                 )
-                aggregated_metrics["roc_auc"] = roc_auc
+                aggregated_metrics["roc_auc"] = roc_auc  # type: ignore
             except ValueError as e:
                 self._logger.warning(f"Could not compute ROC AUC score: {e}")
                 aggregated_metrics["roc_auc"] = 0.0
         return aggregated_metrics
-
-    def _load_model(self) -> None:
-        """Loads the pre-trained FastAI learner model from disk.
-
-        Raises:
-            RuntimeError: If the model file cannot be loaded.
-        """
-        with set_posix_windows():
-            try:
-                self.learner = load_learner(self.model_path)
-                self.learner.to(self.config.device)
-            except Exception as e:
-                raise RuntimeError(
-                    f"Failed to load model from {self.model_path}. " f"Ensure the file is valid. Original error: {e}",
-                ) from e

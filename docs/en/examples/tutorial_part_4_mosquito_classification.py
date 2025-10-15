@@ -1,3 +1,19 @@
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     custom_cell_magics: kql
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.11.2
+#   kernelspec:
+#     display_name: culicidaelab (3.11.6)
+#     language: python
+#     name: python3
+# ---
+
 # %%
 """
 # Classifying Mosquito Species
@@ -18,7 +34,7 @@ This guide will cover:
 
 # %%
 # Install the `culicidaelab` library if not already installed
-# !pip install -q culicidaelab
+# # !pip install -q culicidaelab
 
 # %% [markdown]
 # ## 1. Initialization and Setup
@@ -88,7 +104,8 @@ print(f"Number of samples in the test dataset: {len(classification_test_data)}")
 
 # Let's select one sample to work with.
 # The sample is a dictionary containing the image and its ground truth label.
-sample_index = 287
+classification_test_data = classification_test_data.shuffle(seed=35)
+sample_index = 285
 sample = classification_test_data[sample_index]
 image = sample["image"]
 ground_truth_label = sample["label"]
@@ -113,12 +130,12 @@ plt.show()
 
 # %%
 # Run the classification on our sample image
-predictions = classifier.predict(image)
+result = classifier.predict(image)
 
 # Print the top 5 predictions in a readable format
 print("--- Top 5 Predictions ---")
-for species, probability in predictions[:5]:
-    print(f"{species}: {probability:.2%}")
+for p in result.predictions[:5]:
+    print(f"{p.species_name}: {p.confidence:.2%}")
 
 # %% [markdown]
 # ## 4. Visualizing and Interpreting the Results
@@ -137,8 +154,8 @@ for species, probability in predictions[:5]:
 plt.figure(figsize=(10, 8))
 
 # The predictions are already sorted, so we can plot them directly
-species_names = [p[0] for p in predictions]
-probabilities = [p[1] for p in predictions]
+species_names = [p.species_name for p in result.predictions]
+probabilities = [p.confidence for p in result.predictions]
 
 # We'll reverse the lists (`[::-1]`) so the highest probability is at the top
 bars = plt.barh(species_names[::-1], probabilities[::-1])
@@ -166,7 +183,7 @@ plt.show()
 
 # %%
 # Now, let's use the built-in visualizer for a clean presentation
-annotated_image = classifier.visualize(image, predictions)
+annotated_image = classifier.visualize(image, result)
 
 # Display the final annotated image
 plt.figure(figsize=(10, 6))
@@ -253,8 +270,8 @@ batch_predictions = classifier.predict_batch(batch_images, show_progress=True)
 print("\n--- Batch Classification Results (Top prediction for each image) ---")
 for i, single_image_preds in enumerate(batch_predictions):
     if single_image_preds:  # Check if the prediction list is not empty
-        top_pred_species = single_image_preds[0][0]
-        top_pred_conf = single_image_preds[0][1]
+        top_pred_species = single_image_preds.predictions[0].species_name
+        top_pred_conf = single_image_preds.predictions[0].confidence
         print(
             f"  - Image {i+1} (GT: {ground_truths[i]}): "
             f"Predicted '{top_pred_species}' with {top_pred_conf:.2%} confidence.",

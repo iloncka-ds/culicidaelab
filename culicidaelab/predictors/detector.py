@@ -1,71 +1,41 @@
-"""Module for mosquito object detection in images using YOLO.
+"""Module for mosquito object detection in images.
 
 This module provides the MosquitoDetector class, which uses a pre-trained
-YOLO model from the `ultralytics` library to find bounding boxes of
-mosquitos in an image.
-
-Example:
-    from culicidaelab.core.settings import Settings
-    from culicidaelab.predictors import MosquitoDetector
-    import numpy as np
-
-    # Initialize settings and detector
-    settings = Settings()
-    detector = MosquitoDetector(settings, load_model=True)
-
-    # Create a dummy image
-    image = np.random.randint(0, 256, (640, 640, 3), dtype=np.uint8)
-
-    # Get detections
-    # Each detection is (center_x, center_y, width, height, confidence)
-    detections = detector.predict(image)
-    if detections:
-        print(f"Found {len(detections)} mosquitos.")
-        print(f"Top detection box: {detections[0]}")
-
-    # Clean up
-    detector.unload_model()
+model (e.g., YOLO) to find bounding boxes of mosquitos in an image.
 """
 
 from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, TypeAlias
-from collections.abc import Sequence
+from typing import Any, Literal
 
-import cv2
 import numpy as np
-
-# CHANGED: Replaced tqdm with fastprogress for consistency.
-from fastprogress.fastprogress import progress_bar
-from ultralytics import YOLO
+from PIL import ImageDraw, ImageFont
 
 from culicidaelab.core.base_predictor import BasePredictor, ImageInput
-
+from culicidaelab.core.prediction_models import (
+    BoundingBox,
+    Detection,
+    DetectionPrediction,
+)
 from culicidaelab.core.settings import Settings
-from culicidaelab.core.utils import str_to_bgr
-from culicidaelab.predictors.model_weights_manager import ModelWeightsManager
+from culicidaelab.predictors.backend_factory import create_backend
+from culicidaelab.core.base_inference_backend import BaseInferenceBackend
+
+DetectionGroundTruthType = list[tuple[float, float, float, float]]
 
 logger = logging.getLogger(__name__)
 
-DetectionPredictionType: TypeAlias = list[tuple[float, float, float, float, float]]
-DetectionGroundTruthType: TypeAlias = list[tuple[float, float, float, float]]
-
 
 class MosquitoDetector(
-    BasePredictor[ImageInput, DetectionPredictionType, DetectionGroundTruthType],
+    BasePredictor[ImageInput, DetectionPrediction, DetectionGroundTruthType],
 ):
     """Detects mosquitos in images using a YOLO model.
 
-    This class loads a YOLO model and provides methods for predicting bounding
+    This class loads a model and provides methods for predicting bounding
     boxes on single or batches of images, visualizing results, and evaluating
     detection performance against ground truth data.
-
-    Args:
-        settings (Settings): The main settings object for the library.
-        load_model (bool, optional): If True, the model is loaded upon
-            initialization. Defaults to False.
 
     Attributes:
         confidence_threshold (float): The minimum confidence score for a
@@ -74,43 +44,71 @@ class MosquitoDetector(
         max_detections (int): The maximum number of detections to return per image.
     """
 
-    def __init__(self, settings: Settings, load_model: bool = False) -> None:
-        """Initializes the MosquitoDetector."""
+    def __init__(
+        self,
+        settings: Settings,
+        predictor_type="detector",
+        mode: Literal["torch", "serve"] | None = None,
+        load_model: bool = False,
+        backend: BaseInferenceBackend | None = None,
+    ) -> None:
+        """Initializes the MosquitoDetector.
 
-        weights_manager = ModelWeightsManager(
+        Args:
+            settings: The main settings object for the library.
+            predictor_type: The type of predictor. Defaults to "detector".
+            mode: The mode to run the predictor in, 'torch' or 'serve'.
+                If None, it's determined by the environment.
+            load_model: If True, load the model upon initialization.
+            backend: An optional backend instance. If not provided, one will be
+                created based on the mode and settings.
+        """
+
+        backend_instance = backend or create_backend(
+            predictor_type=predictor_type,
             settings=settings,
+            mode=mode,
         )
+
         super().__init__(
             settings=settings,
-            predictor_type="detector",
-            weights_manager=weights_manager,
+            predictor_type=predictor_type,
+            backend=backend_instance,
             load_model=load_model,
         )
         self.confidence_threshold: float = self.config.confidence or 0.5
         self.iou_threshold: float = self.config.params.get("iou_threshold", 0.45)
         self.max_detections: int = self.config.params.get("max_detections", 300)
 
-    def predict(self, input_data: ImageInput, **kwargs: Any) -> DetectionPredictionType:
+    def predict(self, input_data: ImageInput, **kwargs: Any) -> DetectionPrediction:
         """Detects mosquitos in a single image.
 
+        Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.predictors import MosquitoDetector
+            >>> # This example assumes you have a configured settings object
+            >>> settings = Settings()
+            >>> detector = MosquitoDetector(settings, load_model=True)
+            >>> image = "path/to/your/image.jpg"
+            >>> detections = detector.predict(image)
+            >>> for detection in detections.detections:
+            ...     print(detection.box, detection.confidence)
+
         Args:
-            input_data (ImageInput): The input image as a NumPy array or other supported format.
-            **kwargs (Any): Optional keyword arguments, including:
+            input_data: The input image as a NumPy array or other supported format.
+            **kwargs: Optional keyword arguments, including:
                 confidence_threshold (float): Override the default confidence
                     threshold for this prediction.
 
         Returns:
-            DetectionPredictionType: A list of detection tuples. Each tuple is
-            (x1, y1, x2, y2, confidence). Returns an empty
-            list if no mosquitos are found.
+            A `DetectionPrediction` object containing a list of
+            `Detection` instances. Returns an empty list if no mosquitos are found.
 
         Raises:
             RuntimeError: If the model fails to load or if prediction fails.
         """
-        if not self.model_loaded or self._model is None:
+        if not self.backend.is_loaded:
             self.load_model()
-            if self._model is None:
-                raise RuntimeError("Failed to load model")
 
         confidence_threshold = kwargs.get(
             "confidence_threshold",
@@ -118,9 +116,10 @@ class MosquitoDetector(
         )
 
         try:
-            input_data = np.array(self._load_and_validate_image(input_data))
-            results = self._model(
-                source=input_data,
+            input_image = self._load_and_validate_image(input_data)
+            # The backend now returns a standardized NumPy array (N, 5) -> [x1, y1, x2, y2, conf]
+            results_array = self.backend.predict(
+                input_data=input_image,
                 conf=confidence_threshold,
                 iou=self.iou_threshold,
                 max_det=self.max_detections,
@@ -130,132 +129,90 @@ class MosquitoDetector(
             logger.error(f"Prediction failed: {e}", exc_info=True)
             raise RuntimeError(f"Prediction failed: {e}") from e
 
-        detections: DetectionPredictionType = []
-        if results:
-            boxes = results[0].boxes
-            for box in boxes:
-                xyxy_tensor = box.xyxy[0]
-                x1, y1, x2, y2 = xyxy_tensor.cpu().numpy()
-                conf = float(box.conf[0])
+        return self._convert_raw_to_prediction(results_array)
 
-                detections.append((x1, y1, x2, y2, conf))
-        return detections
-
-    def predict_batch(
-        self,
-        input_data_batch: Sequence[ImageInput],
-        show_progress: bool = False,
-        **kwargs: Any,
-    ) -> list[DetectionPredictionType]:
-        """Detects mosquitos in a batch of images using YOLO's native batching.
+    def _convert_raw_to_prediction(self, raw_prediction: np.ndarray) -> DetectionPrediction:
+        """Converts raw model output to a structured detection prediction.
 
         Args:
-            input_data_batch (Sequence[np.ndarray]): A list of input images.
-            show_progress (bool, optional): If True, a progress bar is shown.
-                Defaults to False.
-            **kwargs (Any): Additional arguments (not used).
+            raw_prediction: A numpy array with shape (N, 5) where each row is
+                [x1, y1, x2, y2, confidence].
 
         Returns:
-            list[DetectionPredictionType]: A list where each item is the list
-            of detections for the corresponding image in the input batch.
-
-        Raises:
-            RuntimeError: If the model is not loaded.
+            A DetectionPrediction object containing a list of Detection objects.
         """
-        if not self.model_loaded or self._model is None:
-            self.load_model()
-            if self._model is None:
-                raise RuntimeError("Failed to load model")
-        if not input_data_batch:
-            return []
-
-        valid_images, valid_indices = self._prepare_batch_images(input_data_batch)
-
-        if not valid_images:
-            self._logger.warning("No valid images found in the batch to process.")
-            return [[]] * len(input_data_batch)
-
-        yolo_results = self._model(
-            source=valid_images,
-            conf=self.confidence_threshold,
-            iou=self.iou_threshold,
-            max_det=self.max_detections,
-            stream=False,
-            verbose=False,
-        )
-
-        all_predictions: list[DetectionPredictionType] = []
-        # CHANGED: Refactored the loop to use progress_bar correctly.
-        iterator = yolo_results
-        if show_progress:
-            iterator = progress_bar(
-                yolo_results,
-                total=len(input_data_batch),
-            )
-
-        for r in iterator:
-            detections = []
-            for box in r.boxes:
-                xyxy_tensor = box.xyxy[0]
-                x1, y1, x2, y2 = xyxy_tensor.cpu().numpy()
-                conf = float(box.conf[0])
-                detections.append((x1, y1, x2, y2, conf))
-            all_predictions.append(detections)
-
-        return all_predictions
+        detections: list[Detection] = []
+        if raw_prediction.ndim == 2 and raw_prediction.shape[1] == 5:
+            for row in raw_prediction:
+                x1, y1, x2, y2, conf = row
+                detections.append(
+                    Detection(box=BoundingBox(x1=x1, y1=y1, x2=x2, y2=y2), confidence=conf),
+                )
+        return DetectionPrediction(detections=detections)
 
     def visualize(
         self,
         input_data: ImageInput,
-        predictions: DetectionPredictionType,
+        predictions: DetectionPrediction,
         save_path: str | Path | None = None,
     ) -> np.ndarray:
         """Draws predicted bounding boxes on an image.
 
+        Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.predictors import MosquitoDetector
+            >>> # This example assumes you have a configured settings object
+            >>> settings = Settings()
+            >>> detector = MosquitoDetector(settings, load_model=True)
+            >>> image = "path/to/your/image.jpg"
+            >>> detections = detector.predict(image)
+            >>> viz_image = detector.visualize(image, detections, save_path="viz.jpg")
+
         Args:
-            input_data (ImageInput): The original image.
-            predictions (DetectionPredictionType): The list of detections from `predict`.
-            save_path (str | Path | None, optional): If provided, the output
-                image is saved to this path. Defaults to None.
+            input_data: The original image.
+            predictions: The `DetectionPrediction` from `predict`.
+            save_path: If provided, the output image is saved to this path.
 
         Returns:
-            np.ndarray: A new image array with bounding boxes and confidence
-            scores drawn on it.
+            A new image array with bounding boxes and confidence scores drawn on it.
         """
-        vis_img = np.array(self._load_and_validate_image(input_data))
+        vis_img = self._load_and_validate_image(input_data).copy()
+        draw = ImageDraw.Draw(vis_img)
         vis_config = self.config.visualization
-        box_color = str_to_bgr(vis_config.box_color)
-        text_color = str_to_bgr(vis_config.text_color)
         font_scale = vis_config.font_scale
         thickness = vis_config.box_thickness
 
-        for x1, y1, x2, y2, conf in predictions:
-            cv2.rectangle(vis_img, (int(x1), int(y1)), (int(x2), int(y2)), box_color, thickness)
-            text = f"{conf:.2f}"
-            cv2.putText(
-                vis_img,
-                text,
-                (int(x1), int(y1 - 5)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                font_scale,
-                text_color,
-                thickness,
+        for detection in predictions.detections:
+            box = detection.box
+            conf = detection.confidence
+            draw.rectangle(
+                [(int(box.x1), int(box.y1)), (int(box.x2), int(box.y2))],
+                outline=vis_config.box_color,
+                width=thickness,
             )
+            text = f"{conf:.2f}"
+            try:
+                font = ImageFont.truetype("arial.ttf", int(font_scale * 20))
+            except OSError:
+                font = ImageFont.load_default()
+            draw.text((int(box.x1), int(box.y1 - 10)), text, fill=vis_config.text_color, font=font)
 
         if save_path:
-            cv2.imwrite(str(save_path), cv2.cvtColor(vis_img, cv2.COLOR_RGB2BGR))
+            save_path = Path(save_path)
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            vis_img.save(str(save_path))
 
-        return vis_img
+        return np.array(vis_img)
 
     def _calculate_iou(self, box1_xyxy: tuple, box2_xyxy: tuple) -> float:
         """Calculates Intersection over Union (IoU) for two boxes.
 
         Args:
-            box1_xyxy (tuple): The first box in (x1, y1, x2, y2) format.
-            box2_xyxy (tuple): The second box in (x1, y1, x2, y2) format.
+            box1_xyxy: The first box in (x1, y1, x2, y2) format.
+            box2_xyxy: The second box in (x1, y1, x2, y2) format.
 
         Returns:
-            float: The IoU score between 0.0 and 1.0.
+            The IoU score between 0.0 and 1.0.
         """
         b1_x1, b1_y1, b1_x2, b1_y2 = box1_xyxy
         b2_x1, b2_y1, b2_x2, b2_y2 = box2_xyxy
@@ -271,7 +228,7 @@ class MosquitoDetector(
 
     def _evaluate_from_prediction(
         self,
-        prediction: DetectionPredictionType,
+        prediction: DetectionPrediction,
         ground_truth: DetectionGroundTruthType,
     ) -> dict[str, float]:
         """Calculates detection metrics for a single image's predictions.
@@ -280,15 +237,13 @@ class MosquitoDetector(
         and mean IoU for a set of predicted boxes against ground truth boxes.
 
         Args:
-            prediction (DetectionPredictionType): A list of predicted boxes with
-                confidence scores: `[(x, y, w, h, conf), ...]`.
-            ground_truth (DetectionGroundTruthType): A list of ground truth
-                boxes: `[(x, y, w, h), ...]`.
+            prediction: A `DetectionPrediction` object.
+            ground_truth: A list of ground truth boxes: `[(x, y, w, h), ...]`.
 
         Returns:
-            dict[str, float]: A dictionary containing the calculated metrics.
+            A dictionary containing the calculated metrics.
         """
-        if not ground_truth and not prediction:
+        if not ground_truth and not prediction.detections:
             return {
                 "precision": 1.0,
                 "recall": 1.0,
@@ -304,7 +259,7 @@ class MosquitoDetector(
                 "ap": 0.0,
                 "mean_iou": 0.0,
             }
-        if not prediction:  # False negatives exist
+        if not prediction.detections:  # False negatives exist
             return {
                 "precision": 0.0,
                 "recall": 0.0,
@@ -313,15 +268,15 @@ class MosquitoDetector(
                 "mean_iou": 0.0,
             }
 
-        predictions_sorted = sorted(prediction, key=lambda x: x[4], reverse=True)
+        predictions_sorted = sorted(prediction.detections, key=lambda x: x.confidence, reverse=True)
         tp = np.zeros(len(predictions_sorted))
         fp = np.zeros(len(predictions_sorted))
         gt_matched = [False] * len(ground_truth)
         all_ious_for_mean = []
         iou_threshold = self.iou_threshold
 
-        for i, pred_box_with_conf in enumerate(predictions_sorted):
-            pred_box = pred_box_with_conf[:4]
+        for i, pred in enumerate(predictions_sorted):
+            pred_box = (pred.box.x1, pred.box.y1, pred.box.x2, pred.box.y2)
             best_iou, best_gt_idx = 0.0, -1
 
             for j, gt_box in enumerate(ground_truth):
@@ -369,27 +324,3 @@ class MosquitoDetector(
             "ap": float(ap),
             "mean_iou": mean_iou_val,
         }
-
-    def _load_model(self) -> None:
-        """Loads the YOLO object detection model from the specified path.
-
-        Raises:
-            RuntimeError: If the model cannot be loaded from the path
-                specified in the configuration.
-        """
-        try:
-            logger.info(f"Loading YOLO model from: {self.model_path}")
-            self._model = YOLO(str(self.model_path), task="detect")
-
-            if self._model and hasattr(self.config, "device") and self.config.device:
-                device = str(self.config.device)
-                logger.info(f"Moving model to device: {device}")
-                self._model.to(device)
-
-            logger.info("YOLO model loaded successfully.")
-        except Exception as e:
-            logger.error(f"Failed to load YOLO model: {e}", exc_info=True)
-            self._model = None
-            raise RuntimeError(
-                f"Could not load YOLO model from {self.model_path}.",
-            ) from e

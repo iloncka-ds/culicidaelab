@@ -1,7 +1,9 @@
-target: "culicidaelab.predictors.segmenter.MosquitoSegmenter"
-model_path: "weights/segmentation/sam2.1_t.pt"
+target: culicidaelab.predictors.MosquitoSegmenter
+backend: "torch" # Default backend
 repository_id: "iloncka/culico-net-segm-v1-nano"
-filename: "sam2.1_hiera_tiny.pt"
+weights:
+  torch: # Corresponds to 'torch' backend_type
+    filename: "sam2.1_t.pt"
 provider_name: "huggingface"
 model_config_path: "configs/sam2.1/sam2.1_hiera_t.yaml"
 model_config_filename: "sam2.1_hiera_t.yaml"

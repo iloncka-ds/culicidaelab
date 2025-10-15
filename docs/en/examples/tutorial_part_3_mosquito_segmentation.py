@@ -1,3 +1,19 @@
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     custom_cell_magics: kql
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.11.2
+#   kernelspec:
+#     display_name: culicidaelab (3.11.6)
+#     language: python
+#     name: python3
+# ---
+
 # %%
 """
 # Mosquito Segmentation Tutorial
@@ -15,7 +31,7 @@ to perform mosquito segmentation on images. We'll cover:
 
 # %%
 # Install the `culicidaelab` library if not already installed
-# !pip install -q culicidaelab
+# # !pip install -q culicidaelab
 
 # %%
 import matplotlib.pyplot as plt
@@ -68,13 +84,13 @@ overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Red color with 50% opacity
 
 # %%
 # Run detection to get bounding boxes
-detections = detector.predict(seg_image)
-
+result = detector.predict(seg_image)
+bboxes = [detection.box.to_numpy() for detection in result.detections]
 # Run segmentation with detection boxes
-predicted_mask = segmenter.predict(seg_image, detection_boxes=np.array(detections))
+predicted_mask = segmenter.predict(seg_image, detection_boxes=np.array(bboxes))
 
 # Create visualizations
-annotated_image = detector.visualize(seg_image, detections)
+annotated_image = detector.visualize(seg_image, result)
 segmented_image = segmenter.visualize(annotated_image, predicted_mask)
 
 # %% [markdown]
@@ -112,13 +128,13 @@ plt.title("Detected Mosquitoes")
 
 # Predicted mask
 plt.subplot(2, 4, 5)
-plt.imshow(predicted_mask, cmap="gray")
+plt.imshow(predicted_mask.mask, cmap="gray")
 plt.axis("off")
 plt.title("Predicted Mask")
 
 # Predicted overlay
-predicted_overlay = np.zeros((*predicted_mask.shape, 4), dtype=np.uint8)
-predicted_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Green for predictions
+predicted_overlay = np.zeros((*predicted_mask.mask.shape, 4), dtype=np.uint8)
+predicted_overlay[predicted_mask.mask >= 0.5] = [0, 255, 0, 128]  # Green for predictions
 plt.subplot(2, 4, 6)
 plt.imshow(seg_image)
 plt.imshow(predicted_overlay, alpha=0.5)
@@ -126,9 +142,9 @@ plt.axis("off")
 plt.title("Predicted Overlay")
 
 # Combined overlay (ground truth + predictions)
-combined_overlay = np.zeros((*predicted_mask.shape, 4), dtype=np.uint8)
+combined_overlay = np.zeros((*predicted_mask.mask.shape, 4), dtype=np.uint8)
 combined_overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Red for ground truth
-combined_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Green for predictions
+combined_overlay[predicted_mask.mask >= 0.5] = [0, 255, 0, 128]  # Green for predictions
 plt.subplot(2, 4, 7)
 plt.imshow(seg_image)
 plt.imshow(combined_overlay, alpha=0.5)

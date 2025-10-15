@@ -1,3 +1,19 @@
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     custom_cell_magics: kql
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.11.2
+#   kernelspec:
+#     display_name: culicidaelab (3.11.6)
+#     language: python
+#     name: python3
+# ---
+
 # %%
 """
 # Руководство по сегментации комаров
@@ -15,7 +31,7 @@
 
 # %%
 # Установите библиотеку `culicidaelab`, если она еще не установлена
-# !pip install -q culicidaelab
+# # !pip install -q culicidaelab
 
 # %%
 import matplotlib.pyplot as plt
@@ -68,13 +84,14 @@ overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Красный цвет с 50% пр
 
 # %%
 # Запускаем детекцию для получения ограничивающих рамок
-detections = detector.predict(seg_image)
+result = detector.predict(seg_image)
+bboxes = [detection.box.to_numpy() for detection in result.detections]
 
 # Запускаем сегментацию с рамками детекции
-predicted_mask = segmenter.predict(seg_image, detection_boxes=np.array(detections))
+predicted_mask = segmenter.predict(seg_image, detection_boxes=np.array(bboxes))
 
 # Создаем визуализации
-annotated_image = detector.visualize(seg_image, detections)
+annotated_image = detector.visualize(seg_image, result)
 segmented_image = segmenter.visualize(annotated_image, predicted_mask)
 
 # %% [markdown]
@@ -112,13 +129,13 @@ plt.title("Обнаруженные комары")
 
 # Предсказанная маска
 plt.subplot(2, 4, 5)
-plt.imshow(predicted_mask, cmap="gray")
+plt.imshow(predicted_mask.mask, cmap="gray")
 plt.axis("off")
 plt.title("Предсказанная маска")
 
 # Наложение предсказанной маски
-predicted_overlay = np.zeros((*predicted_mask.shape, 4), dtype=np.uint8)
-predicted_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Зеленый для предсказаний
+predicted_overlay = np.zeros((*predicted_mask.mask.shape, 4), dtype=np.uint8)
+predicted_overlay[predicted_mask.mask >= 0.5] = [0, 255, 0, 128]  # Зеленый для предсказаний
 plt.subplot(2, 4, 6)
 plt.imshow(seg_image)
 plt.imshow(predicted_overlay, alpha=0.5)
@@ -126,9 +143,9 @@ plt.axis("off")
 plt.title("Наложение предсказанной маски")
 
 # Комбинированное наложение (истинная маска + предсказания)
-combined_overlay = np.zeros((*predicted_mask.shape, 4), dtype=np.uint8)
+combined_overlay = np.zeros((*predicted_mask.mask.shape, 4), dtype=np.uint8)
 combined_overlay[seg_mask >= 1] = [255, 0, 0, 128]  # Красный для истинной маски
-combined_overlay[predicted_mask >= 0.5] = [0, 255, 0, 128]  # Зеленый для предсказаний
+combined_overlay[predicted_mask.mask >= 0.5] = [0, 255, 0, 128]  # Зеленый для предсказаний
 plt.subplot(2, 4, 7)
 plt.imshow(seg_image)
 plt.imshow(combined_overlay, alpha=0.5)

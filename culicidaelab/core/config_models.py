@@ -11,11 +11,11 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 # --- Versioning ---
 # A simple string to identify the configuration schema version.
 # When a breaking change is made to any model, this version should be incremented.
-CONFIG_SCHEMA_VERSION = "1.0"
+CONFIG_SCHEMA_VERSION = "2.0"
+"""The version of the configuration schema."""
 
 
 # --- Species Metadata Models ---
@@ -24,7 +24,7 @@ CONFIG_SCHEMA_VERSION = "1.0"
 class TaxonomyModel(BaseModel):
     """Defines the detailed taxonomic classification of a species.
 
-    Args:
+    Attributes:
         family (str): The taxonomic family (e.g., "Culicidae").
         subfamily (str): The taxonomic subfamily (e.g., "Culicinae").
         genus (str): The taxonomic genus (e.g., "Aedes").
@@ -42,7 +42,7 @@ class TaxonomyModel(BaseModel):
 class SpeciesAttributesModel(BaseModel):
     """Defines biological and ecological attributes for a species.
 
-    Args:
+    Attributes:
         vector_status (bool): True if the species is a known disease vector.
         diseases (list[str]): A list of diseases the species is known to transmit.
         habitat (str): A description of the species' typical habitat.
@@ -60,7 +60,7 @@ class SpeciesAttributesModel(BaseModel):
 class SingleSpeciesMetadataModel(BaseModel):
     """Represents the full metadata object for a single species.
 
-    Args:
+    Attributes:
         common_name (str): The common name for the species.
         taxonomy (TaxonomyModel): The detailed taxonomic hierarchy.
         metadata (SpeciesAttributesModel): Additional biological attributes.
@@ -74,7 +74,7 @@ class SingleSpeciesMetadataModel(BaseModel):
 class SpeciesFiles(BaseModel):
     """A helper model representing the aggregated contents of species YAML files.
 
-    Args:
+    Attributes:
         species_info_mapping (dict[str, str]): A mapping from species class name to
             its corresponding metadata file.
         species_metadata (dict[str, SingleSpeciesMetadataModel]): A dictionary holding
@@ -89,7 +89,7 @@ class SpeciesFiles(BaseModel):
 class SpeciesModel(BaseModel):
     """Configuration for the entire 'species' section of the config.
 
-    Args:
+    Attributes:
         species_classes (dict[int, str]): A mapping of integer class IDs to
             string-based species names.
         species_metadata (SpeciesFiles): The aggregated species metadata loaded
@@ -110,7 +110,7 @@ class AppSettings(BaseSettings):
     These settings control the runtime behavior of the library, such as logging.
     They can be set via environment variables prefixed with `CULICIDAELAB_`.
 
-    Args:
+    Attributes:
         environment (str): The runtime environment (e.g., "development", "production").
         log_level (str): The logging level (e.g., "INFO", "DEBUG").
     """
@@ -123,7 +123,7 @@ class AppSettings(BaseSettings):
 class ProcessingConfig(BaseModel):
     """General data processing parameters.
 
-    Args:
+    Attributes:
         batch_size (int): The number of samples to process in a single batch.
         confidence_threshold (float): The minimum confidence score for predictions.
         device (str): The compute device to use ("cpu" or "cuda").
@@ -137,7 +137,7 @@ class ProcessingConfig(BaseModel):
 class VisualizationConfig(BaseModel):
     """Configuration for generating visual outputs like overlays and plots.
 
-    Args:
+    Attributes:
         overlay_color (str): The default hex color for segmentation masks.
         alpha (float): The opacity level for overlays (0.0 to 1.0).
         box_color (str): The hex color for drawing bounding boxes.
@@ -164,21 +164,32 @@ class VisualizationConfig(BaseModel):
 # --- Main Component Models ---
 
 
+class WeightDetails(BaseModel):
+    """Defines the details for a specific backend's weights.
+
+    Attributes:
+        filename (str): The name of the weights file.
+    """
+
+    filename: str
+
+
 class PredictorConfig(BaseModel):
     """Configuration for a single inference predictor.
 
     This model defines how to load and use a specific pre-trained model for inference.
 
-    Args:
+    Attributes:
         target (str): The fully qualified import path to the predictor class
-            (e.g., `culicidaelab.models.YOLOv8Predictor`). Aliased from `target`.
-        model_path (str): The local path or remote URL to the model weights file.
+            (e.g., `culicidaelab.models.YOLOv8Predictor`).
         confidence (float): The default confidence threshold for this predictor.
         device (str): The compute device to use ("cpu" or "cuda").
+        backend (str | None): The specific inference backend to use (e.g., 'yolo').
         params (dict[str, Any]): A dictionary of extra parameters to pass to the
             predictor's constructor.
         repository_id (str | None): The Hugging Face Hub repository ID for the model.
-        filename (str | None): The specific model filename within the repository.
+        weights (dict[str, WeightDetails] | None): A mapping of backend names to their
+            weight details.
         provider_name (str | None): The name of the provider (e.g., "huggingface").
         model_arch (str | None): The model architecture name (e.g., "yolov8n-seg").
         model_config_path (str | None): The path to the model's specific config file.
@@ -188,12 +199,12 @@ class PredictorConfig(BaseModel):
 
     model_config = ConfigDict(extra="allow", protected_namespaces=())
     target: str = Field(..., alias="target")
-    model_path: str
     confidence: float = 0.5
     device: str = "cpu"
+    backend: str | None = None
     params: dict[str, Any] = Field(default_factory=dict)
     repository_id: str | None = None
-    filename: str | None = None
+    weights: dict[str, WeightDetails] | None = None
     provider_name: str | None = None
     model_arch: str | None = None
     model_config_path: str | None = None
@@ -204,13 +215,14 @@ class PredictorConfig(BaseModel):
 class DatasetConfig(BaseModel):
     """Configuration for a single dataset.
 
-    Args:
+    Attributes:
         name (str): The unique internal name for the dataset.
         path (str): The local directory path for storing the dataset.
         format (str): The dataset format (e.g., "imagefolder", "coco", "yolo").
         classes (list[str]): A list of class names present in the dataset.
         provider_name (str): The name of the data provider (e.g., "huggingface").
         repository (str): The repository ID on the provider's platform.
+        config_name (str | None): The specific configuration of a Hugging Face dataset.
         derived_datasets (list[str] | None): A list of Hugging Face repository IDs
             for datasets that were derived from this one. Defaults to None.
         trained_models_repositories (list[str] | None): A list of Hugging Face
@@ -232,9 +244,9 @@ class DatasetConfig(BaseModel):
 class ProviderConfig(BaseModel):
     """Configuration for a data provider, such as Hugging Face.
 
-    Args:
+    Attributes:
         target (str): The fully qualified import path to the provider's
-            service class. Aliased from `target`.
+            service class.
         dataset_url (str): The base URL for accessing datasets from this provider.
         api_key (str | None): An optional API key for authentication, if required.
     """
@@ -254,7 +266,7 @@ class CulicidaeLabConfig(BaseModel):
     This model validates the entire configuration structure after it is loaded
     from YAML files, serving as the single source of truth for all settings.
 
-    Args:
+    Attributes:
         config_version (str): The version of the configuration schema. This is used
             to ensure compatibility with the library version.
         app_settings (AppSettings): Core application settings.

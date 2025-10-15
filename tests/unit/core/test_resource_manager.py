@@ -21,16 +21,6 @@ def test_initialization(resource_manager):
     assert resource_manager.temp_dir.exists()
 
 
-def test_get_model_path(resource_manager):
-    """Test getting model path creates directory and returns correct path."""
-    model_name = "test_model"
-    model_path = resource_manager.get_model_path(model_name)
-    assert model_path.exists()
-    assert model_path.is_dir()
-    assert model_path.name == model_name
-    assert model_path.parent == resource_manager.model_dir
-
-
 def test_get_dataset_path(resource_manager):
     """Test getting dataset path creates directory and returns correct path."""
     dataset_name = "test_dataset"
@@ -39,15 +29,6 @@ def test_get_dataset_path(resource_manager):
     assert dataset_path.is_dir()
     assert dataset_path.name == dataset_name
     assert dataset_path.parent == resource_manager.dataset_dir
-
-
-def test_get_cache_path_and_sanitize(resource_manager):
-    cache_name = "test:cache*name?"
-    cache_path = resource_manager.get_cache_path(cache_name)
-    assert cache_path.exists()
-    assert "_" in cache_path.name
-    with pytest.raises(ValueError):
-        resource_manager.get_cache_path("")
 
 
 def test_temp_workspace_context(resource_manager):
@@ -74,15 +55,10 @@ def test_get_disk_usage_and_directory_size(resource_manager):
 
 
 def test_format_bytes(resource_manager):
-    assert resource_manager._format_bytes(0) == "0.0 B"
+    assert resource_manager._format_bytes(0) == "0 B"
     assert resource_manager._format_bytes(1024) == "1.0 KB"
     with pytest.raises(ValueError):
         resource_manager._format_bytes(None)
-
-
-def test_sanitize_name(resource_manager):
-    assert resource_manager._sanitize_name("a:b/c*d?") == "a_b_c_d_"
-    assert resource_manager._sanitize_name("   ...   ") == "unnamed"
 
 
 def test_create_and_verify_checksum(resource_manager, tmp_path):

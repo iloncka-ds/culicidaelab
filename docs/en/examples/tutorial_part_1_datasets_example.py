@@ -1,3 +1,19 @@
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     custom_cell_magics: kql
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.11.2
+#   kernelspec:
+#     display_name: culicidaelab (3.11.6)
+#     language: python
+#     name: python3
+# ---
+
 # %%
 """
 # Managing and Loading Datasets
@@ -27,7 +43,7 @@ to interact with the datasets defined in the library's configuration.
 # Before you start, make sure you have `culicidaelab` and other necessary libraries installed with code:
 
 # %%
-# %pip install culicidaelab requests matplotlib numpy
+# # %pip install culicidaelab requests matplotlib numpy
 
 # %%
 # Standard library imports

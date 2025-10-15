@@ -4,11 +4,6 @@ This module defines the ModelWeightsManager, a class responsible for ensuring
 that the necessary model weight files are available locally. If the weights
 are not present, it coordinates with a provider service (e.g., HuggingFace)
 to download them.
-
-Attributes:
-    settings (Settings): The main settings object for the library.
-    provider_service (ProviderService): The service used to access and
-        download model weights from various providers.
 """
 
 from __future__ import annotations
@@ -26,40 +21,82 @@ class ModelWeightsManager(WeightsManagerProtocol):
     This class implements the WeightsManagerProtocol and serves as the bridge
     between a predictor and the provider service that can download model files.
 
-    Args:
+    Attributes:
         settings (Settings): The application's global settings object.
+        provider_service (ProviderService): The service used to access and
+            download model weights from various providers.
     """
 
     def __init__(self, settings: Settings):
-        """Initializes the ModelWeightsManager."""
+        """Initializes the ModelWeightsManager.
+
+        Args:
+            settings: The application's global settings object.
+        """
         self.settings = settings
         self.provider_service = ProviderService(settings)
 
-    def ensure_weights(self, model_type: str) -> Path:
-        """Ensures model weights exist locally, downloading them if needed.
+    def ensure_weights(self, predictor_type: str, backend_type: str) -> Path:
+        """Ensures weights for a given predictor and backend are available.
 
-        This method checks for the local existence of a model's weights. If they
-        are not found, it uses the provider service to download them based on
-        the configuration associated with the given model type.
+        This method checks if the model weights for the specified predictor and
+        backend type exist locally. If they don't, it downloads them using the
+        provider service.
+
+        Example:
+            >>> from culicidaelab.settings import Settings
+            >>> from culicidaelab.predictors import ModelWeightsManager
+            >>> # This example assumes you have a configured settings object
+            >>> settings = Settings()
+            >>> manager = ModelWeightsManager(settings)
+            >>> weights_path = manager.ensure_weights("classifier", "torch")
+            >>> print(weights_path.exists())
+            True
 
         Args:
-            model_type (str): The type of the model for which to ensure weights,
-                e.g., 'classifier', 'detector'.
+            predictor_type: The type of predictor (e.g., 'classifier').
+            backend_type: The type of backend (e.g., 'torch', 'onnx').
 
         Returns:
-            Path: The absolute, canonical path to the local model weights file.
+            The absolute path to the local model weights file.
 
         Raises:
-            RuntimeError: If the weights cannot be downloaded or if the
-                configuration for the provider is missing or invalid.
+            RuntimeError: If the weights cannot be resolved or downloaded.
+            ValueError: If the configuration for the weights is missing
+                'repository_id' or 'filename'.
         """
-        predictor_config = None
+
         try:
-            predictor_config = self.settings.get_config(f"predictors.{model_type}")
-            provider = self.provider_service.get_provider(predictor_config.provider_name)
-            return provider.download_model_weights(model_type)
+            local_path = self.settings.construct_weights_path(
+                predictor_type=predictor_type,
+                backend=backend_type,
+            )
+
+            if local_path.exists():
+                return local_path
+
+            predictor_config = self.settings.get_config(f"predictors.{predictor_type}")
+            # Construct the config key to get the specific weights info
+            weights_config_key = f"predictors.{predictor_type}.weights.{backend_type}"
+            weights_config = self.settings.get_config(weights_config_key)
+
+            # The repository can be overridden at the weights level
+            repo_id = predictor_config.repository_id
+            filename = weights_config.filename
+
+            if not all([repo_id, filename]):
+                raise ValueError(f"Missing 'repository_id' or 'filename' for {weights_config_key}")
+
+            provider_name = predictor_config.provider_name or "huggingface"  # Default provider
+            provider = self.provider_service.get_provider(provider_name)
+
+            # Assuming provider has a method to download a specific file
+            return provider.download_model_weights(
+                repo_id=repo_id,
+                filename=filename,
+                local_dir=local_path.parent,
+            )
+
         except Exception as e:
-            error_msg = f"Failed to download weights for '{model_type}': {str(e)}"
-            if predictor_config:
-                error_msg += f" with predictor config {predictor_config}"
+            error_msg = f"Failed to resolve weights for '{predictor_type}' with backend '{backend_type}': {e}"
             raise RuntimeError(error_msg) from e

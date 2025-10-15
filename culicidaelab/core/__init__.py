@@ -12,6 +12,7 @@ Attributes:
 from culicidaelab.core.base_predictor import BasePredictor
 from culicidaelab.core.base_provider import BaseProvider
 from culicidaelab.core.weights_manager_protocol import WeightsManagerProtocol
+from culicidaelab.core.base_inference_backend import BaseInferenceBackend
 
 # Configuration
 from culicidaelab.core.config_manager import ConfigManager
@@ -23,22 +24,31 @@ from culicidaelab.core.config_models import (
     SpeciesModel,
 )
 from culicidaelab.core.species_config import SpeciesConfig
+from culicidaelab.core.prediction_models import (
+    BoundingBox,
+    Detection,
+    DetectionPrediction,
+    SegmentationPrediction,
+    Classification,
+    ClassificationPrediction,
+)
 
 # Services and Managers
 from culicidaelab.core.provider_service import ProviderService
-from culicidaelab.core.resource_manager import ResourceManager, ResourceManagerError
+from culicidaelab.core.resource_manager import ResourceManager
 
 # Settings Facade
 from culicidaelab.core.settings import Settings, get_settings
 
 # Utilities
-from culicidaelab.core.utils import download_file, str_to_bgr
+from culicidaelab.core.utils import download_file
 
 __all__ = [
     # Base classes and protocols
     "BasePredictor",
     "BaseProvider",
     "WeightsManagerProtocol",
+    "BaseInferenceBackend",
     # Configuration
     "ConfigManager",
     "CulicidaeLabConfig",
@@ -47,14 +57,19 @@ __all__ = [
     "ProviderConfig",
     "SpeciesModel",
     "SpeciesConfig",
+    # Prediction Models
+    "BoundingBox",
+    "Detection",
+    "DetectionPrediction",
+    "SegmentationPrediction",
+    "Classification",
+    "ClassificationPrediction",
     # Services and Managers
     "ProviderService",
     "ResourceManager",
-    "ResourceManagerError",
     # Settings Facade
     "Settings",
     "get_settings",
     # Utilities
     "download_file",
-    "str_to_bgr",
 ]

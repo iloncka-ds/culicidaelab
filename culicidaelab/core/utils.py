@@ -9,7 +9,10 @@ from pathlib import Path
 from collections.abc import Callable
 
 import requests
+
+import re
 import tqdm
+import uuid
 
 
 def download_file(
@@ -21,23 +24,52 @@ def download_file(
     timeout: int = 30,
     desc: str | None = None,
 ) -> Path:
-    """Downloads a file from a URL with progress tracking.
+    """
+    Downloads a file from the specified URL showing a progress bar and optionally calling
+    a progress callback function. Supports both direct destination paths and default
+    download directories.
 
     Args:
-        url (str): The URL of the file to download.
-        destination (str | Path, optional): The specific destination path for the file.
-        downloads_dir (str | Path, optional): Default directory for downloads.
-        progress_callback (Callable, optional): A custom progress callback.
-        chunk_size (int): The size of chunks to download in bytes.
-        timeout (int): The timeout for the download request in seconds.
-        desc (str, optional): A description for the progress bar.
+        url (str): The URL of the file to download. Must start with 'http://' or 'https://'.
+        destination (Union[str, Path, None], optional): The complete file path where the
+            downloaded file should be saved. If None, the file will be saved in downloads_dir
+            with its original filename. Defaults to None.
+        downloads_dir (Union[str, Path, None], optional): The directory to save the file in
+            when no specific destination is provided. If None, uses current working directory.
+            Defaults to None.
+        progress_callback (Optional[Callable[[int, int], None]], optional): A function to call
+            with progress updates. Takes two parameters: bytes downloaded and total bytes.
+            Defaults to None.
+        chunk_size (int, optional): Size of chunks to download in bytes. Larger chunks use
+            more memory but may download faster. Defaults to 8192.
+        timeout (int, optional): Number of seconds to wait for server response before timing
+            out. Defaults to 30.
+        desc (Optional[str], optional): Custom description for the progress bar. If None,
+            uses the filename. Defaults to None.
 
     Returns:
-        Path: The path to the downloaded file.
+        Path: Path object pointing to the downloaded file.
 
     Raises:
-        ValueError: If the URL is invalid.
-        RuntimeError: If the download or file write fails.
+        ValueError: If the URL is invalid or doesn't start with http(s).
+        RuntimeError: If the download fails due to network issues or if writing the file
+            fails due to permission or disk space issues.
+
+    Example:
+        >>> from pathlib import Path
+        >>> # Basic download to current directory
+        >>> path = download_file('https://example.com/data.csv')
+        >>> print(path)
+        PosixPath('data.csv')
+
+        >>> # Download with custom progress tracking
+        >>> def progress(current, total):
+        ...     print(f'Downloaded {current}/{total} bytes')
+        >>> path = download_file(
+        ...     'https://example.com/large_file.zip',
+        ...     destination='downloads/myfile.zip',
+        ...     progress_callback=progress
+        ... )
     """
     if not url or not url.startswith(("http://", "https://")):
         raise ValueError(f"Invalid URL: {url}")
@@ -81,25 +113,41 @@ def download_file(
         raise RuntimeError(f"Failed to write file to {dest_path}: {e}") from e
 
 
-def str_to_bgr(str_color: str) -> tuple[int, int, int]:
-    """Converts a hexadecimal color string to a BGR tuple.
+def create_safe_path(name: str) -> str:
+    """
+    Sanitize a string to create a safe directory or file name.
+
+    Converts a string into a valid filename by replacing Windows/Unix reserved characters
+    with underscores and removing potentially problematic leading/trailing characters.
+    If the resulting string is empty, returns a UUID.
 
     Args:
-        str_color (str): A hex color string in '#RRGGBB' or 'RRGGBB' format.
+        name (str): The string to be converted into a safe filename. If not a string,
+            it will be converted to one.
 
     Returns:
-        tuple[int, int, int]: A (B, G, R) tuple of integers.
+        str: A sanitized string safe for use as a filename or directory name.
+            - Reserved characters (<>:\"/\\|?*) are replaced with underscores
+            - Leading/trailing dots and whitespace are removed
+            - If result would be empty, returns a UUID
 
-    Raises:
-        ValueError: If the string has an invalid format or invalid characters.
+    Example:
+        >>> # Basic filename sanitization
+        >>> create_safe_path('my:file*.txt')
+        'my_file_.txt'
+
+        >>> # Handling special characters and spaces
+        >>> create_safe_path('data/file (1).csv')
+        'data_file (1).csv'
+
+        >>> # Empty or invalid input
+        >>> path = create_safe_path('')  # Returns a UUID
+        >>> print(len(path))
+        36
     """
-    hex_color = str_color.lstrip("#")
-    if len(hex_color) != 6:
-        raise ValueError(f"Invalid hex color string format: '{str_color}'.")
-    try:
-        r = int(hex_color[0:2], 16)
-        g = int(hex_color[2:4], 16)
-        b = int(hex_color[4:6], 16)
-        return (b, g, r)
-    except ValueError:
-        raise ValueError(f"Invalid characters in hex string: '{str_color}'.")
+
+    if not isinstance(name, str):
+        name = str(name)
+
+    sanitized = re.sub(r'[<>:"/\\|?*]', "_", name).strip(". ")
+    return sanitized or str(uuid.uuid4())

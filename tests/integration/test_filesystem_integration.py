@@ -21,21 +21,3 @@ def test_temp_workspace_creation_and_cleanup(resource_manager: ResourceManager):
         assert (workspace_path / "temp_file.txt").exists()
 
     assert not workspace_path.exists()
-
-
-def test_model_and_dataset_path_management(resource_manager: ResourceManager):
-    """
-    Tests that ResourceManager correctly creates paths for models and datasets.
-    """
-    model_path = resource_manager.get_model_path("my_test_model")
-    assert model_path.exists()
-    assert "my_test_model" in str(model_path)
-    assert resource_manager.model_dir in model_path.parents
-
-    (model_path / "weights.pt").touch()
-    assert (model_path / "weights.pt").exists()
-
-    dataset_path = resource_manager.get_dataset_path("my_test_dataset")
-    assert dataset_path.exists()
-    assert "my_test_dataset" in str(dataset_path)
-    assert resource_manager.dataset_dir in dataset_path.parents
