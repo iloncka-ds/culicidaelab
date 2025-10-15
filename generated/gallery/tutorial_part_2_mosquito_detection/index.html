@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="ru" class="no-js">
+<html lang="en" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -12,7 +12,7 @@
         <meta name="author" content="Ilona Kovaleva">
       
       
-        <link rel="canonical" href="https://iloncka-ds.github.io/culicidaelab/ru/generated/gallery/tutorial_part_2_mosquito_detection/">
+        <link rel="canonical" href="https://iloncka-ds.github.io/culicidaelab/en/generated/gallery/tutorial_part_2_mosquito_detection/">
       
       
         <link rel="prev" href="../tutorial_part_1_datasets_example/">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Руководство по детекции комаров - CulicidaeLab</title>
+        <title>Mosquito Detection Tutorial - CulicidaeLab</title>
       
     
     
@@ -88,8 +88,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
-          Перейти к содержанию
+        <a href="#mosquito-detection-tutorial" class="md-skip">
+          Skip to content
         </a>
       
     </div>
@@ -103,7 +103,7 @@
   
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Верхний колонтитул">
+  <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../../.." title="CulicidaeLab" class="md-header__button md-logo" aria-label="CulicidaeLab" data-md-component="logo">
       
   
@@ -124,7 +124,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Руководство по детекции комаров
+              Mosquito Detection Tutorial
             
           </span>
         </div>
@@ -164,7 +164,7 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="Выберите язык">
+    <button class="md-header__button md-icon" aria-label="Select language">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
@@ -196,16 +196,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Поиск" placeholder="Поиск" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="Поиск">
+      <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" title="Очистить" aria-label="Очистить" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -218,7 +218,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            Инициализация поиска
+            Initializing search
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -229,7 +229,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/iloncka-ds/culicidaelab" title="Перейти к репозиторию" class="md-source" data-md-component="source">
+        <a href="https://github.com/iloncka-ds/culicidaelab" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
@@ -244,7 +244,7 @@
   
     
       
-<nav class="md-tabs" aria-label="Вкладки" data-md-component="tabs">
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
   <div class="md-grid">
     <ul class="md-tabs__list">
       
@@ -258,7 +258,7 @@
   
     
   
-  ВВЕДЕНИЕ
+  INTRODUCTION
 
       </a>
     </li>
@@ -275,7 +275,7 @@
   
     
   
-  УСТАНОВКА
+  INSTALLATION
 
       </a>
     </li>
@@ -292,7 +292,7 @@
   
     
   
-  БЫСТРЫЙ СТАРТ
+  QUICK START
 
       </a>
     </li>
@@ -309,7 +309,7 @@
   
     
   
-  РУКОВОДСТВО ПОЛЬЗОВАТЕЛЯ
+  USER MANUAL
 
       </a>
     </li>
@@ -336,7 +336,7 @@
         <a href="../" class="md-tabs__link">
           
   
-  ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ
+  USAGE EXAMPLES
 
         </a>
       </li>
@@ -357,7 +357,7 @@
         <a href="../../../dev_docs/architecture/" class="md-tabs__link">
           
   
-  РУКОВОДСТВО РАЗРАБОТЧИКА
+  DEVELOPER GUIDE
 
         </a>
       </li>
@@ -375,7 +375,7 @@
         <a href="../../../api_docs/core/" class="md-tabs__link">
           
   
-  API ДОКУМЕНТАЦИЯ
+  API REFERENCE
 
         </a>
       </li>
@@ -411,7 +411,7 @@
 
   
 
-<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Навигация" data-md-level="0">
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../../.." title="CulicidaeLab" class="md-nav__button md-logo" aria-label="CulicidaeLab" data-md-component="logo">
       
@@ -423,7 +423,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/iloncka-ds/culicidaelab" title="Перейти к репозиторию" class="md-source" data-md-component="source">
+      <a href="https://github.com/iloncka-ds/culicidaelab" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
@@ -447,7 +447,7 @@
         
   
   <span class="md-ellipsis">
-    ВВЕДЕНИЕ
+    INTRODUCTION
   </span>
   
 
@@ -467,7 +467,7 @@
         
   
   <span class="md-ellipsis">
-    УСТАНОВКА
+    INSTALLATION
   </span>
   
 
@@ -487,7 +487,7 @@
         
   
   <span class="md-ellipsis">
-    БЫСТРЫЙ СТАРТ
+    QUICK START
   </span>
   
 
@@ -507,7 +507,7 @@
         
   
   <span class="md-ellipsis">
-    РУКОВОДСТВО ПОЛЬЗОВАТЕЛЯ
+    USER MANUAL
   </span>
   
 
@@ -547,7 +547,7 @@
             
   
   <span class="md-ellipsis">
-    ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ
+    USAGE EXAMPLES
   </span>
   
 
@@ -557,7 +557,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ
+            USAGE EXAMPLES
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -592,7 +592,7 @@
             
   
   <span class="md-ellipsis">
-    Примеры
+    Tutorials
   </span>
   
 
@@ -602,7 +602,7 @@
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_1_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5_1">
             <span class="md-nav__icon md-icon"></span>
-            Примеры
+            Tutorials
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -617,7 +617,7 @@
         
   
   <span class="md-ellipsis">
-    Примеры
+    Tutorials
   </span>
   
 
@@ -638,7 +638,7 @@
         
   
   <span class="md-ellipsis">
-    Использование модуля `settings`
+    Understanding and Using the Settings
   </span>
   
 
@@ -659,7 +659,7 @@
         
   
   <span class="md-ellipsis">
-    Управление и загрузка наборов данных
+    Managing and Loading Datasets
   </span>
   
 
@@ -685,99 +685,15 @@
         
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Руководство по детекции комаров
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Руководство по детекции комаров
+    Mosquito Detection Tutorial
   </span>
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Содержание">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Содержание
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Инициализация
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Детекция комаров на изображении из набора данных
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-ground-truth" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Оценка предсказания с использованием истинных данных (Ground Truth)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Выполнение пакетных предсказаний на изображениях из набора данных
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Оценка пакета предсказаний с использованием истинных данных из набора данных
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Визуализация истинных данных в сравнении с предсказаниями
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -795,7 +711,7 @@
         
   
   <span class="md-ellipsis">
-    Руководство по сегментации комаров
+    Mosquito Segmentation Tutorial
   </span>
   
 
@@ -816,7 +732,28 @@
         
   
   <span class="md-ellipsis">
-    Классификация видов комаров
+    Classifying Mosquito Species
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_part_5_serve_module/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Using the Serve Module for Production Inference
   </span>
   
 
@@ -869,7 +806,7 @@
             
   
   <span class="md-ellipsis">
-    РУКОВОДСТВО РАЗРАБОТЧИКА
+    DEVELOPER GUIDE
   </span>
   
 
@@ -879,7 +816,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
-            РУКОВОДСТВО РАЗРАБОТЧИКА
+            DEVELOPER GUIDE
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -894,7 +831,7 @@
         
   
   <span class="md-ellipsis">
-    Руководство разработчика
+    Developer guide
   </span>
   
 
@@ -915,7 +852,7 @@
         
   
   <span class="md-ellipsis">
-    Инструкция по внесению изменений
+    Contributing
   </span>
   
 
@@ -960,7 +897,7 @@
             
   
   <span class="md-ellipsis">
-    API ДОКУМЕНТАЦИЯ
+    API REFERENCE
   </span>
   
 
@@ -970,7 +907,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
-            API ДОКУМЕНТАЦИЯ
+            API REFERENCE
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -1087,7 +1024,7 @@
  DO NOT EDIT.
  THIS FILE WAS AUTOMATICALLY GENERATED BY mkdocs-gallery.
  TO MAKE CHANGES, EDIT THE SOURCE PYTHON FILE:
- "docs/ru/examples/tutorial_part_2_mosquito_detection.py"
+ "docs/en/examples/tutorial_part_2_mosquito_detection.py"
  LINE NUMBERS ARE GIVEN BELOW.
 -->
 
@@ -1096,196 +1033,194 @@
 <p>Click <a href="#download_links">here</a>
 to download the full example code</p>
 </div>
-<h1 id="_1">Руководство по детекции комаров</h1>
-<p>Это руководство показывает, как использовать <code>MosquitoDetector</code> из библиотеки CulicidaeLab
-для выполнения детекции объектов на изображениях. Мы рассмотрим:</p>
+<h1 id="mosquito-detection-tutorial">Mosquito Detection Tutorial</h1>
+<p>This tutorial shows how to use the <code>MosquitoDetector</code> from the CulicidaeLab
+library to perform object detection on images. We will cover:</p>
 <ul>
-<li>Загрузку модели детектора</li>
-<li>Подготовку изображения из набора данных</li>
-<li>Запуск модели для получения ограничивающих рамок</li>
-<li>Визуализацию результатов</li>
-<li>Оценку точности предсказаний</li>
-<li>Выполнение предсказаний на пакете изображений</li>
+<li>Loading the detector model</li>
+<li>Preparing an image from the dataset</li>
+<li>Running the model to get bounding boxes</li>
+<li>Visualizing the results</li>
+<li>Evaluating prediction accuracy</li>
+<li>Running predictions on a batch of images</li>
 </ul>
-<!-- GENERATED FROM PYTHON SOURCE LINES 18-20 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 34-36 -->
 
-<p>Установите библиотеку <code>culicidaelab</code>, если она еще не установлена
-!pip install -q culicidaelab</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 22-27 -->
+<p>Install the <code>culicidaelab</code> library if not already installed</p>
+<h1 id="pip-install-q-culicidaelab">!pip install -q culicidaelab</h1>
+<!-- GENERATED FROM PYTHON SOURCE LINES 38-43 -->
 
-<h2 id="1">1. Инициализация</h2>
-<p>Сначала мы получим глобальный экземпляр <code>settings</code> и используем его для инициализации нашего <code>MosquitoDetector</code>.
-Установив <code>load_model=True</code>, мы указываем детектору сразу же загрузить веса модели в память.
-Если файл модели не существует локально, он будет загружен автоматически.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 29-50 -->
+<h2 id="1-initialization">1. Initialization</h2>
+<p>First, we'll get the global <code>settings</code> instance and use it to initialize our <code>MosquitoDetector</code>.
+By setting <code>load_model=True</code>, we tell the detector to load the model weights into memory immediately.
+If the model file doesn't exist locally, it will be downloaded automatically.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 45-67 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageDraw</span><span class="p">,</span> <span class="n">ImageFont</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">culicidaelab</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_settings</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">culicidaelab</span><span class="w"> </span><span class="kn">import</span> <span class="n">MosquitoDetector</span><span class="p">,</span> <span class="n">DatasetsManager</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># Получаем экземпляр настроек</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># Get settings instance</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
 <a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># Инициализируем менеджер наборов данных</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># Initialize the datasets manager</span>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">manager</span> <span class="o">=</span> <span class="n">DatasetsManager</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="c1"># Загружаем набор данных для детекции</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="c1"># Load detection dataset</span>
 <a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="n">detect_data</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;detection&quot;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train[:20]&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="c1"># Создаем экземпляр детектора и загружаем модель</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Инициализация MosquitoDetector и загрузка модели...&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="c1"># Instantiate the detector and load the model</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Initializing MosquitoDetector and loading model...&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="n">detector</span> <span class="o">=</span> <span class="n">MosquitoDetector</span><span class="p">(</span><span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">,</span> <span class="n">load_model</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Модель успешно загружена.&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model loaded successfully.&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Cache<span class="w"> </span>hit<span class="w"> </span><span class="k">for</span><span class="w"> </span>split<span class="w"> </span>config:<span class="w"> </span>train<span class="o">[</span>:20<span class="o">]</span><span class="w"> </span><span class="o">(</span>key:<span class="w"> </span>9e9940e1c673b6f0<span class="o">)</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>Инициализация<span class="w"> </span>MosquitoDetector<span class="w"> </span>и<span class="w"> </span>загрузка<span class="w"> </span>модели...
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Weights<span class="w"> </span>file<span class="w"> </span>found<span class="w"> </span>at:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\m</span>odels<span class="se">\w</span>eights<span class="se">\d</span>etection<span class="se">\c</span>ulico-net-det-v1-nano.pt
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>Модель<span class="w"> </span>успешно<span class="w"> </span>загружена.
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Cache<span class="w"> </span>hit<span class="w"> </span><span class="k">for</span><span class="w"> </span>split<span class="w"> </span>config:<span class="w"> </span>train<span class="o">[</span>:20<span class="o">]</span><span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\d</span>atasets<span class="se">\m</span>osquito_detection<span class="se">\9</span>e9940e1c673b6f0
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>Initializing<span class="w"> </span>MosquitoDetector<span class="w"> </span>and<span class="w"> </span>loading<span class="w"> </span>model...
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Model<span class="w"> </span>loaded<span class="w"> </span>successfully.
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 51-54 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 68-71 -->
 
-<h2 id="2">2. Детекция комаров на изображении из набора данных</h2>
-<p>Теперь давайте используем изображение из набора данных для детекции и запустим на нем детектор.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 56-57 -->
+<h2 id="2-detecting-mosquitoes-in-a-dataset-image">2. Detecting Mosquitoes in a Dataset Image</h2>
+<p>Now let's use an image from the detection dataset and run the detector on it.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 73-74 -->
 
-<p>Изучаем образец для детекции</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 57-90 -->
+<p>Inspect a detection sample</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 74-107 -->
 
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">detect_sample</span> <span class="o">=</span> <span class="n">detect_data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">detect_image</span> <span class="o">=</span> <span class="n">detect_sample</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Получаем истинные объекты (ground truth)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Get ground truth objects</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">objects</span> <span class="o">=</span> <span class="n">detect_sample</span><span class="p">[</span><span class="s2">&quot;objects&quot;</span><span class="p">]</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;На этом изображении найдено </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">objects</span><span class="p">[</span><span class="s1">&#39;bboxes&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> объект(ов).&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">objects</span><span class="p">[</span><span class="s1">&#39;bboxes&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> object(s) in this image.&quot;</span><span class="p">)</span>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># Метод `predict` возвращает список обнаружений.</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Каждое обнаружение — это кортеж: (x1, y1, x2, y2, оценка_уверенности)</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">detections</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">detect_image</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># The `predict` method returns a list of detections.</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Each detection is a tuple: (x1, y1, x2, y2, confidence_score)</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">result</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">detect_image</span><span class="p">)</span>
 <a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Метод `visualize` рисует ограничивающие рамки на изображении для удобной проверки.</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">annotated_image</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">detect_image</span><span class="p">,</span> <span class="n">detections</span><span class="p">)</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># The `visualize` method draws the bounding boxes onto the image for easy inspection.</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">annotated_image</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">visualize</span><span class="p">(</span><span class="n">detect_image</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
 <a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="c1"># Отображаем результат</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="c1"># Display the result</span>
 <a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
 <a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">annotated_image</span><span class="p">)</span>
 <a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Обнаруженные комары&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Detected Mosquitoes&quot;</span><span class="p">)</span>
 <a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 <a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>
-<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="c1"># Выводим численные результаты детекции</span>
-<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Результаты детекции:&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="k">if</span> <span class="n">detections</span><span class="p">:</span>
-<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detections</span><span class="p">):</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="c1"># Print the numerical detection results</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Detection Results:&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">det</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">detections</span><span class="p">):</span>
 <a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>        <span class="nb">print</span><span class="p">(</span>
-<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>            <span class="sa">f</span><span class="s2">&quot;  - Комар </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="se">\</span>
-<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="s2">            Уверенность = </span><span class="si">{</span><span class="n">conf</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
-<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="s2">            Рамка = (x1=</span><span class="si">{</span><span class="n">x1</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, y1=</span><span class="si">{</span><span class="n">y1</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, x2=</span><span class="si">{</span><span class="n">x2</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, y2=</span><span class="si">{</span><span class="n">y2</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>            <span class="sa">f</span><span class="s2">&quot;  - Mosquito </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="se">\</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="s2">            Confidence = </span><span class="si">{</span><span class="n">det</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="s2">            Box = (x1=</span><span class="si">{</span><span class="n">det</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">x1</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, y1=</span><span class="si">{</span><span class="n">det</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">y1</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, x2=</span><span class="si">{</span><span class="n">det</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">x2</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, y2=</span><span class="si">{</span><span class="n">det</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">y2</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
 <a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>        <span class="p">)</span>
 <a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Комары не обнаружены.&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  No mosquitoes detected.&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="Обнаруженные комары" class="mkd-glr-single-img" src="../images/mkd_glr_tutorial_part_2_mosquito_detection_001.png" srcset="../images/mkd_glr_tutorial_part_2_mosquito_detection_001.png, ../images/mkd_glr_tutorial_part_2_mosquito_detection_001_2_0x.png 2.0x" /></p>
+<p><img alt="Detected Mosquitoes" class="mkd-glr-single-img" src="../images/mkd_glr_tutorial_part_2_mosquito_detection_001.png" srcset="../images/mkd_glr_tutorial_part_2_mosquito_detection_001.png, ../images/mkd_glr_tutorial_part_2_mosquito_detection_001_2_0x.png 2.0x" /></p>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>На<span class="w"> </span>этом<span class="w"> </span>изображении<span class="w"> </span>найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>объект<span class="o">(</span>ов<span class="o">)</span>.
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/ru/examples/tutorial_part_2_mosquito_detection.py:76:<span class="w"> </span>UserWarning:<span class="w"> </span>FigureCanvasAgg<span class="w"> </span>is<span class="w"> </span>non-interactive,<span class="w"> </span>and<span class="w"> </span>thus<span class="w"> </span>cannot<span class="w"> </span>be<span class="w"> </span>shown
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>object<span class="o">(</span>s<span class="o">)</span><span class="w"> </span><span class="k">in</span><span class="w"> </span>this<span class="w"> </span>image.
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/en/examples/tutorial_part_2_mosquito_detection.py:93:<span class="w"> </span>UserWarning:<span class="w"> </span>FigureCanvasAgg<span class="w"> </span>is<span class="w"> </span>non-interactive,<span class="w"> </span>and<span class="w"> </span>thus<span class="w"> </span>cannot<span class="w"> </span>be<span class="w"> </span>shown
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>plt.show<span class="o">()</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>Результаты<span class="w"> </span>детекции:
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span>-<span class="w"> </span>Комар<span class="w"> </span><span class="m">1</span>:<span class="w">             </span><span class="nv">Уверенность</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>.33,<span class="w">             </span><span class="nv">Рамка</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="nv">x1</span><span class="o">=</span><span class="m">51</span>.5,<span class="w"> </span><span class="nv">y1</span><span class="o">=</span><span class="m">135</span>.7,<span class="w"> </span><span class="nv">x2</span><span class="o">=</span><span class="m">851</span>.1,<span class="w"> </span><span class="nv">y2</span><span class="o">=</span><span class="m">667</span>.0<span class="o">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>Detection<span class="w"> </span>Results:
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span>-<span class="w"> </span>Mosquito<span class="w"> </span><span class="m">1</span>:<span class="w">             </span><span class="nv">Confidence</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>.44,<span class="w">             </span><span class="nv">Box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span><span class="nv">x1</span><span class="o">=</span><span class="m">73</span>.8,<span class="w"> </span><span class="nv">y1</span><span class="o">=</span><span class="m">141</span>.9,<span class="w"> </span><span class="nv">x2</span><span class="o">=</span><span class="m">820</span>.1,<span class="w"> </span><span class="nv">y2</span><span class="o">=</span><span class="m">511</span>.1<span class="o">)</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 91-97 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 108-114 -->
 
-<h2 id="3-ground-truth">3. Оценка предсказания с использованием истинных данных (Ground Truth)</h2>
-<p>Метод <code>evaluate</code> позволяет сравнить предсказание с истинными данными.
-Это необходимо для оценки точности модели. Метод возвращает несколько метрик, которые является
-стандартом для задач детекции объектов.
-Теперь давайте сравним результаты модели с фактическими истинными данными из набора данных.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 99-100 -->
+<h2 id="3-evaluating-a-prediction-with-ground-truth">3. Evaluating a Prediction with Ground Truth</h2>
+<p>The <code>evaluate</code> method allows you to compare a prediction against a ground truth.
+This is useful for measuring the model's accuracy. The method returns several metrics,
+which are a standard for object detection.
+Now let's evaluate the prediction against the actual ground truth from the dataset.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 116-117 -->
 
-<p>Извлекаем истинные рамки из образца набора данных</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 100-110 -->
+<p>Extract ground truth boxes from the dataset sample</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 117-127 -->
 
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">ground_truth_boxes</span> <span class="o">=</span> <span class="p">[]</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">[</span><span class="s2">&quot;bboxes&quot;</span><span class="p">]:</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="n">bbox</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">ground_truth_boxes</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">))</span>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1"># Оцениваем, используя истинные данные из набора данных</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Оценка с использованием истинных данных из набора данных ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">evaluation</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">ground_truth</span><span class="o">=</span><span class="n">ground_truth_boxes</span><span class="p">,</span> <span class="n">prediction</span><span class="o">=</span><span class="n">detections</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1"># Evaluate using the ground truth from the dataset</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Evaluating with dataset ground truth ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">evaluation</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">ground_truth</span><span class="o">=</span><span class="n">ground_truth_boxes</span><span class="p">,</span> <span class="n">prediction</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
 <a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">evaluation</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>---<span class="w"> </span>Оценка<span class="w"> </span>с<span class="w"> </span>использованием<span class="w"> </span>истинных<span class="w"> </span>данных<span class="w"> </span>из<span class="w"> </span>набора<span class="w"> </span>данных<span class="w"> </span>---
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="o">{</span><span class="s1">&#39;precision&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;recall&#39;</span>:<span class="w"> </span><span class="m">1</span>.0,<span class="w"> </span><span class="s1">&#39;f1&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;ap&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;mean_iou&#39;</span>:<span class="w"> </span><span class="m">0</span>.6381935477256775<span class="o">}</span>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>---<span class="w"> </span>Evaluating<span class="w"> </span>with<span class="w"> </span>dataset<span class="w"> </span>ground<span class="w"> </span>truth<span class="w"> </span>---
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="o">{</span><span class="s1">&#39;precision&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;recall&#39;</span>:<span class="w"> </span><span class="m">1</span>.0,<span class="w"> </span><span class="s1">&#39;f1&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;ap&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;mean_iou&#39;</span>:<span class="w"> </span><span class="m">0</span>.6156440556082946<span class="o">}</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 111-113 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 128-129 -->
 
-<p>Можно такжк получить необходимые метрики, передав необработанное изображение. Детектор будет вызван
-внутри метода <code>evaluate</code>.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 113-117 -->
+<p>You can let the method run prediction internally by passing the raw image</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 129-133 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Оценка напрямую из изображения ---&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Evaluating directly from an image ---&quot;</span><span class="p">)</span>
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">evaluation_from_raw</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">ground_truth</span><span class="o">=</span><span class="n">ground_truth_boxes</span><span class="p">,</span> <span class="n">input_data</span><span class="o">=</span><span class="n">detect_image</span><span class="p">)</span>
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">evaluation_from_raw</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>---<span class="w"> </span>Оценка<span class="w"> </span>напрямую<span class="w"> </span>из<span class="w"> </span>изображения<span class="w"> </span>---
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="o">{</span><span class="s1">&#39;precision&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;recall&#39;</span>:<span class="w"> </span><span class="m">1</span>.0,<span class="w"> </span><span class="s1">&#39;f1&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;ap&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;mean_iou&#39;</span>:<span class="w"> </span><span class="m">0</span>.6381935477256775<span class="o">}</span>
-</code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 118-121 -->
-
-<h2 id="4">4. Выполнение пакетных предсказаний на изображениях из набора данных</h2>
-<p>Для эффективности вы можете обрабатывать несколько изображений одновременно, используя <code>predict_batch</code>.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 123-124 -->
-
-<p>Извлекаем изображения из набора данных для детекции</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 124-133 -->
-
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">image_batch</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">detect_data</span><span class="p">]</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="c1"># Запускаем пакетное предсказание</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">detections_batch</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict_batch</span><span class="p">(</span><span class="n">image_batch</span><span class="p">)</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Пакетное предсказание завершено.&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dets</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detections_batch</span><span class="p">):</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - Изображение </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: Найдено </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dets</span><span class="p">)</span><span class="si">}</span><span class="s2"> обнаружений.&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Пакетное<span class="w"> </span>предсказание<span class="w"> </span>завершено.
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">1</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">2</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">3</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">4</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">5</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">6</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">7</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">8</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">9</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">10</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">11</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">12</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">13</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">14</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">15</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">16</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">17</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">18</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">19</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
-<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">  </span>-<span class="w"> </span>Изображение<span class="w"> </span><span class="m">20</span>:<span class="w"> </span>Найдено<span class="w"> </span><span class="m">1</span><span class="w"> </span>обнаружений.
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>---<span class="w"> </span>Evaluating<span class="w"> </span>directly<span class="w"> </span>from<span class="w"> </span>an<span class="w"> </span>image<span class="w"> </span>---
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="o">{</span><span class="s1">&#39;precision&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;recall&#39;</span>:<span class="w"> </span><span class="m">1</span>.0,<span class="w"> </span><span class="s1">&#39;f1&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;ap&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;mean_iou&#39;</span>:<span class="w"> </span><span class="m">0</span>.6156440556082946<span class="o">}</span>
 </code></pre></div>
 <!-- GENERATED FROM PYTHON SOURCE LINES 134-137 -->
 
-<h2 id="5">5. Оценка пакета предсказаний с использованием истинных данных из набора данных</h2>
-<p>Аналогично, <code>evaluate_batch</code> можно использовать для получения агрегированных метрик по всему набору данных.</p>
+<h2 id="4-running-batch-predictions-on-dataset-images">4. Running Batch Predictions on Dataset Images</h2>
+<p>For efficiency, you can process multiple images at once using <code>predict_batch</code>.</p>
 <!-- GENERATED FROM PYTHON SOURCE LINES 139-140 -->
 
-<p>Извлекаем истинные данные из набора данных для детекции</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 140-159 -->
+<p>Extract images from the detection dataset</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 140-149 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">image_batch</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">detect_data</span><span class="p">]</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="c1"># Run batch prediction</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">detections_batch</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict_batch</span><span class="p">(</span><span class="n">image_batch</span><span class="p">)</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Batch prediction complete.&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dets</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detections_batch</span><span class="p">):</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - Image </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">: Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dets</span><span class="o">.</span><span class="n">detections</span><span class="p">)</span><span class="si">}</span><span class="s2"> detection(s).&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p class="mkd-glr-script-out">Out:</p>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Batch<span class="w"> </span>prediction<span class="w"> </span>complete.
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">1</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">2</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">3</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">4</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">5</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">6</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">7</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">8</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">9</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">10</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">11</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">12</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">13</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">14</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">15</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">16</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">17</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">18</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">19</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">  </span>-<span class="w"> </span>Image<span class="w"> </span><span class="m">20</span>:<span class="w"> </span>Found<span class="w"> </span><span class="m">1</span><span class="w"> </span>detection<span class="o">(</span>s<span class="o">)</span>.
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 150-153 -->
+
+<h2 id="5-evaluating-a-batch-of-predictions-with-dataset-ground-truth">5. Evaluating a Batch of Predictions with Dataset Ground Truth</h2>
+<p>Similarly, <code>evaluate_batch</code> can be used to get aggregated metrics over the entire dataset.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 155-156 -->
+
+<p>Extract ground truth from the detection dataset</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 156-175 -->
 
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">ground_truth_batch</span> <span class="o">=</span> <span class="p">[]</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">detect_data</span><span class="p">:</span>
@@ -1295,79 +1230,142 @@ to download the full example code</p>
 <a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="n">boxes</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">))</span>
 <a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="n">ground_truth_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>
 <a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="c1"># Вызываем evaluate_batch с истинными данными из набора данных</span>
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Оценка всего пакета с использованием истинных данных из набора данных ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="c1"># Call evaluate_batch with dataset ground truth</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Evaluating the entire batch with dataset ground truth ---&quot;</span><span class="p">)</span>
 <a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="n">batch_evaluation</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">evaluate_batch</span><span class="p">(</span>
 <a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>    <span class="n">ground_truth_batch</span><span class="o">=</span><span class="n">ground_truth_batch</span><span class="p">,</span>
 <a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    <span class="n">predictions_batch</span><span class="o">=</span><span class="n">detections_batch</span><span class="p">,</span>
-<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>    <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># Используйте несколько потоков для ускорения обработки</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>    <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># Use multiple workers for faster processing</span>
 <a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="p">)</span>
 <a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>
-<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Агрегированные метрики оценки пакета:&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Aggregated batch evaluation metrics:&quot;</span><span class="p">)</span>
 <a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="nb">print</span><span class="p">(</span><span class="n">batch_evaluation</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>---<span class="w"> </span>Оценка<span class="w"> </span>всего<span class="w"> </span>пакета<span class="w"> </span>с<span class="w"> </span>использованием<span class="w"> </span>истинных<span class="w"> </span>данных<span class="w"> </span>из<span class="w"> </span>набора<span class="w"> </span>данных<span class="w"> </span>---
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>Агрегированные<span class="w"> </span>метрики<span class="w"> </span>оценки<span class="w"> </span>пакета:
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="o">{</span><span class="s1">&#39;f1_mean&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;f1_std&#39;</span>:<span class="w"> </span><span class="m">0</span>.0,<span class="w"> </span><span class="s1">&#39;recall_mean&#39;</span>:<span class="w"> </span><span class="m">1</span>.0,<span class="w"> </span><span class="s1">&#39;recall_std&#39;</span>:<span class="w"> </span><span class="m">0</span>.0,<span class="w"> </span><span class="s1">&#39;precision_mean&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;precision_std&#39;</span>:<span class="w"> </span><span class="m">0</span>.0,<span class="w"> </span><span class="s1">&#39;mean_iou_mean&#39;</span>:<span class="w"> </span><span class="m">0</span>.780258059501648,<span class="w"> </span><span class="s1">&#39;mean_iou_std&#39;</span>:<span class="w"> </span><span class="m">0</span>.11935859631699092,<span class="w"> </span><span class="s1">&#39;ap_mean&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;ap_std&#39;</span>:<span class="w"> </span><span class="m">0</span>.0,<span class="w"> </span><span class="s1">&#39;count&#39;</span>:<span class="w"> </span><span class="m">20</span><span class="o">}</span>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>---<span class="w"> </span>Evaluating<span class="w"> </span>the<span class="w"> </span>entire<span class="w"> </span>batch<span class="w"> </span>with<span class="w"> </span>dataset<span class="w"> </span>ground<span class="w"> </span>truth<span class="w"> </span>---
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>Aggregated<span class="w"> </span>batch<span class="w"> </span>evaluation<span class="w"> </span>metrics:
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="o">{</span><span class="s1">&#39;recall_mean&#39;</span>:<span class="w"> </span><span class="m">1</span>.0,<span class="w"> </span><span class="s1">&#39;recall_std&#39;</span>:<span class="w"> </span><span class="m">0</span>.0,<span class="w"> </span><span class="s1">&#39;f1_mean&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;f1_std&#39;</span>:<span class="w"> </span><span class="m">0</span>.0,<span class="w"> </span><span class="s1">&#39;precision_mean&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;precision_std&#39;</span>:<span class="w"> </span><span class="m">0</span>.0,<span class="w"> </span><span class="s1">&#39;ap_mean&#39;</span>:<span class="w"> </span><span class="m">0</span>.9999999989999999,<span class="w"> </span><span class="s1">&#39;ap_std&#39;</span>:<span class="w"> </span><span class="m">0</span>.0,<span class="w"> </span><span class="s1">&#39;mean_iou_mean&#39;</span>:<span class="w"> </span><span class="m">0</span>.7802580509636634,<span class="w"> </span><span class="s1">&#39;mean_iou_std&#39;</span>:<span class="w"> </span><span class="m">0</span>.11935857019771838,<span class="w"> </span><span class="s1">&#39;count&#39;</span>:<span class="w"> </span><span class="m">20</span><span class="o">}</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 160-163 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 176-179 -->
 
-<h2 id="6">6. Визуализация истинных данных в сравнении с предсказаниями</h2>
-<p>Давайте создадим сравнительную визуализацию, показывающую как истинные данные, так и предсказания.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 166-167 -->
+<h2 id="6-visualizing-ground-truth-vs-predictions">6. Visualizing Ground Truth vs Predictions</h2>
+<p>Let's create a comparison visualization showing both ground truth and predictions.</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 182-183 -->
 
-<p>Создадим функцию для визуализации как истинных данных, так и предсказаний</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 167-208 -->
+<p>Create a function to visualize both ground truth and predictions</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 183-287 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visualize_comparison</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">,</span> <span class="n">ground_truth_boxes</span><span class="p">,</span> <span class="n">detection_boxes</span><span class="p">):</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="c1"># Рисуем истинные рамки зеленым цветом</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">ground_truth_boxes</span><span class="p">:</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>        <span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">bbox</span><span class="p">)</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">,</span> <span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">),</span> <span class="p">(</span><span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">putText</span><span class="p">(</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>            <span class="n">image_rgb</span><span class="p">,</span>
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>            <span class="s2">&quot;GT&quot;</span><span class="p">,</span>
-<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>            <span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span> <span class="o">-</span> <span class="mi">5</span><span class="p">),</span>
-<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>            <span class="n">cv2</span><span class="o">.</span><span class="n">FONT_HERSHEY_SIMPLEX</span><span class="p">,</span>
-<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>            <span class="mf">0.5</span><span class="p">,</span>
-<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>            <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>            <span class="mi">1</span><span class="p">,</span>
-<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>        <span class="p">)</span>
-<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>
-<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>    <span class="c1"># Рисуем предсказанные рамки синим цветом с указанием показателя уверенности</span>
-<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>    <span class="k">for</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">conf</span> <span class="ow">in</span> <span class="n">detection_boxes</span><span class="p">:</span>
-<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>        <span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x1</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">y1</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">x2</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">y2</span><span class="p">)</span>
-<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">,</span> <span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">),</span> <span class="p">(</span><span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">),</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
-<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>        <span class="n">cv2</span><span class="o">.</span><span class="n">putText</span><span class="p">(</span>
-<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>            <span class="n">image_rgb</span><span class="p">,</span>
-<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">conf</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>            <span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span> <span class="o">-</span> <span class="mi">5</span><span class="p">),</span>
-<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>            <span class="n">cv2</span><span class="o">.</span><span class="n">FONT_HERSHEY_SIMPLEX</span><span class="p">,</span>
-<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a>            <span class="mf">0.5</span><span class="p">,</span>
-<a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a>            <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-<a id="__codelineno-12-27" name="__codelineno-12-27" href="#__codelineno-12-27"></a>            <span class="mi">1</span><span class="p">,</span>
-<a id="__codelineno-12-28" name="__codelineno-12-28" href="#__codelineno-12-28"></a>        <span class="p">)</span>
-<a id="__codelineno-12-29" name="__codelineno-12-29" href="#__codelineno-12-29"></a>
-<a id="__codelineno-12-30" name="__codelineno-12-30" href="#__codelineno-12-30"></a>    <span class="k">return</span> <span class="n">image_rgb</span>
-<a id="__codelineno-12-31" name="__codelineno-12-31" href="#__codelineno-12-31"></a>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visualize_comparison</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">,</span> <span class="n">ground_truth_boxes</span><span class="p">,</span> <span class="n">detections</span><span class="p">):</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="sd">    Visualize ground truth and detection bounding boxes on an image using Pillow.</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="sd">    Args:</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="sd">        image_rgb: RGB image as numpy array or PIL Image</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="sd">        ground_truth_boxes: List of ground truth bounding boxes [x_min, y_min, x_max, y_max]</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="sd">        detections: List of detections results</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="sd">        PIL Image with bounding boxes drawn</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    <span class="c1"># Convert numpy array to PIL Image if needed</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>        <span class="k">if</span> <span class="n">image_rgb</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span> <span class="ow">or</span> <span class="n">image_rgb</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>            <span class="n">image_rgb</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_rgb</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>        <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">)</span>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>        <span class="n">image</span> <span class="o">=</span> <span class="n">image_rgb</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>    <span class="c1"># Create a drawing context</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>    <span class="n">draw</span> <span class="o">=</span> <span class="n">ImageDraw</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>    <span class="c1"># Try to load a default font, fall back to default if not available</span>
+<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a>        <span class="n">font</span> <span class="o">=</span> <span class="n">ImageFont</span><span class="o">.</span><span class="n">truetype</span><span class="p">(</span><span class="s2">&quot;arial.ttf&quot;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+<a id="__codelineno-12-27" name="__codelineno-12-27" href="#__codelineno-12-27"></a>    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+<a id="__codelineno-12-28" name="__codelineno-12-28" href="#__codelineno-12-28"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-12-29" name="__codelineno-12-29" href="#__codelineno-12-29"></a>            <span class="n">font</span> <span class="o">=</span> <span class="n">ImageFont</span><span class="o">.</span><span class="n">load_default</span><span class="p">()</span>
+<a id="__codelineno-12-30" name="__codelineno-12-30" href="#__codelineno-12-30"></a>        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<a id="__codelineno-12-31" name="__codelineno-12-31" href="#__codelineno-12-31"></a>            <span class="n">font</span> <span class="o">=</span> <span class="kc">None</span>
 <a id="__codelineno-12-32" name="__codelineno-12-32" href="#__codelineno-12-32"></a>
-<a id="__codelineno-12-33" name="__codelineno-12-33" href="#__codelineno-12-33"></a><span class="c1"># Создаем сравнительную визуализацию</span>
-<a id="__codelineno-12-34" name="__codelineno-12-34" href="#__codelineno-12-34"></a><span class="n">comparison_image</span> <span class="o">=</span> <span class="n">visualize_comparison</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detect_image</span><span class="p">),</span> <span class="n">ground_truth_boxes</span><span class="p">,</span> <span class="n">detections</span><span class="p">)</span>
-<a id="__codelineno-12-35" name="__codelineno-12-35" href="#__codelineno-12-35"></a>
-<a id="__codelineno-12-36" name="__codelineno-12-36" href="#__codelineno-12-36"></a><span class="c1"># Отображаем сравнение</span>
-<a id="__codelineno-12-37" name="__codelineno-12-37" href="#__codelineno-12-37"></a><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
-<a id="__codelineno-12-38" name="__codelineno-12-38" href="#__codelineno-12-38"></a><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">comparison_image</span><span class="p">)</span>
-<a id="__codelineno-12-39" name="__codelineno-12-39" href="#__codelineno-12-39"></a><span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-40" name="__codelineno-12-40" href="#__codelineno-12-40"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Истинные данные vs Предсказанные</span><span class="se">\n</span><span class="s2">Зеленый: Истинные данные</span><span class="se">\n</span><span class="s2">Красный: Результат модели&quot;</span><span class="p">)</span>
-<a id="__codelineno-12-41" name="__codelineno-12-41" href="#__codelineno-12-41"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<a id="__codelineno-12-33" name="__codelineno-12-33" href="#__codelineno-12-33"></a>    <span class="c1"># Draw ground truth boxes in green</span>
+<a id="__codelineno-12-34" name="__codelineno-12-34" href="#__codelineno-12-34"></a>    <span class="k">for</span> <span class="n">bbox</span> <span class="ow">in</span> <span class="n">ground_truth_boxes</span><span class="p">:</span>
+<a id="__codelineno-12-35" name="__codelineno-12-35" href="#__codelineno-12-35"></a>        <span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">bbox</span><span class="p">)</span>
+<a id="__codelineno-12-36" name="__codelineno-12-36" href="#__codelineno-12-36"></a>
+<a id="__codelineno-12-37" name="__codelineno-12-37" href="#__codelineno-12-37"></a>        <span class="c1"># Draw rectangle</span>
+<a id="__codelineno-12-38" name="__codelineno-12-38" href="#__codelineno-12-38"></a>        <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span>
+<a id="__codelineno-12-39" name="__codelineno-12-39" href="#__codelineno-12-39"></a>            <span class="p">[(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">),</span> <span class="p">(</span><span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">)],</span>
+<a id="__codelineno-12-40" name="__codelineno-12-40" href="#__codelineno-12-40"></a>            <span class="n">outline</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-41" name="__codelineno-12-41" href="#__codelineno-12-41"></a>            <span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-12-42" name="__codelineno-12-42" href="#__codelineno-12-42"></a>        <span class="p">)</span>
+<a id="__codelineno-12-43" name="__codelineno-12-43" href="#__codelineno-12-43"></a>
+<a id="__codelineno-12-44" name="__codelineno-12-44" href="#__codelineno-12-44"></a>        <span class="c1"># Draw label</span>
+<a id="__codelineno-12-45" name="__codelineno-12-45" href="#__codelineno-12-45"></a>        <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;GT&quot;</span>
+<a id="__codelineno-12-46" name="__codelineno-12-46" href="#__codelineno-12-46"></a>        <span class="n">text_bbox</span> <span class="o">=</span> <span class="n">draw</span><span class="o">.</span><span class="n">textbbox</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">text</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="n">font</span><span class="p">)</span>
+<a id="__codelineno-12-47" name="__codelineno-12-47" href="#__codelineno-12-47"></a>        <span class="n">text_width</span> <span class="o">=</span> <span class="n">text_bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">text_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-12-48" name="__codelineno-12-48" href="#__codelineno-12-48"></a>        <span class="n">text_height</span> <span class="o">=</span> <span class="n">text_bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">text_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-12-49" name="__codelineno-12-49" href="#__codelineno-12-49"></a>
+<a id="__codelineno-12-50" name="__codelineno-12-50" href="#__codelineno-12-50"></a>        <span class="c1"># Position text above the box</span>
+<a id="__codelineno-12-51" name="__codelineno-12-51" href="#__codelineno-12-51"></a>        <span class="n">text_x</span> <span class="o">=</span> <span class="n">x_min</span>
+<a id="__codelineno-12-52" name="__codelineno-12-52" href="#__codelineno-12-52"></a>        <span class="n">text_y</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_min</span> <span class="o">-</span> <span class="n">text_height</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+<a id="__codelineno-12-53" name="__codelineno-12-53" href="#__codelineno-12-53"></a>
+<a id="__codelineno-12-54" name="__codelineno-12-54" href="#__codelineno-12-54"></a>        <span class="c1"># Draw text background</span>
+<a id="__codelineno-12-55" name="__codelineno-12-55" href="#__codelineno-12-55"></a>        <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span>
+<a id="__codelineno-12-56" name="__codelineno-12-56" href="#__codelineno-12-56"></a>            <span class="p">[(</span><span class="n">text_x</span><span class="p">,</span> <span class="n">text_y</span><span class="p">),</span> <span class="p">(</span><span class="n">text_x</span> <span class="o">+</span> <span class="n">text_width</span><span class="p">,</span> <span class="n">text_y</span> <span class="o">+</span> <span class="n">text_height</span><span class="p">)],</span>
+<a id="__codelineno-12-57" name="__codelineno-12-57" href="#__codelineno-12-57"></a>            <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-58" name="__codelineno-12-58" href="#__codelineno-12-58"></a>        <span class="p">)</span>
+<a id="__codelineno-12-59" name="__codelineno-12-59" href="#__codelineno-12-59"></a>
+<a id="__codelineno-12-60" name="__codelineno-12-60" href="#__codelineno-12-60"></a>        <span class="c1"># Draw text</span>
+<a id="__codelineno-12-61" name="__codelineno-12-61" href="#__codelineno-12-61"></a>        <span class="n">draw</span><span class="o">.</span><span class="n">text</span><span class="p">((</span><span class="n">text_x</span><span class="p">,</span> <span class="n">text_y</span><span class="p">),</span> <span class="n">text</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="n">font</span><span class="p">)</span>
+<a id="__codelineno-12-62" name="__codelineno-12-62" href="#__codelineno-12-62"></a>
+<a id="__codelineno-12-63" name="__codelineno-12-63" href="#__codelineno-12-63"></a>    <span class="c1"># Draw detection boxes in blue with confidence</span>
+<a id="__codelineno-12-64" name="__codelineno-12-64" href="#__codelineno-12-64"></a>    <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="n">detections</span><span class="o">.</span><span class="n">detections</span><span class="p">:</span>
+<a id="__codelineno-12-65" name="__codelineno-12-65" href="#__codelineno-12-65"></a>        <span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">x1</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">y1</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">x2</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">y2</span><span class="p">)</span>
+<a id="__codelineno-12-66" name="__codelineno-12-66" href="#__codelineno-12-66"></a>
+<a id="__codelineno-12-67" name="__codelineno-12-67" href="#__codelineno-12-67"></a>        <span class="c1"># Draw rectangle</span>
+<a id="__codelineno-12-68" name="__codelineno-12-68" href="#__codelineno-12-68"></a>        <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span>
+<a id="__codelineno-12-69" name="__codelineno-12-69" href="#__codelineno-12-69"></a>            <span class="p">[(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">),</span> <span class="p">(</span><span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">)],</span>
+<a id="__codelineno-12-70" name="__codelineno-12-70" href="#__codelineno-12-70"></a>            <span class="n">outline</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-71" name="__codelineno-12-71" href="#__codelineno-12-71"></a>            <span class="n">width</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-12-72" name="__codelineno-12-72" href="#__codelineno-12-72"></a>        <span class="p">)</span>
+<a id="__codelineno-12-73" name="__codelineno-12-73" href="#__codelineno-12-73"></a>
+<a id="__codelineno-12-74" name="__codelineno-12-74" href="#__codelineno-12-74"></a>        <span class="c1"># Draw confidence label</span>
+<a id="__codelineno-12-75" name="__codelineno-12-75" href="#__codelineno-12-75"></a>        <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">det</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-12-76" name="__codelineno-12-76" href="#__codelineno-12-76"></a>        <span class="n">text_bbox</span> <span class="o">=</span> <span class="n">draw</span><span class="o">.</span><span class="n">textbbox</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">text</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="n">font</span><span class="p">)</span>
+<a id="__codelineno-12-77" name="__codelineno-12-77" href="#__codelineno-12-77"></a>        <span class="n">text_width</span> <span class="o">=</span> <span class="n">text_bbox</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">text_bbox</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-12-78" name="__codelineno-12-78" href="#__codelineno-12-78"></a>        <span class="n">text_height</span> <span class="o">=</span> <span class="n">text_bbox</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">text_bbox</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-12-79" name="__codelineno-12-79" href="#__codelineno-12-79"></a>
+<a id="__codelineno-12-80" name="__codelineno-12-80" href="#__codelineno-12-80"></a>        <span class="c1"># Position text above the box</span>
+<a id="__codelineno-12-81" name="__codelineno-12-81" href="#__codelineno-12-81"></a>        <span class="n">text_x</span> <span class="o">=</span> <span class="n">x_min</span>
+<a id="__codelineno-12-82" name="__codelineno-12-82" href="#__codelineno-12-82"></a>        <span class="n">text_y</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_min</span> <span class="o">-</span> <span class="n">text_height</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+<a id="__codelineno-12-83" name="__codelineno-12-83" href="#__codelineno-12-83"></a>
+<a id="__codelineno-12-84" name="__codelineno-12-84" href="#__codelineno-12-84"></a>        <span class="c1"># Draw text background</span>
+<a id="__codelineno-12-85" name="__codelineno-12-85" href="#__codelineno-12-85"></a>        <span class="n">draw</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span>
+<a id="__codelineno-12-86" name="__codelineno-12-86" href="#__codelineno-12-86"></a>            <span class="p">[(</span><span class="n">text_x</span><span class="p">,</span> <span class="n">text_y</span><span class="p">),</span> <span class="p">(</span><span class="n">text_x</span> <span class="o">+</span> <span class="n">text_width</span><span class="p">,</span> <span class="n">text_y</span> <span class="o">+</span> <span class="n">text_height</span><span class="p">)],</span>
+<a id="__codelineno-12-87" name="__codelineno-12-87" href="#__codelineno-12-87"></a>            <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-88" name="__codelineno-12-88" href="#__codelineno-12-88"></a>        <span class="p">)</span>
+<a id="__codelineno-12-89" name="__codelineno-12-89" href="#__codelineno-12-89"></a>
+<a id="__codelineno-12-90" name="__codelineno-12-90" href="#__codelineno-12-90"></a>        <span class="c1"># Draw text</span>
+<a id="__codelineno-12-91" name="__codelineno-12-91" href="#__codelineno-12-91"></a>        <span class="n">draw</span><span class="o">.</span><span class="n">text</span><span class="p">((</span><span class="n">text_x</span><span class="p">,</span> <span class="n">text_y</span><span class="p">),</span> <span class="n">text</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="n">font</span><span class="o">=</span><span class="n">font</span><span class="p">)</span>
+<a id="__codelineno-12-92" name="__codelineno-12-92" href="#__codelineno-12-92"></a>
+<a id="__codelineno-12-93" name="__codelineno-12-93" href="#__codelineno-12-93"></a>    <span class="k">return</span> <span class="n">image</span>
+<a id="__codelineno-12-94" name="__codelineno-12-94" href="#__codelineno-12-94"></a>
+<a id="__codelineno-12-95" name="__codelineno-12-95" href="#__codelineno-12-95"></a>
+<a id="__codelineno-12-96" name="__codelineno-12-96" href="#__codelineno-12-96"></a><span class="c1"># Create comparison visualization</span>
+<a id="__codelineno-12-97" name="__codelineno-12-97" href="#__codelineno-12-97"></a><span class="n">comparison_image</span> <span class="o">=</span> <span class="n">visualize_comparison</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">detect_image</span><span class="p">),</span> <span class="n">ground_truth_boxes</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-12-98" name="__codelineno-12-98" href="#__codelineno-12-98"></a>
+<a id="__codelineno-12-99" name="__codelineno-12-99" href="#__codelineno-12-99"></a><span class="c1"># Display the comparison</span>
+<a id="__codelineno-12-100" name="__codelineno-12-100" href="#__codelineno-12-100"></a><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<a id="__codelineno-12-101" name="__codelineno-12-101" href="#__codelineno-12-101"></a><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">comparison_image</span><span class="p">)</span>
+<a id="__codelineno-12-102" name="__codelineno-12-102" href="#__codelineno-12-102"></a><span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-103" name="__codelineno-12-103" href="#__codelineno-12-103"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Ground Truth vs Predictions</span><span class="se">\n</span><span class="s2">Green: Ground Truth</span><span class="se">\n</span><span class="s2">Red: Predictions with Confidence&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-104" name="__codelineno-12-104" href="#__codelineno-12-104"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </code></pre></div>
-<p><img alt="Истинные данные vs Предсказанные Зеленый: Истинные данные Красный: Результат модели" class="mkd-glr-single-img" src="../images/mkd_glr_tutorial_part_2_mosquito_detection_002.png" srcset="../images/mkd_glr_tutorial_part_2_mosquito_detection_002.png, ../images/mkd_glr_tutorial_part_2_mosquito_detection_002_2_0x.png 2.0x" /></p>
+<p><img alt="Ground Truth vs Predictions Green: Ground Truth Red: Predictions with Confidence" class="mkd-glr-single-img" src="../images/mkd_glr_tutorial_part_2_mosquito_detection_002.png" srcset="../images/mkd_glr_tutorial_part_2_mosquito_detection_002.png, ../images/mkd_glr_tutorial_part_2_mosquito_detection_002_2_0x.png 2.0x" /></p>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/ru/examples/tutorial_part_2_mosquito_detection.py:207:<span class="w"> </span>UserWarning:<span class="w"> </span>FigureCanvasAgg<span class="w"> </span>is<span class="w"> </span>non-interactive,<span class="w"> </span>and<span class="w"> </span>thus<span class="w"> </span>cannot<span class="w"> </span>be<span class="w"> </span>shown
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/en/examples/tutorial_part_2_mosquito_detection.py:286:<span class="w"> </span>UserWarning:<span class="w"> </span>FigureCanvasAgg<span class="w"> </span>is<span class="w"> </span>non-interactive,<span class="w"> </span>and<span class="w"> </span>thus<span class="w"> </span>cannot<span class="w"> </span>be<span class="w"> </span>shown
 <a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>plt.show<span class="o">()</span>
 </code></pre></div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  6.966 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  19.455 seconds)</p>
 <div id="download_links"></div>
 
 <p><a class="md-button center" href="../tutorial_part_2_mosquito_detection.py"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32v242.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64h384c35.3 0 64-28.7 64-64v-32c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48"/></svg></span> Download Python source code: tutorial_part_2_mosquito_detection.py</a></p>
@@ -1399,33 +1397,33 @@ to download the full example code</p>
   
     
       
-      <nav class="md-footer__inner md-grid" aria-label="Нижний колонтитул" >
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../tutorial_part_1_datasets_example/" class="md-footer__link md-footer__link--prev" aria-label="Назад: Управление и загрузка наборов данных">
+          <a href="../tutorial_part_1_datasets_example/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Managing and Loading Datasets">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                Назад
+                Previous
               </span>
               <div class="md-ellipsis">
-                Управление и загрузка наборов данных
+                Managing and Loading Datasets
               </div>
             </div>
           </a>
         
         
           
-          <a href="../tutorial_part_3_mosquito_segmentation/" class="md-footer__link md-footer__link--next" aria-label="Вперед: Руководство по сегментации комаров">
+          <a href="../tutorial_part_3_mosquito_segmentation/" class="md-footer__link md-footer__link--next" aria-label="Next: Mosquito Segmentation Tutorial">
             <div class="md-footer__title">
               <span class="md-footer__direction">
-                Вперед
+                Next
               </span>
               <div class="md-ellipsis">
-                Руководство по сегментации комаров
+                Mosquito Segmentation Tutorial
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1463,7 +1461,7 @@ to download the full example code</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["search.suggest", "search.highlight", "navigation.path", "navigation.footer", "navigation.tabs", "navigation.tabs.sticky", "navigation.tracking", "navigation.sections", "navigation.expand", "toc.follow", "toc.integrate", "content.code.annotate", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e \u0432 \u0431\u0443\u0444\u0435\u0440", "clipboard.copy": "\u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0432 \u0431\u0443\u0444\u0435\u0440", "search.result.more.one": "\u0415\u0449\u0451 1 \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.more.other": "\u0415\u0449\u0451 # \u043d\u0430 \u044d\u0442\u043e\u0439 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0435", "search.result.none": "\u0421\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e", "search.result.one": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e 1 \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435", "search.result.other": "\u041d\u0430\u0439\u0434\u0435\u043d\u043e \u0441\u043e\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0439: #", "search.result.placeholder": "\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043f\u0435\u0447\u0430\u0442\u0430\u0442\u044c \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430", "search.result.term.missing": "\u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442", "select.version": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0432\u0435\u0440\u0441\u0438\u044e"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["search.suggest", "search.highlight", "navigation.path", "navigation.footer", "navigation.tabs", "navigation.tabs.sticky", "navigation.tracking", "navigation.sections", "navigation.expand", "toc.follow", "toc.integrate", "content.code.annotate", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../../assets/javascripts/bundle.83f73b43.min.js"></script>
