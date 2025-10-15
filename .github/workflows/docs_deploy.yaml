@@ -1,14 +1,11 @@
 name: doc_deploy
 on:
-  pull_request:
-    tags: [ 'docs*' ]
   push:
     tags: [ 'docs*' ]
 permissions:
   contents: write
 jobs:
   doc_deploy:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
