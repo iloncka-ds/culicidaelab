@@ -6,10 +6,12 @@ dist/
 wheels/
 *.egg-info
 .vscode
+.kiro
 .coverage
 .mypy_cache
 .pytest_cache
 .ruff_cache
+develop*/
 .ge*/
 # Virtual environments
 .venv
