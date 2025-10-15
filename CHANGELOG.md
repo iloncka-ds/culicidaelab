@@ -5,7 +5,7 @@ All notable changes to CulicidaeLab will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.1] - 2024-12-XX
+## [0.3.0] - 2025-12-15
 
 ### 🚀 Major Features
 
@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Added backend factory** with intelligent backend selection (PyTorch vs ONNX)
 - **Added concrete backend implementations**:
   - `ClassifierFastAIBackend` and `ClassifierONNXBackend` for classification
-  - `DetectorYOLOBackend` for YOLO-based detection  
+  - `DetectorYOLOBackend` for YOLO-based detection
   - `SegmenterSAMBackend` for Segment Anything Model segmentation
 
 #### High-Performance Serving API
@@ -46,7 +46,7 @@ This enhancement applies to:
 #### Structured Prediction Outputs
 - **Added Pydantic-based prediction models** for type-safe, validated outputs:
   - `ClassificationPrediction` with `Classification` objects
-  - `DetectionPrediction` with `Detection` and `BoundingBox` objects  
+  - `DetectionPrediction` with `Detection` and `BoundingBox` objects
   - `SegmentationPrediction` with NumPy mask and pixel count
 - **Built-in JSON serialization** via Pydantic
 - **Confidence score validation** (0.0-1.0 range enforcement)
@@ -78,8 +78,8 @@ This enhancement applies to:
   # Old (v0.2.2)
   predictions = classifier.predict("image.jpg")
   species, confidence = predictions[0]
-  
-  # New (v0.3.1)  
+
+  # New (v0.3.1)
   result = classifier.predict("image.jpg")
   species = result.top_prediction().species_name
   confidence = result.top_prediction().confidence
@@ -100,7 +100,7 @@ This enhancement applies to:
 
 #### Moved to Optional
 - `torch>=2.3.1` - Now optional, only in `[full]` profiles
-- `torchvision>=0.18.1` - Now optional, only in `[full]` profiles  
+- `torchvision>=0.18.1` - Now optional, only in `[full]` profiles
 - `fastai>=2.7.0,<=2.8.0` - Now optional, only in `[full]` profiles
 - `ultralytics>=8.3.0` - Now optional, only in `[full]` profiles
 
@@ -124,7 +124,7 @@ This enhancement applies to:
 - **Added performance comparison** between profiles
 - **Added deployment examples** for different use cases
 
-#### API Documentation  
+#### API Documentation
 - **Updated code examples** for new structured outputs
 - **Added serving API examples** for production use
 - **Added migration guide** from v0.2.2 to v0.3.1
@@ -149,7 +149,7 @@ This enhancement applies to:
 
 ---
 
-## Migration Guide: v0.2.2 → v0.3.1
+## Migration Guide: v0.2.2 → v0.3.0
 
 ### Installation Changes
 
@@ -169,7 +169,7 @@ pip install culicidaelab[serve-gpu]
 
 #### For Development/Research
 ```bash
-# Old  
+# Old
 pip install culicidaelab
 
 # New
