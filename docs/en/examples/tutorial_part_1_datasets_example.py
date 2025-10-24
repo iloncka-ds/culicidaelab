@@ -41,12 +41,19 @@ to interact with the datasets defined in the library's configuration.
 # ### Prerequisites
 #
 # Before you start, make sure you have `culicidaelab` and other necessary libraries installed with code:
+#
+#
+# Install the `culicidaelab` library if not already installed
+# ```bash
+# !pip install -q culicidaelab[full]
+# ```
+# or, if you have access to GPU
+# ```bash
+# !pip install -q culicidaelab[full-gpu]
+# ```
+# Import necessary libraries
 
 # %%
-# # %pip install culicidaelab requests matplotlib numpy
-
-# %%
-# Standard library imports
 from collections import defaultdict
 from pathlib import Path
 import json

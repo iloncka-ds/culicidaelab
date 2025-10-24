@@ -30,11 +30,16 @@ library to perform object detection on images. We will cover:
 
 """
 
-# %%
-# Install the `culicidaelab` library if not already installed
-# # !pip install -q culicidaelab
-
 # %% [markdown]
+# Install the `culicidaelab` library if not already installed
+# ```bash
+# !pip install -q culicidaelab[full]
+# ```
+# or, if you have access to GPU
+# ```bash
+# !pip install -q culicidaelab[full-gpu]
+# ```
+#
 # ## 1. Initialization
 #
 # First, we'll get the global `settings` instance and use it to initialize our `MosquitoDetector`.
@@ -42,7 +47,6 @@ library to perform object detection on images. We will cover:
 # If the model file doesn't exist locally, it will be downloaded automatically.
 
 # %%
-
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import matplotlib.pyplot as plt
