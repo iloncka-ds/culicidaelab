@@ -22,7 +22,7 @@
 # *   Как загружать наборы данных для классификации, детекции и сегментации.
 # *   Как выполнять исследовательский анализ данных (EDA) на примере набора данных о разнообразии комаров.
 #
-# %% [markdown]
+#
 # Установите библиотеку `culicidaelab`, если она еще не установлена
 # ```bash
 # !pip install -q culicidaelab[full]
@@ -30,10 +30,11 @@
 # или, если есть доступ к GPU
 # ```bash
 # !pip install -q culicidaelab[full-gpu]
-# `
+# ```
+#
+# Импортируем необходимые библиотеки
 
 # %%
-# Импорты из стандартной библиотеки
 from collections import defaultdict
 from pathlib import Path
 import json

@@ -40,9 +40,8 @@ This guide will cover:
 # or, if you have access to GPU
 # ```bash
 # !pip install -q culicidaelab[full-gpu]
-# `
-
-# %% [markdown]
+# ```
+#
 # ## 1. Initialization and Setup
 #
 # Our first step is to set up the necessary components. We will initialize:

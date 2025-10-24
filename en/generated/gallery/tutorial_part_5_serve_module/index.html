@@ -748,6 +748,17 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Using the Serve Module for Production Inference
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -757,6 +768,70 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-initialization-and-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Initialization and Setup
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-loading-the-test-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Loading the Test Dataset
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-using-serve-for-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Using serve for Classification
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-caching-in-action" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Caching in Action
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-clearing-the-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Clearing the Cache
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1044,12 +1119,11 @@ is designed to be a lightweight, fast, and safe way to run predictions.</p>
 <li><strong>Caching</strong>: Understand the in-memory caching for predictor instances.</li>
 <li><strong>Clearing the Cache</strong>: How to clear the cache when needed.</li>
 </ul>
-<!-- GENERATED FROM PYTHON SOURCE LINES 34-36 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 34-42 -->
 
-<p>Install the <code>culicidaelab</code> library if not already installed</p>
-<h1 id="pip-install-q-culicidaelab">!pip install -q culicidaelab</h1>
-<!-- GENERATED FROM PYTHON SOURCE LINES 38-42 -->
-
+<p>Install the <code>culicidaelab</code> library if not already installed
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>!pip<span class="w"> </span>install<span class="w"> </span>-q<span class="w"> </span>culicidaelab<span class="o">[</span>full<span class="o">]</span>
+</code></pre></div></p>
 <h2 id="1-initialization-and-setup">1. Initialization and Setup</h2>
 <p>We will initialize the <code>DatasetsManager</code> to get some sample data.
 The <code>serve</code> function doesn't require manual initialization of predictors.</p>
@@ -1058,21 +1132,21 @@ The <code>serve</code> function doesn't require manual initialization of predict
 <p>Import necessary libraries</p>
 <!-- GENERATED FROM PYTHON SOURCE LINES 45-61 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Import the required classes from the CulicidaeLab library</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">culicidaelab</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">DatasetsManager</span><span class="p">,</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">get_settings</span><span class="p">,</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">serve</span><span class="p">,</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">clear_serve_cache</span><span class="p">,</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># Get the default library settings instance</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="c1"># Initialize the services needed to manage and download data</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="n">manager</span> <span class="o">=</span> <span class="n">DatasetsManager</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Import the required classes from the CulicidaeLab library</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">culicidaelab</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">DatasetsManager</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">get_settings</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">serve</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">clear_serve_cache</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># Get the default library settings instance</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># Initialize the services needed to manage and download data</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">manager</span> <span class="o">=</span> <span class="n">DatasetsManager</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
 </code></pre></div>
 <!-- GENERATED FROM PYTHON SOURCE LINES 62-65 -->
 
@@ -1080,36 +1154,36 @@ The <code>serve</code> function doesn't require manual initialization of predict
 <p>We will use a built-in test dataset to get an image for our predictions.</p>
 <!-- GENERATED FROM PYTHON SOURCE LINES 67-88 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Loading the &#39;classification&#39; dataset&#39;s &#39;test&#39; split ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">classification_test_data</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;classification&quot;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Test dataset loaded successfully!&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of samples in the test dataset: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">classification_test_data</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Let&#39;s select one sample to work with.</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">classification_test_data</span> <span class="o">=</span> <span class="n">classification_test_data</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">sample</span> <span class="o">=</span> <span class="n">classification_test_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">image</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">ground_truth_label</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Selected sample&#39;s ground truth label: &#39;</span><span class="si">{</span><span class="n">ground_truth_label</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># Display the input image</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input Image</span><span class="se">\n</span><span class="s2">(Ground Truth: </span><span class="si">{</span><span class="n">ground_truth_label</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Loading the &#39;classification&#39; dataset&#39;s &#39;test&#39; split ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">classification_test_data</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;classification&quot;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Test dataset loaded successfully!&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of samples in the test dataset: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">classification_test_data</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Let&#39;s select one sample to work with.</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">classification_test_data</span> <span class="o">=</span> <span class="n">classification_test_data</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">sample</span> <span class="o">=</span> <span class="n">classification_test_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">image</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">ground_truth_label</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Selected sample&#39;s ground truth label: &#39;</span><span class="si">{</span><span class="n">ground_truth_label</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="c1"># Display the input image</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input Image</span><span class="se">\n</span><span class="s2">(Ground Truth: </span><span class="si">{</span><span class="n">ground_truth_label</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </code></pre></div>
 <p><img alt="Input Image (Ground Truth: aedes_triseriatus)" class="mkd-glr-single-img" src="../images/mkd_glr_tutorial_part_5_serve_module_001.png" srcset="../images/mkd_glr_tutorial_part_5_serve_module_001.png, ../images/mkd_glr_tutorial_part_5_serve_module_001_2_0x.png 2.0x" /></p>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>---<span class="w"> </span>Loading<span class="w"> </span>the<span class="w"> </span><span class="s1">&#39;classification&#39;</span><span class="w"> </span>dataset<span class="s1">&#39;s &#39;</span>test<span class="s1">&#39; split ---</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="s1">Cache hit for split config: test C:\Users\lenova\AppData\Local\culicidaelab\culicidaelab\datasets\mosquito_species_classification\4d967a30111bf29f</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="s1">Test dataset loaded successfully!</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="s1">Number of samples in the test dataset: 328</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="s1">Selected sample&#39;</span>s<span class="w"> </span>ground<span class="w"> </span>truth<span class="w"> </span>label:<span class="w"> </span><span class="s1">&#39;aedes_triseriatus&#39;</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/en/examples/tutorial_part_5_serve_module.py:85:<span class="w"> </span>UserWarning:<span class="w"> </span>FigureCanvasAgg<span class="w"> </span>is<span class="w"> </span>non-interactive,<span class="w"> </span>and<span class="w"> </span>thus<span class="w"> </span>cannot<span class="w"> </span>be<span class="w"> </span>shown
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span>plt.show<span class="o">()</span>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>---<span class="w"> </span>Loading<span class="w"> </span>the<span class="w"> </span><span class="s1">&#39;classification&#39;</span><span class="w"> </span>dataset<span class="s1">&#39;s &#39;</span>test<span class="s1">&#39; split ---</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="s1">Cache hit for split config: test C:\Users\lenova\AppData\Local\culicidaelab\culicidaelab\datasets\mosquito_species_classification\4d967a30111bf29f</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="s1">Test dataset loaded successfully!</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="s1">Number of samples in the test dataset: 328</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="s1">Selected sample&#39;</span>s<span class="w"> </span>ground<span class="w"> </span>truth<span class="w"> </span>label:<span class="w"> </span><span class="s1">&#39;aedes_triseriatus&#39;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>C:/Users/lenova/CascadeProjects/culicidaelab/docs/en/examples/tutorial_part_5_serve_module.py:85:<span class="w"> </span>UserWarning:<span class="w"> </span>FigureCanvasAgg<span class="w"> </span>is<span class="w"> </span>non-interactive,<span class="w"> </span>and<span class="w"> </span>thus<span class="w"> </span>cannot<span class="w"> </span>be<span class="w"> </span>shown
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span>plt.show<span class="o">()</span>
 </code></pre></div>
 <!-- GENERATED FROM PYTHON SOURCE LINES 89-93 -->
 
@@ -1121,24 +1195,24 @@ on the first call and caches it for subsequent requests.</p>
 <p>Run classification using the serve function</p>
 <!-- GENERATED FROM PYTHON SOURCE LINES 96-104 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Running classification for the first time (will initialize predictor) ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">classification_result</span> <span class="o">=</span> <span class="n">serve</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Print the top 5 predictions</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Top 5 Classification Predictions ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">classification_result</span><span class="o">.</span><span class="n">predictions</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">species_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Running classification for the first time (will initialize predictor) ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">classification_result</span> <span class="o">=</span> <span class="n">serve</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Print the top 5 predictions</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Top 5 Classification Predictions ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">classification_result</span><span class="o">.</span><span class="n">predictions</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">species_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>---<span class="w"> </span>Running<span class="w"> </span>classification<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>first<span class="w"> </span><span class="nb">time</span><span class="w"> </span><span class="o">(</span>will<span class="w"> </span>initialize<span class="w"> </span>predictor<span class="o">)</span><span class="w"> </span>---
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>Initializing<span class="w"> </span><span class="s1">&#39;classifier&#39;</span><span class="w"> </span>predictor<span class="w"> </span><span class="k">for</span><span class="w"> </span>serving...
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>---<span class="w"> </span>Top<span class="w"> </span><span class="m">5</span><span class="w"> </span>Classification<span class="w"> </span>Predictions<span class="w"> </span>---
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>Aedes<span class="w"> </span>triseriatus:<span class="w"> </span><span class="m">99</span>.81%
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>Aedes<span class="w"> </span>geniculatus:<span class="w"> </span><span class="m">0</span>.19%
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>Culiseta<span class="w"> </span>longiareolata:<span class="w"> </span><span class="m">0</span>.00%
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>Aedes<span class="w"> </span>canadensis:<span class="w"> </span><span class="m">0</span>.00%
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>Culex<span class="w"> </span>pipiens:<span class="w"> </span><span class="m">0</span>.00%
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>---<span class="w"> </span>Running<span class="w"> </span>classification<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>first<span class="w"> </span><span class="nb">time</span><span class="w"> </span><span class="o">(</span>will<span class="w"> </span>initialize<span class="w"> </span>predictor<span class="o">)</span><span class="w"> </span>---
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>Initializing<span class="w"> </span><span class="s1">&#39;classifier&#39;</span><span class="w"> </span>predictor<span class="w"> </span><span class="k">for</span><span class="w"> </span>serving...
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>---<span class="w"> </span>Top<span class="w"> </span><span class="m">5</span><span class="w"> </span>Classification<span class="w"> </span>Predictions<span class="w"> </span>---
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>Aedes<span class="w"> </span>triseriatus:<span class="w"> </span><span class="m">99</span>.81%
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>Aedes<span class="w"> </span>geniculatus:<span class="w"> </span><span class="m">0</span>.19%
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>Culiseta<span class="w"> </span>longiareolata:<span class="w"> </span><span class="m">0</span>.00%
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>Aedes<span class="w"> </span>canadensis:<span class="w"> </span><span class="m">0</span>.00%
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>Culex<span class="w"> </span>pipiens:<span class="w"> </span><span class="m">0</span>.00%
 </code></pre></div>
 <!-- GENERATED FROM PYTHON SOURCE LINES 105-109 -->
 
@@ -1150,23 +1224,23 @@ the predictor is already in memory.</p>
 <p>Run classification again to see the caching effect</p>
 <!-- GENERATED FROM PYTHON SOURCE LINES 112-121 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Running classification for the second time (should be faster) ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">classification_result_cached</span> <span class="o">=</span> <span class="n">serve</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">predictor_type</span><span class="o">=</span><span class="s2">&quot;classifier&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Print the top 5 predictions again</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Top 5 Classification Predictions (from cache) ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">classification_result_cached</span><span class="o">.</span><span class="n">predictions</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">species_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Running classification for the second time (should be faster) ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">classification_result_cached</span> <span class="o">=</span> <span class="n">serve</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">predictor_type</span><span class="o">=</span><span class="s2">&quot;classifier&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Print the top 5 predictions again</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Top 5 Classification Predictions (from cache) ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">classification_result_cached</span><span class="o">.</span><span class="n">predictions</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">species_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>---<span class="w"> </span>Running<span class="w"> </span>classification<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>second<span class="w"> </span><span class="nb">time</span><span class="w"> </span><span class="o">(</span>should<span class="w"> </span>be<span class="w"> </span>faster<span class="o">)</span><span class="w"> </span>---
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>---<span class="w"> </span>Top<span class="w"> </span><span class="m">5</span><span class="w"> </span>Classification<span class="w"> </span>Predictions<span class="w"> </span><span class="o">(</span>from<span class="w"> </span>cache<span class="o">)</span><span class="w"> </span>---
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>Aedes<span class="w"> </span>triseriatus:<span class="w"> </span><span class="m">99</span>.81%
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>Aedes<span class="w"> </span>geniculatus:<span class="w"> </span><span class="m">0</span>.19%
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>Culiseta<span class="w"> </span>longiareolata:<span class="w"> </span><span class="m">0</span>.00%
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>Aedes<span class="w"> </span>canadensis:<span class="w"> </span><span class="m">0</span>.00%
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>Culex<span class="w"> </span>pipiens:<span class="w"> </span><span class="m">0</span>.00%
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>---<span class="w"> </span>Running<span class="w"> </span>classification<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>second<span class="w"> </span><span class="nb">time</span><span class="w"> </span><span class="o">(</span>should<span class="w"> </span>be<span class="w"> </span>faster<span class="o">)</span><span class="w"> </span>---
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>---<span class="w"> </span>Top<span class="w"> </span><span class="m">5</span><span class="w"> </span>Classification<span class="w"> </span>Predictions<span class="w"> </span><span class="o">(</span>from<span class="w"> </span>cache<span class="o">)</span><span class="w"> </span>---
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>Aedes<span class="w"> </span>triseriatus:<span class="w"> </span><span class="m">99</span>.81%
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>Aedes<span class="w"> </span>geniculatus:<span class="w"> </span><span class="m">0</span>.19%
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>Culiseta<span class="w"> </span>longiareolata:<span class="w"> </span><span class="m">0</span>.00%
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>Aedes<span class="w"> </span>canadensis:<span class="w"> </span><span class="m">0</span>.00%
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>Culex<span class="w"> </span>pipiens:<span class="w"> </span><span class="m">0</span>.00%
 </code></pre></div>
 <!-- GENERATED FROM PYTHON SOURCE LINES 122-126 -->
 
@@ -1178,31 +1252,31 @@ the predictor is already in memory.</p>
 <p>Clear the cache</p>
 <!-- GENERATED FROM PYTHON SOURCE LINES 129-139 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Clearing the predictor cache ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">clear_serve_cache</span><span class="p">()</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Run classification again, it will re-initialize the predictor</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Running classification again after clearing cache (will re-initialize) ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">classification_result_after_clear</span> <span class="o">=</span> <span class="n">serve</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Top 5 Classification Predictions (after cache clear) ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">classification_result_after_clear</span><span class="o">.</span><span class="n">predictions</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">species_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Clearing the predictor cache ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">clear_serve_cache</span><span class="p">()</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Run classification again, it will re-initialize the predictor</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Running classification again after clearing cache (will re-initialize) ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">classification_result_after_clear</span> <span class="o">=</span> <span class="n">serve</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Top 5 Classification Predictions (after cache clear) ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">classification_result_after_clear</span><span class="o">.</span><span class="n">predictions</span><span class="p">[:</span><span class="mi">5</span><span class="p">]:</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">species_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>---<span class="w"> </span>Clearing<span class="w"> </span>the<span class="w"> </span>predictor<span class="w"> </span>cache<span class="w"> </span>---
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>---<span class="w"> </span>Running<span class="w"> </span>classification<span class="w"> </span>again<span class="w"> </span>after<span class="w"> </span>clearing<span class="w"> </span>cache<span class="w"> </span><span class="o">(</span>will<span class="w"> </span>re-initialize<span class="o">)</span><span class="w"> </span>---
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>Initializing<span class="w"> </span><span class="s1">&#39;classifier&#39;</span><span class="w"> </span>predictor<span class="w"> </span><span class="k">for</span><span class="w"> </span>serving...
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>---<span class="w"> </span>Top<span class="w"> </span><span class="m">5</span><span class="w"> </span>Classification<span class="w"> </span>Predictions<span class="w"> </span><span class="o">(</span>after<span class="w"> </span>cache<span class="w"> </span>clear<span class="o">)</span><span class="w"> </span>---
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>Aedes<span class="w"> </span>triseriatus:<span class="w"> </span><span class="m">99</span>.81%
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>Aedes<span class="w"> </span>geniculatus:<span class="w"> </span><span class="m">0</span>.19%
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>Culiseta<span class="w"> </span>longiareolata:<span class="w"> </span><span class="m">0</span>.00%
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>Aedes<span class="w"> </span>canadensis:<span class="w"> </span><span class="m">0</span>.00%
-<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>Culex<span class="w"> </span>pipiens:<span class="w"> </span><span class="m">0</span>.00%
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>---<span class="w"> </span>Clearing<span class="w"> </span>the<span class="w"> </span>predictor<span class="w"> </span>cache<span class="w"> </span>---
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>---<span class="w"> </span>Running<span class="w"> </span>classification<span class="w"> </span>again<span class="w"> </span>after<span class="w"> </span>clearing<span class="w"> </span>cache<span class="w"> </span><span class="o">(</span>will<span class="w"> </span>re-initialize<span class="o">)</span><span class="w"> </span>---
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>Initializing<span class="w"> </span><span class="s1">&#39;classifier&#39;</span><span class="w"> </span>predictor<span class="w"> </span><span class="k">for</span><span class="w"> </span>serving...
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>---<span class="w"> </span>Top<span class="w"> </span><span class="m">5</span><span class="w"> </span>Classification<span class="w"> </span>Predictions<span class="w"> </span><span class="o">(</span>after<span class="w"> </span>cache<span class="w"> </span>clear<span class="o">)</span><span class="w"> </span>---
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>Aedes<span class="w"> </span>triseriatus:<span class="w"> </span><span class="m">99</span>.81%
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>Aedes<span class="w"> </span>geniculatus:<span class="w"> </span><span class="m">0</span>.19%
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>Culiseta<span class="w"> </span>longiareolata:<span class="w"> </span><span class="m">0</span>.00%
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>Aedes<span class="w"> </span>canadensis:<span class="w"> </span><span class="m">0</span>.00%
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>Culex<span class="w"> </span>pipiens:<span class="w"> </span><span class="m">0</span>.00%
 </code></pre></div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  2.157 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  1.507 seconds)</p>
 <div id="download_links"></div>
 
 <p><a class="md-button center" href="../tutorial_part_5_serve_module.py"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32v242.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64h384c35.3 0 64-28.7 64-64v-32c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48"/></svg></span> Download Python source code: tutorial_part_5_serve_module.py</a></p>

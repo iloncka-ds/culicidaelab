@@ -38,7 +38,7 @@
 # или, если есть доступ к GPU
 # ```bash
 # !pip install -q culicidaelab[full-gpu]
-# `
+# ```
 
 # %% [markdown]
 # ## 1. Инициализация

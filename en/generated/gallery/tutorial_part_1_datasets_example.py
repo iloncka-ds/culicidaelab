@@ -41,8 +41,8 @@ to interact with the datasets defined in the library's configuration.
 # ### Prerequisites
 #
 # Before you start, make sure you have `culicidaelab` and other necessary libraries installed with code:
-
-# %% [markdown]
+#
+#
 # Install the `culicidaelab` library if not already installed
 # ```bash
 # !pip install -q culicidaelab[full]
@@ -50,10 +50,10 @@ to interact with the datasets defined in the library's configuration.
 # or, if you have access to GPU
 # ```bash
 # !pip install -q culicidaelab[full-gpu]
-# `
+# ```
+# Import necessary libraries
 
 # %%
-# Standard library imports
 from collections import defaultdict
 from pathlib import Path
 import json

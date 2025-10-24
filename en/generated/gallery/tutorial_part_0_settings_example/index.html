@@ -1112,26 +1112,25 @@ to download the full example code</p>
 <p>This tutorial demonstrates how to use the core <code>settings</code> object in CulicidaeLab.
 The <code>settings</code> object is the main entry point for accessing configurations, file paths,
 and model parameters throughout the library.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 26-34 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 26-35 -->
 
 <p>Install the <code>culicidaelab</code> library if not already installed
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>!pip<span class="w"> </span>install<span class="w"> </span>-q<span class="w"> </span>culicidaelab<span class="o">[</span>full<span class="o">]</span>
 </code></pre></div>
 or, if you have access to GPU
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>!pip<span class="w"> </span>install<span class="w"> </span>-q<span class="w"> </span>culicidaelab<span class="o">[</span>full-gpu<span class="o">]</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="sb">`</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>&lt;!--<span class="w"> </span>GENERATED<span class="w"> </span>FROM<span class="w"> </span>PYTHON<span class="w"> </span>SOURCE<span class="w"> </span>LINES<span class="w"> </span><span class="m">36</span>-39<span class="w"> </span>--&gt;
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="sb">```</span><span class="o">{</span>.python<span class="w"> </span><span class="o">}</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>import<span class="w"> </span>yaml
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>from<span class="w"> </span>pathlib<span class="w"> </span>import<span class="w"> </span>Path
-</code></pre></div></p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 40-42 -->
-
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">culicidaelab</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_settings</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 43-51 -->
+Import necessary libraries</p>
+<!-- GENERATED FROM PYTHON SOURCE LINES 37-40 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 41-43 -->
+
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">culicidaelab</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_settings</span>
+</code></pre></div>
+<!-- GENERATED FROM PYTHON SOURCE LINES 44-52 -->
 
 <h2 id="1-using-default-settings">1. Using Default Settings</h2>
 <p>The easiest way to start with <code>CulicidaeLab</code> is by loading the default settings.
@@ -1139,233 +1138,233 @@ The <code>get_settings()</code> function acts as a singleton; it loads the confi
 and returns the same instance on subsequent calls. This ensures a consistent
 state across your application.</p>
 <p>The default settings are loaded from the configuration files bundled with the library.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 53-54 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 54-55 -->
 
 <p>Get the default settings instance</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 54-64 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 55-65 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># The settings object provides easy access to key resource directories.</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># The library will automatically create these directories if they don&#39;t exist.</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Default Resource Directories ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Active Config Directory: </span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">config_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Models Directory: </span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">model_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Datasets Directory: </span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">dataset_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache Directory: </span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">cache_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># The settings object provides easy access to key resource directories.</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># The library will automatically create these directories if they don&#39;t exist.</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Default Resource Directories ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Active Config Directory: </span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">config_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Models Directory: </span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">model_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Datasets Directory: </span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">dataset_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cache Directory: </span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">cache_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>---<span class="w"> </span>Default<span class="w"> </span>Resource<span class="w"> </span>Directories<span class="w"> </span>---
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>Active<span class="w"> </span>Config<span class="w"> </span>Directory:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\C</span>ascadeProjects<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\c</span>onf
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Models<span class="w"> </span>Directory:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\m</span>odels
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>Datasets<span class="w"> </span>Directory:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\d</span>atasets
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>Cache<span class="w"> </span>Directory:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\C</span>ache
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>---<span class="w"> </span>Default<span class="w"> </span>Resource<span class="w"> </span>Directories<span class="w"> </span>---
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>Active<span class="w"> </span>Config<span class="w"> </span>Directory:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\C</span>ascadeProjects<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\c</span>onf
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>Models<span class="w"> </span>Directory:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\m</span>odels
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>Datasets<span class="w"> </span>Directory:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\d</span>atasets
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>Cache<span class="w"> </span>Directory:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\C</span>ache
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 65-69 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 66-70 -->
 
 <h2 id="2-accessing-model-weight-paths">2. Accessing Model Weight Paths</h2>
 <p>The <code>settings</code> object knows the default local paths for all predictor model weights.
 When you instantiate a predictor, it uses these paths to find or download the models.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 71-72 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 72-73 -->
 
 <p>Get the configured local file paths for different model types</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 72-81 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 73-82 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">detection_weights</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get_model_weights_path</span><span class="p">(</span><span class="s2">&quot;detector&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">segmentation_weights</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get_model_weights_path</span><span class="p">(</span><span class="s2">&quot;segmenter&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">classification_weights</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get_model_weights_path</span><span class="p">(</span><span class="s2">&quot;classifier&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Default Model Weight Paths ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detection Model: </span><span class="si">{</span><span class="n">detection_weights</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Segmentation Model: </span><span class="si">{</span><span class="n">segmentation_weights</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Classification Model: </span><span class="si">{</span><span class="n">classification_weights</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">detection_weights</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get_model_weights_path</span><span class="p">(</span><span class="s2">&quot;detector&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">segmentation_weights</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get_model_weights_path</span><span class="p">(</span><span class="s2">&quot;segmenter&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">classification_weights</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get_model_weights_path</span><span class="p">(</span><span class="s2">&quot;classifier&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--- Default Model Weight Paths ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detection Model: </span><span class="si">{</span><span class="n">detection_weights</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Segmentation Model: </span><span class="si">{</span><span class="n">segmentation_weights</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Classification Model: </span><span class="si">{</span><span class="n">classification_weights</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>---<span class="w"> </span>Default<span class="w"> </span>Model<span class="w"> </span>Weight<span class="w"> </span>Paths<span class="w"> </span>---
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>Detection<span class="w"> </span>Model:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\m</span>odels<span class="se">\d</span>etector<span class="se">\t</span>orch<span class="se">\c</span>ulico-net-det-v1-nano.pt
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>Segmentation<span class="w"> </span>Model:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\m</span>odels<span class="se">\s</span>egmenter<span class="se">\t</span>orch<span class="se">\s</span>am2.1_t.pt
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>Classification<span class="w"> </span>Model:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\m</span>odels<span class="se">\c</span>lassifier<span class="se">\t</span>orch<span class="se">\c</span>ulico-net-cls-v1-17.pkl
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>---<span class="w"> </span>Default<span class="w"> </span>Model<span class="w"> </span>Weight<span class="w"> </span>Paths<span class="w"> </span>---
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>Detection<span class="w"> </span>Model:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\m</span>odels<span class="se">\d</span>etector<span class="se">\t</span>orch<span class="se">\c</span>ulico-net-det-v1-nano.pt
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>Segmentation<span class="w"> </span>Model:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\m</span>odels<span class="se">\s</span>egmenter<span class="se">\t</span>orch<span class="se">\s</span>am2.1_t.pt
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>Classification<span class="w"> </span>Model:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\l</span>enova<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\c</span>ulicidaelab<span class="se">\c</span>ulicidaelab<span class="se">\m</span>odels<span class="se">\c</span>lassifier<span class="se">\t</span>orch<span class="se">\c</span>ulico-net-cls-v1-17.pkl
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 82-87 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 83-88 -->
 
 <h2 id="3-working-with-species-configuration">3. Working with Species Configuration</h2>
 <p>All species-related information, including class names and detailed metadata,
 is managed through the <code>species_config</code> property. This is crucial for interpreting
 the output of the classification model.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 89-90 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 90-91 -->
 
 <p>Get the dedicated species configuration object</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 90-105 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 91-106 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">species_config</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">species_config</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># You can easily retrieve the mapping of class indices to species names.</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Species Index-to-Name Mapping ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">species_config</span><span class="o">.</span><span class="n">species_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">species</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># You can also fetch detailed metadata for any specific species.</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="n">species_name</span> <span class="o">=</span> <span class="s2">&quot;Aedes aegypti&quot;</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="n">metadata</span> <span class="o">=</span> <span class="n">species_config</span><span class="o">.</span><span class="n">get_species_metadata</span><span class="p">(</span><span class="n">species_name</span><span class="p">)</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Metadata for &#39;</span><span class="si">{</span><span class="n">species_name</span><span class="si">}</span><span class="s2">&#39; ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">species_config</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">species_config</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="c1"># You can easily retrieve the mapping of class indices to species names.</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Species Index-to-Name Mapping ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">species_config</span><span class="o">.</span><span class="n">species_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">species</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="c1"># You can also fetch detailed metadata for any specific species.</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="n">species_name</span> <span class="o">=</span> <span class="s2">&quot;Aedes aegypti&quot;</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="n">metadata</span> <span class="o">=</span> <span class="n">species_config</span><span class="o">.</span><span class="n">get_species_metadata</span><span class="p">(</span><span class="n">species_name</span><span class="p">)</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Metadata for &#39;</span><span class="si">{</span><span class="n">species_name</span><span class="si">}</span><span class="s2">&#39; ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>---<span class="w"> </span>Species<span class="w"> </span>Index-to-Name<span class="w"> </span>Mapping<span class="w"> </span>---
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>Class<span class="w"> </span><span class="m">0</span>:<span class="w"> </span>Aedes<span class="w"> </span>aegypti
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>Class<span class="w"> </span><span class="m">1</span>:<span class="w"> </span>Aedes<span class="w"> </span>albopictus
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>Class<span class="w"> </span><span class="m">2</span>:<span class="w"> </span>Aedes<span class="w"> </span>canadensis
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>Class<span class="w"> </span><span class="m">3</span>:<span class="w"> </span>Aedes<span class="w"> </span>dorsalis
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>Class<span class="w"> </span><span class="m">4</span>:<span class="w"> </span>Aedes<span class="w"> </span>geniculatus
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>Class<span class="w"> </span><span class="m">5</span>:<span class="w"> </span>Aedes<span class="w"> </span>koreicus
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>Class<span class="w"> </span><span class="m">6</span>:<span class="w"> </span>Aedes<span class="w"> </span>triseriatus
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>Class<span class="w"> </span><span class="m">7</span>:<span class="w"> </span>Aedes<span class="w"> </span>vexans
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>Class<span class="w"> </span><span class="m">8</span>:<span class="w"> </span>Anopheles<span class="w"> </span>arabiensis
-<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>Class<span class="w"> </span><span class="m">9</span>:<span class="w"> </span>Anopheles<span class="w"> </span>freeborni
-<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>Class<span class="w"> </span><span class="m">10</span>:<span class="w"> </span>Anopheles<span class="w"> </span>sinensis
-<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>Class<span class="w"> </span><span class="m">11</span>:<span class="w"> </span>Species<span class="w"> </span>not<span class="w"> </span>defined
-<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>Class<span class="w"> </span><span class="m">12</span>:<span class="w"> </span>Culex<span class="w"> </span>inatomii
-<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>Class<span class="w"> </span><span class="m">13</span>:<span class="w"> </span>Culex<span class="w"> </span>pipiens
-<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>Class<span class="w"> </span><span class="m">14</span>:<span class="w"> </span>Culex<span class="w"> </span>quinquefasciatus
-<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>Class<span class="w"> </span><span class="m">15</span>:<span class="w"> </span>Culex<span class="w"> </span>tritaeniorhynchus
-<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>Class<span class="w"> </span><span class="m">16</span>:<span class="w"> </span>Culiseta<span class="w"> </span>annulata
-<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>Class<span class="w"> </span><span class="m">17</span>:<span class="w"> </span>Culiseta<span class="w"> </span>longiareolata
-<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>
-<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>---<span class="w"> </span>Metadata<span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="s1">&#39;Aedes aegypti&#39;</span><span class="w"> </span>---
-<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>common_name:<span class="w"> </span>Yellow<span class="w"> </span>fever<span class="w"> </span>mosquito
-<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>taxonomy:<span class="w"> </span><span class="o">{</span><span class="s1">&#39;family&#39;</span>:<span class="w"> </span><span class="s1">&#39;Culicidae&#39;</span>,<span class="w"> </span><span class="s1">&#39;subfamily&#39;</span>:<span class="w"> </span><span class="s1">&#39;Culicinae&#39;</span>,<span class="w"> </span><span class="s1">&#39;genus&#39;</span>:<span class="w"> </span><span class="s1">&#39;Aedes&#39;</span>,<span class="w"> </span><span class="s1">&#39;subgenus&#39;</span>:<span class="w"> </span><span class="s1">&#39;Stegomyia&#39;</span>,<span class="w"> </span><span class="s1">&#39;species_complex&#39;</span>:<span class="w"> </span>None<span class="o">}</span>
-<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>metadata:<span class="w"> </span><span class="o">{</span><span class="s1">&#39;vector_status&#39;</span>:<span class="w"> </span>True,<span class="w"> </span><span class="s1">&#39;diseases&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;Yellow fever&#39;</span>,<span class="w"> </span><span class="s1">&#39;Dengue&#39;</span>,<span class="w"> </span><span class="s1">&#39;Zika&#39;</span><span class="o">]</span>,<span class="w"> </span><span class="s1">&#39;habitat&#39;</span>:<span class="w"> </span><span class="s1">&#39;Urban&#39;</span>,<span class="w"> </span><span class="s1">&#39;breeding_sites&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;Artificial containers&#39;</span>,<span class="w"> </span><span class="s1">&#39;Tree holes&#39;</span><span class="o">]</span>,<span class="w"> </span><span class="s1">&#39;sources&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;https://www.cdc.gov/zika/geo/aedes-aegypti.html&#39;</span><span class="o">]}</span>
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>---<span class="w"> </span>Species<span class="w"> </span>Index-to-Name<span class="w"> </span>Mapping<span class="w"> </span>---
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>Class<span class="w"> </span><span class="m">0</span>:<span class="w"> </span>Aedes<span class="w"> </span>aegypti
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>Class<span class="w"> </span><span class="m">1</span>:<span class="w"> </span>Aedes<span class="w"> </span>albopictus
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>Class<span class="w"> </span><span class="m">2</span>:<span class="w"> </span>Aedes<span class="w"> </span>canadensis
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>Class<span class="w"> </span><span class="m">3</span>:<span class="w"> </span>Aedes<span class="w"> </span>dorsalis
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>Class<span class="w"> </span><span class="m">4</span>:<span class="w"> </span>Aedes<span class="w"> </span>geniculatus
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>Class<span class="w"> </span><span class="m">5</span>:<span class="w"> </span>Aedes<span class="w"> </span>koreicus
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>Class<span class="w"> </span><span class="m">6</span>:<span class="w"> </span>Aedes<span class="w"> </span>triseriatus
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>Class<span class="w"> </span><span class="m">7</span>:<span class="w"> </span>Aedes<span class="w"> </span>vexans
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>Class<span class="w"> </span><span class="m">8</span>:<span class="w"> </span>Anopheles<span class="w"> </span>arabiensis
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>Class<span class="w"> </span><span class="m">9</span>:<span class="w"> </span>Anopheles<span class="w"> </span>freeborni
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>Class<span class="w"> </span><span class="m">10</span>:<span class="w"> </span>Anopheles<span class="w"> </span>sinensis
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>Class<span class="w"> </span><span class="m">11</span>:<span class="w"> </span>Species<span class="w"> </span>not<span class="w"> </span>defined
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>Class<span class="w"> </span><span class="m">12</span>:<span class="w"> </span>Culex<span class="w"> </span>inatomii
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>Class<span class="w"> </span><span class="m">13</span>:<span class="w"> </span>Culex<span class="w"> </span>pipiens
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>Class<span class="w"> </span><span class="m">14</span>:<span class="w"> </span>Culex<span class="w"> </span>quinquefasciatus
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>Class<span class="w"> </span><span class="m">15</span>:<span class="w"> </span>Culex<span class="w"> </span>tritaeniorhynchus
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>Class<span class="w"> </span><span class="m">16</span>:<span class="w"> </span>Culiseta<span class="w"> </span>annulata
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>Class<span class="w"> </span><span class="m">17</span>:<span class="w"> </span>Culiseta<span class="w"> </span>longiareolata
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>---<span class="w"> </span>Metadata<span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="s1">&#39;Aedes aegypti&#39;</span><span class="w"> </span>---
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>common_name:<span class="w"> </span>Yellow<span class="w"> </span>fever<span class="w"> </span>mosquito
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>taxonomy:<span class="w"> </span><span class="o">{</span><span class="s1">&#39;family&#39;</span>:<span class="w"> </span><span class="s1">&#39;Culicidae&#39;</span>,<span class="w"> </span><span class="s1">&#39;subfamily&#39;</span>:<span class="w"> </span><span class="s1">&#39;Culicinae&#39;</span>,<span class="w"> </span><span class="s1">&#39;genus&#39;</span>:<span class="w"> </span><span class="s1">&#39;Aedes&#39;</span>,<span class="w"> </span><span class="s1">&#39;subgenus&#39;</span>:<span class="w"> </span><span class="s1">&#39;Stegomyia&#39;</span>,<span class="w"> </span><span class="s1">&#39;species_complex&#39;</span>:<span class="w"> </span>None<span class="o">}</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>metadata:<span class="w"> </span><span class="o">{</span><span class="s1">&#39;vector_status&#39;</span>:<span class="w"> </span>True,<span class="w"> </span><span class="s1">&#39;diseases&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;Yellow fever&#39;</span>,<span class="w"> </span><span class="s1">&#39;Dengue&#39;</span>,<span class="w"> </span><span class="s1">&#39;Zika&#39;</span><span class="o">]</span>,<span class="w"> </span><span class="s1">&#39;habitat&#39;</span>:<span class="w"> </span><span class="s1">&#39;Urban&#39;</span>,<span class="w"> </span><span class="s1">&#39;breeding_sites&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;Artificial containers&#39;</span>,<span class="w"> </span><span class="s1">&#39;Tree holes&#39;</span><span class="o">]</span>,<span class="w"> </span><span class="s1">&#39;sources&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;https://www.cdc.gov/zika/geo/aedes-aegypti.html&#39;</span><span class="o">]}</span>
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 106-113 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 107-114 -->
 
 <h2 id="4-using-a-custom-configuration-directory">4. Using a Custom Configuration Directory</h2>
 <p>For advanced use cases, such as providing your own species metadata or changing
 default model parameters, you can point the library to a custom configuration directory.</p>
 <p><code>CulicidaeLab</code> will load your custom <code>.yaml</code> files and merge them on top of the defaults.
 This allows you to override only the settings you need to change.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 115-116 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 116-117 -->
 
 <p>Create a custom config directory and a new config file</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 116-183 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 117-184 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">custom_config_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;custom_configs&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">custom_config_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Define a minimal custom configuration. We&#39;ll just override the species info.</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1"># Any settings not defined here will fall back to the library&#39;s defaults.</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="n">example_config</span> <span class="o">=</span> <span class="p">{</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="s2">&quot;species&quot;</span><span class="p">:</span> <span class="p">{</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>        <span class="s2">&quot;species_classes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;Aedes aegypti&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;Anopheles gambiae&quot;</span><span class="p">},</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>        <span class="s2">&quot;species_metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>            <span class="s2">&quot;species_info_mapping&quot;</span><span class="p">:</span> <span class="p">{</span>
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>                <span class="s2">&quot;aedes_aegypti&quot;</span><span class="p">:</span> <span class="s2">&quot;Aedes aegypti&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>                <span class="s2">&quot;anopheles_gambiae&quot;</span><span class="p">:</span> <span class="s2">&quot;Anopheles gambiae&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>            <span class="p">},</span>
-<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>            <span class="s2">&quot;species_metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>                <span class="s2">&quot;Aedes aegypti&quot;</span><span class="p">:</span> <span class="p">{</span>
-<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>                    <span class="s2">&quot;common_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Custom Yellow Fever Mosquito&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>                    <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="p">{</span>
-<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>                        <span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="s2">&quot;Culicidae&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>                        <span class="s2">&quot;subfamily&quot;</span><span class="p">:</span> <span class="s2">&quot;Culicinae&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>                        <span class="s2">&quot;genus&quot;</span><span class="p">:</span> <span class="s2">&quot;Aedes&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>                    <span class="p">},</span>
-<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>                    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>                        <span class="s2">&quot;vector_status&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>                        <span class="s2">&quot;diseases&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Dengue&quot;</span><span class="p">,</span> <span class="s2">&quot;Zika&quot;</span><span class="p">],</span>
-<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>                        <span class="s2">&quot;habitat&quot;</span><span class="p">:</span> <span class="s2">&quot;Urban&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>                        <span class="s2">&quot;breeding_sites&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Artificial containers&quot;</span><span class="p">],</span>
-<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>                        <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;custom_source&quot;</span><span class="p">],</span>
-<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>                    <span class="p">},</span>
-<a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>                <span class="p">},</span>
-<a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>                <span class="s2">&quot;Anopheles gambiae&quot;</span><span class="p">:</span> <span class="p">{</span>
-<a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>                    <span class="s2">&quot;common_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Custom African Malaria Mosquito&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>                    <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="p">{</span>
-<a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a>                        <span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="s2">&quot;Culicidae&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>                        <span class="s2">&quot;subfamily&quot;</span><span class="p">:</span> <span class="s2">&quot;Anophelinae&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a>                        <span class="s2">&quot;genus&quot;</span><span class="p">:</span> <span class="s2">&quot;Anopheles&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a>                    <span class="p">},</span>
-<a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a>                    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-<a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a>                        <span class="s2">&quot;vector_status&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a>                        <span class="s2">&quot;diseases&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Malaria&quot;</span><span class="p">],</span>
-<a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a>                        <span class="s2">&quot;habitat&quot;</span><span class="p">:</span> <span class="s2">&quot;Rural&quot;</span><span class="p">,</span>
-<a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a>                        <span class="s2">&quot;breeding_sites&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Puddles&quot;</span><span class="p">],</span>
-<a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a>                        <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;custom_source&quot;</span><span class="p">],</span>
-<a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a>                    <span class="p">},</span>
-<a id="__codelineno-9-44" name="__codelineno-9-44" href="#__codelineno-9-44"></a>                <span class="p">},</span>
-<a id="__codelineno-9-45" name="__codelineno-9-45" href="#__codelineno-9-45"></a>            <span class="p">},</span>
-<a id="__codelineno-9-46" name="__codelineno-9-46" href="#__codelineno-9-46"></a>        <span class="p">},</span>
-<a id="__codelineno-9-47" name="__codelineno-9-47" href="#__codelineno-9-47"></a>    <span class="p">},</span>
-<a id="__codelineno-9-48" name="__codelineno-9-48" href="#__codelineno-9-48"></a><span class="p">}</span>
-<a id="__codelineno-9-49" name="__codelineno-9-49" href="#__codelineno-9-49"></a>
-<a id="__codelineno-9-50" name="__codelineno-9-50" href="#__codelineno-9-50"></a>
-<a id="__codelineno-9-51" name="__codelineno-9-51" href="#__codelineno-9-51"></a><span class="c1"># Write the custom config file</span>
-<a id="__codelineno-9-52" name="__codelineno-9-52" href="#__codelineno-9-52"></a><span class="n">config_file_path</span> <span class="o">=</span> <span class="n">custom_config_dir</span> <span class="o">/</span> <span class="s2">&quot;species.yaml&quot;</span>
-<a id="__codelineno-9-53" name="__codelineno-9-53" href="#__codelineno-9-53"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<a id="__codelineno-9-54" name="__codelineno-9-54" href="#__codelineno-9-54"></a>    <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">example_config</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-<a id="__codelineno-9-55" name="__codelineno-9-55" href="#__codelineno-9-55"></a>
-<a id="__codelineno-9-56" name="__codelineno-9-56" href="#__codelineno-9-56"></a><span class="c1"># Now, initialize settings with the path to our custom directory.</span>
-<a id="__codelineno-9-57" name="__codelineno-9-57" href="#__codelineno-9-57"></a><span class="c1"># `get_settings` is smart enough to create a *new* instance if a different config_dir is provided.</span>
-<a id="__codelineno-9-58" name="__codelineno-9-58" href="#__codelineno-9-58"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Initializing with Custom Settings ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-59" name="__codelineno-9-59" href="#__codelineno-9-59"></a><span class="n">custom_settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">(</span><span class="n">config_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">custom_config_dir</span><span class="p">))</span>
-<a id="__codelineno-9-60" name="__codelineno-9-60" href="#__codelineno-9-60"></a>
-<a id="__codelineno-9-61" name="__codelineno-9-61" href="#__codelineno-9-61"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Active Config Directory: </span><span class="si">{</span><span class="n">custom_settings</span><span class="o">.</span><span class="n">config_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-62" name="__codelineno-9-62" href="#__codelineno-9-62"></a>
-<a id="__codelineno-9-63" name="__codelineno-9-63" href="#__codelineno-9-63"></a><span class="c1"># Let&#39;s check if our custom species map was loaded</span>
-<a id="__codelineno-9-64" name="__codelineno-9-64" href="#__codelineno-9-64"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Custom Species Mapping ---&quot;</span><span class="p">)</span>
-<a id="__codelineno-9-65" name="__codelineno-9-65" href="#__codelineno-9-65"></a><span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">custom_settings</span><span class="o">.</span><span class="n">species_config</span><span class="o">.</span><span class="n">species_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-<a id="__codelineno-9-66" name="__codelineno-9-66" href="#__codelineno-9-66"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">species</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">custom_config_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;custom_configs&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">custom_config_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Define a minimal custom configuration. We&#39;ll just override the species info.</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="c1"># Any settings not defined here will fall back to the library&#39;s defaults.</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="n">example_config</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="s2">&quot;species&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>        <span class="s2">&quot;species_classes&quot;</span><span class="p">:</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;Aedes aegypti&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;Anopheles gambiae&quot;</span><span class="p">},</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="s2">&quot;species_metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>            <span class="s2">&quot;species_info_mapping&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>                <span class="s2">&quot;aedes_aegypti&quot;</span><span class="p">:</span> <span class="s2">&quot;Aedes aegypti&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>                <span class="s2">&quot;anopheles_gambiae&quot;</span><span class="p">:</span> <span class="s2">&quot;Anopheles gambiae&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>            <span class="p">},</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>            <span class="s2">&quot;species_metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>                <span class="s2">&quot;Aedes aegypti&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>                    <span class="s2">&quot;common_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Custom Yellow Fever Mosquito&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>                    <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>                        <span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="s2">&quot;Culicidae&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>                        <span class="s2">&quot;subfamily&quot;</span><span class="p">:</span> <span class="s2">&quot;Culicinae&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>                        <span class="s2">&quot;genus&quot;</span><span class="p">:</span> <span class="s2">&quot;Aedes&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>                    <span class="p">},</span>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a>                    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>                        <span class="s2">&quot;vector_status&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a>                        <span class="s2">&quot;diseases&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Dengue&quot;</span><span class="p">,</span> <span class="s2">&quot;Zika&quot;</span><span class="p">],</span>
+<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a>                        <span class="s2">&quot;habitat&quot;</span><span class="p">:</span> <span class="s2">&quot;Urban&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a>                        <span class="s2">&quot;breeding_sites&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Artificial containers&quot;</span><span class="p">],</span>
+<a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a>                        <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;custom_source&quot;</span><span class="p">],</span>
+<a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a>                    <span class="p">},</span>
+<a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>                <span class="p">},</span>
+<a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a>                <span class="s2">&quot;Anopheles gambiae&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>                    <span class="s2">&quot;common_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Custom African Malaria Mosquito&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a>                    <span class="s2">&quot;taxonomy&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a>                        <span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="s2">&quot;Culicidae&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a>                        <span class="s2">&quot;subfamily&quot;</span><span class="p">:</span> <span class="s2">&quot;Anophelinae&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a>                        <span class="s2">&quot;genus&quot;</span><span class="p">:</span> <span class="s2">&quot;Anopheles&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a>                    <span class="p">},</span>
+<a id="__codelineno-10-37" name="__codelineno-10-37" href="#__codelineno-10-37"></a>                    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-10-38" name="__codelineno-10-38" href="#__codelineno-10-38"></a>                        <span class="s2">&quot;vector_status&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-10-39" name="__codelineno-10-39" href="#__codelineno-10-39"></a>                        <span class="s2">&quot;diseases&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Malaria&quot;</span><span class="p">],</span>
+<a id="__codelineno-10-40" name="__codelineno-10-40" href="#__codelineno-10-40"></a>                        <span class="s2">&quot;habitat&quot;</span><span class="p">:</span> <span class="s2">&quot;Rural&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-41" name="__codelineno-10-41" href="#__codelineno-10-41"></a>                        <span class="s2">&quot;breeding_sites&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Puddles&quot;</span><span class="p">],</span>
+<a id="__codelineno-10-42" name="__codelineno-10-42" href="#__codelineno-10-42"></a>                        <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;custom_source&quot;</span><span class="p">],</span>
+<a id="__codelineno-10-43" name="__codelineno-10-43" href="#__codelineno-10-43"></a>                    <span class="p">},</span>
+<a id="__codelineno-10-44" name="__codelineno-10-44" href="#__codelineno-10-44"></a>                <span class="p">},</span>
+<a id="__codelineno-10-45" name="__codelineno-10-45" href="#__codelineno-10-45"></a>            <span class="p">},</span>
+<a id="__codelineno-10-46" name="__codelineno-10-46" href="#__codelineno-10-46"></a>        <span class="p">},</span>
+<a id="__codelineno-10-47" name="__codelineno-10-47" href="#__codelineno-10-47"></a>    <span class="p">},</span>
+<a id="__codelineno-10-48" name="__codelineno-10-48" href="#__codelineno-10-48"></a><span class="p">}</span>
+<a id="__codelineno-10-49" name="__codelineno-10-49" href="#__codelineno-10-49"></a>
+<a id="__codelineno-10-50" name="__codelineno-10-50" href="#__codelineno-10-50"></a>
+<a id="__codelineno-10-51" name="__codelineno-10-51" href="#__codelineno-10-51"></a><span class="c1"># Write the custom config file</span>
+<a id="__codelineno-10-52" name="__codelineno-10-52" href="#__codelineno-10-52"></a><span class="n">config_file_path</span> <span class="o">=</span> <span class="n">custom_config_dir</span> <span class="o">/</span> <span class="s2">&quot;species.yaml&quot;</span>
+<a id="__codelineno-10-53" name="__codelineno-10-53" href="#__codelineno-10-53"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-10-54" name="__codelineno-10-54" href="#__codelineno-10-54"></a>    <span class="n">yaml</span><span class="o">.</span><span class="n">safe_dump</span><span class="p">(</span><span class="n">example_config</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<a id="__codelineno-10-55" name="__codelineno-10-55" href="#__codelineno-10-55"></a>
+<a id="__codelineno-10-56" name="__codelineno-10-56" href="#__codelineno-10-56"></a><span class="c1"># Now, initialize settings with the path to our custom directory.</span>
+<a id="__codelineno-10-57" name="__codelineno-10-57" href="#__codelineno-10-57"></a><span class="c1"># `get_settings` is smart enough to create a *new* instance if a different config_dir is provided.</span>
+<a id="__codelineno-10-58" name="__codelineno-10-58" href="#__codelineno-10-58"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Initializing with Custom Settings ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-59" name="__codelineno-10-59" href="#__codelineno-10-59"></a><span class="n">custom_settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">(</span><span class="n">config_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">custom_config_dir</span><span class="p">))</span>
+<a id="__codelineno-10-60" name="__codelineno-10-60" href="#__codelineno-10-60"></a>
+<a id="__codelineno-10-61" name="__codelineno-10-61" href="#__codelineno-10-61"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Active Config Directory: </span><span class="si">{</span><span class="n">custom_settings</span><span class="o">.</span><span class="n">config_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-62" name="__codelineno-10-62" href="#__codelineno-10-62"></a>
+<a id="__codelineno-10-63" name="__codelineno-10-63" href="#__codelineno-10-63"></a><span class="c1"># Let&#39;s check if our custom species map was loaded</span>
+<a id="__codelineno-10-64" name="__codelineno-10-64" href="#__codelineno-10-64"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Custom Species Mapping ---&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-65" name="__codelineno-10-65" href="#__codelineno-10-65"></a><span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">species</span> <span class="ow">in</span> <span class="n">custom_settings</span><span class="o">.</span><span class="n">species_config</span><span class="o">.</span><span class="n">species_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-10-66" name="__codelineno-10-66" href="#__codelineno-10-66"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">species</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>---<span class="w"> </span>Initializing<span class="w"> </span>with<span class="w"> </span>Custom<span class="w"> </span>Settings<span class="w"> </span>---
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>Active<span class="w"> </span>Config<span class="w"> </span>Directory:<span class="w"> </span>custom_configs
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>---<span class="w"> </span>Custom<span class="w"> </span>Species<span class="w"> </span>Mapping<span class="w"> </span>---
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>Class<span class="w"> </span><span class="m">0</span>:<span class="w"> </span>Aedes<span class="w"> </span>aegypti
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>Class<span class="w"> </span><span class="m">1</span>:<span class="w"> </span>Aedes<span class="w"> </span>albopictus
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>Class<span class="w"> </span><span class="m">2</span>:<span class="w"> </span>Aedes<span class="w"> </span>canadensis
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>Class<span class="w"> </span><span class="m">3</span>:<span class="w"> </span>Aedes<span class="w"> </span>dorsalis
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>Class<span class="w"> </span><span class="m">4</span>:<span class="w"> </span>Aedes<span class="w"> </span>geniculatus
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>Class<span class="w"> </span><span class="m">5</span>:<span class="w"> </span>Aedes<span class="w"> </span>koreicus
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>Class<span class="w"> </span><span class="m">6</span>:<span class="w"> </span>Aedes<span class="w"> </span>triseriatus
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>Class<span class="w"> </span><span class="m">7</span>:<span class="w"> </span>Aedes<span class="w"> </span>vexans
-<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>Class<span class="w"> </span><span class="m">8</span>:<span class="w"> </span>Anopheles<span class="w"> </span>arabiensis
-<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>Class<span class="w"> </span><span class="m">9</span>:<span class="w"> </span>Anopheles<span class="w"> </span>freeborni
-<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>Class<span class="w"> </span><span class="m">10</span>:<span class="w"> </span>Anopheles<span class="w"> </span>sinensis
-<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>Class<span class="w"> </span><span class="m">11</span>:<span class="w"> </span>Species<span class="w"> </span>not<span class="w"> </span>defined
-<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>Class<span class="w"> </span><span class="m">12</span>:<span class="w"> </span>Culex<span class="w"> </span>inatomii
-<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>Class<span class="w"> </span><span class="m">13</span>:<span class="w"> </span>Culex<span class="w"> </span>pipiens
-<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>Class<span class="w"> </span><span class="m">14</span>:<span class="w"> </span>Culex<span class="w"> </span>quinquefasciatus
-<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>Class<span class="w"> </span><span class="m">15</span>:<span class="w"> </span>Culex<span class="w"> </span>tritaeniorhynchus
-<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>Class<span class="w"> </span><span class="m">16</span>:<span class="w"> </span>Culiseta<span class="w"> </span>annulata
-<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a>Class<span class="w"> </span><span class="m">17</span>:<span class="w"> </span>Culiseta<span class="w"> </span>longiareolata
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>---<span class="w"> </span>Initializing<span class="w"> </span>with<span class="w"> </span>Custom<span class="w"> </span>Settings<span class="w"> </span>---
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>Active<span class="w"> </span>Config<span class="w"> </span>Directory:<span class="w"> </span>custom_configs
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>---<span class="w"> </span>Custom<span class="w"> </span>Species<span class="w"> </span>Mapping<span class="w"> </span>---
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>Class<span class="w"> </span><span class="m">0</span>:<span class="w"> </span>Aedes<span class="w"> </span>aegypti
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>Class<span class="w"> </span><span class="m">1</span>:<span class="w"> </span>Aedes<span class="w"> </span>albopictus
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>Class<span class="w"> </span><span class="m">2</span>:<span class="w"> </span>Aedes<span class="w"> </span>canadensis
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>Class<span class="w"> </span><span class="m">3</span>:<span class="w"> </span>Aedes<span class="w"> </span>dorsalis
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>Class<span class="w"> </span><span class="m">4</span>:<span class="w"> </span>Aedes<span class="w"> </span>geniculatus
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>Class<span class="w"> </span><span class="m">5</span>:<span class="w"> </span>Aedes<span class="w"> </span>koreicus
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>Class<span class="w"> </span><span class="m">6</span>:<span class="w"> </span>Aedes<span class="w"> </span>triseriatus
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>Class<span class="w"> </span><span class="m">7</span>:<span class="w"> </span>Aedes<span class="w"> </span>vexans
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>Class<span class="w"> </span><span class="m">8</span>:<span class="w"> </span>Anopheles<span class="w"> </span>arabiensis
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>Class<span class="w"> </span><span class="m">9</span>:<span class="w"> </span>Anopheles<span class="w"> </span>freeborni
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>Class<span class="w"> </span><span class="m">10</span>:<span class="w"> </span>Anopheles<span class="w"> </span>sinensis
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>Class<span class="w"> </span><span class="m">11</span>:<span class="w"> </span>Species<span class="w"> </span>not<span class="w"> </span>defined
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>Class<span class="w"> </span><span class="m">12</span>:<span class="w"> </span>Culex<span class="w"> </span>inatomii
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>Class<span class="w"> </span><span class="m">13</span>:<span class="w"> </span>Culex<span class="w"> </span>pipiens
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>Class<span class="w"> </span><span class="m">14</span>:<span class="w"> </span>Culex<span class="w"> </span>quinquefasciatus
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>Class<span class="w"> </span><span class="m">15</span>:<span class="w"> </span>Culex<span class="w"> </span>tritaeniorhynchus
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>Class<span class="w"> </span><span class="m">16</span>:<span class="w"> </span>Culiseta<span class="w"> </span>annulata
+<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a>Class<span class="w"> </span><span class="m">17</span>:<span class="w"> </span>Culiseta<span class="w"> </span>longiareolata
 </code></pre></div>
-<!-- GENERATED FROM PYTHON SOURCE LINES 184-190 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 185-191 -->
 
 <h2 id="5-overriding-a-single-configuration-value">5. Overriding a Single Configuration Value</h2>
 <p>Sometimes, you may only want to change a single value at runtime without creating new YAML files.
 The <code>set_config</code> method is perfect for this.</p>
 <p>Let's load the default settings and change the confidence threshold for the detector.</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 192-193 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 193-194 -->
 
 <p>Load default settings again (or use the previous 'settings' instance)</p>
-<!-- GENERATED FROM PYTHON SOURCE LINES 193-201 -->
+<!-- GENERATED FROM PYTHON SOURCE LINES 194-202 -->
 
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">runtime_settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">original_confidence</span> <span class="o">=</span> <span class="n">runtime_settings</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;predictors.detector.confidence&quot;</span><span class="p">)</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Original detector confidence: </span><span class="si">{</span><span class="n">original_confidence</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="c1"># Set a new confidence value at runtime</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="n">runtime_settings</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;predictors.detector.confidence&quot;</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">)</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="n">new_confidence</span> <span class="o">=</span> <span class="n">runtime_settings</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;predictors.detector.confidence&quot;</span><span class="p">)</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;New detector confidence: </span><span class="si">{</span><span class="n">new_confidence</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">runtime_settings</span> <span class="o">=</span> <span class="n">get_settings</span><span class="p">()</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">original_confidence</span> <span class="o">=</span> <span class="n">runtime_settings</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;predictors.detector.confidence&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Original detector confidence: </span><span class="si">{</span><span class="n">original_confidence</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1"># Set a new confidence value at runtime</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="n">runtime_settings</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;predictors.detector.confidence&quot;</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">)</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="n">new_confidence</span> <span class="o">=</span> <span class="n">runtime_settings</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;predictors.detector.confidence&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;New detector confidence: </span><span class="si">{</span><span class="n">new_confidence</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p class="mkd-glr-script-out">Out:</p>
-<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>Original<span class="w"> </span>detector<span class="w"> </span>confidence:<span class="w"> </span><span class="m">0</span>.25
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>New<span class="w"> </span>detector<span class="w"> </span>confidence:<span class="w"> </span><span class="m">0</span>.85
+<div class="mkd-glr-script-out-disp highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>Original<span class="w"> </span>detector<span class="w"> </span>confidence:<span class="w"> </span><span class="m">0</span>.25
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>New<span class="w"> </span>detector<span class="w"> </span>confidence:<span class="w"> </span><span class="m">0</span>.85
 </code></pre></div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  5.820 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  5.359 seconds)</p>
 <div id="download_links"></div>
 
 <p><a class="md-button center" href="../tutorial_part_0_settings_example.py"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32v242.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64h384c35.3 0 64-28.7 64-64v-32c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48"/></svg></span> Download Python source code: tutorial_part_0_settings_example.py</a></p>

@@ -30,11 +30,11 @@ This guide will cover:
 - **Clearing the Cache**: How to clear the cache when needed.
 """
 
-# %%
-# Install the `culicidaelab` library if not already installed
-# # !pip install -q culicidaelab
-
 # %% [markdown]
+# Install the `culicidaelab` library if not already installed
+# ```bash
+# !pip install -q culicidaelab[full]
+# ```
 # ## 1. Initialization and Setup
 #
 # We will initialize the `DatasetsManager` to get some sample data.

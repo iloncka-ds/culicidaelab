@@ -30,7 +30,8 @@ and model parameters throughout the library.
 # or, if you have access to GPU
 # ```bash
 # !pip install -q culicidaelab[full-gpu]
-# `
+# ```
+# Import necessary libraries
 
 # %%
 import yaml

@@ -38,9 +38,8 @@ library to perform object detection on images. We will cover:
 # or, if you have access to GPU
 # ```bash
 # !pip install -q culicidaelab[full-gpu]
-# `
-
-# %% [markdown]
+# ```
+#
 # ## 1. Initialization
 #
 # First, we'll get the global `settings` instance and use it to initialize our `MosquitoDetector`.
@@ -48,7 +47,6 @@ library to perform object detection on images. We will cover:
 # If the model file doesn't exist locally, it will be downloaded automatically.
 
 # %%
-
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import matplotlib.pyplot as plt
