@@ -1,14 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CulicidaeLab Server Documentation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #66eacb 0%, #4ba274 100%);
+        }
+        .container {
+            background: white;
+            padding: 3rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 { color: #333; margin-bottom: 2rem; font-size: 2rem; }
+        .lang-buttons { display: flex; gap: 1rem; justify-content: center; }
+        .lang-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: #66eab5fe;
+            color: black;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: transform 0.2s;
+            min-width: 150px;
+        }
+        .lang-button:hover {
+            transform: translateY(-2px);
+            background: #55d3a3;
+        }
+    </style>
 </head>
 <body>
-    <h1>Select Language / Выберите язык</h1>
-    <ul>
-        <li><a href="en/">English Documentation</a></li>
-        <li><a href="ru/">Русская документация</a></li>
-    </ul>
+    <div class="container">
+        <h1>🦟 CulicidaeLab</h1>
+        <p style="color: #666; margin-bottom: 2rem;">Select language / Выберите язык</p>
+        <div class="lang-buttons">
+            <a href="en/" class="lang-button">🇬🇧 English</a>
+            <a href="ru/" class="lang-button">🇷🇺 Русский</a>
+        </div>
+    </div>
 </body>
 </html>

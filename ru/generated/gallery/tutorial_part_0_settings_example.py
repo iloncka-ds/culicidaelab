@@ -5,9 +5,16 @@
 Объект `settings` является основной точкой входа для доступа к конфигурациям, путям к файлам
 и параметрам моделей во всей библиотеке.
 """
-# %%
+
+# %% [markdown]
 # Установите библиотеку `culicidaelab`, если она еще не установлена
-# !pip install -q culicidaelab
+# ```bash
+# !pip install -q culicidaelab[full]
+# ```
+# или, если есть доступ к GPU
+# ```bash
+# !pip install -q culicidaelab[full-gpu]
+# `
 
 # %%
 import yaml

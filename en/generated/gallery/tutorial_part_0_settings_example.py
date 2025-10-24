@@ -22,9 +22,15 @@ This tutorial demonstrates how to use the core `settings` object in CulicidaeLab
 The `settings` object is the main entry point for accessing configurations, file paths,
 and model parameters throughout the library.
 """
-# %%
+# %% [markdown]
 # Install the `culicidaelab` library if not already installed
-# # !pip install -q culicidaelab
+# ```bash
+# !pip install -q culicidaelab[full]
+# ```
+# or, if you have access to GPU
+# ```bash
+# !pip install -q culicidaelab[full-gpu]
+# `
 
 # %%
 import yaml

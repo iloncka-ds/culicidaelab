@@ -32,9 +32,11 @@ CulicidaeLab для высокопроизводительной работы н
 - **Очистка кэша**: Как очистить кэш при необходимости.
 """
 
-# %%
+# %% [markdown]
 # Установите библиотеку `culicidaelab`, если она еще не установлена
-# # !pip install -q culicidaelab
+# ```bash
+# !pip install -q culicidaelab
+# ```
 
 # %% [markdown]
 # ## 1. Инициализация и настройка

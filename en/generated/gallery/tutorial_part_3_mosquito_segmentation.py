@@ -29,9 +29,15 @@ to perform mosquito segmentation on images. We'll cover:
 
 """
 
-# %%
+# %% [markdown]
 # Install the `culicidaelab` library if not already installed
-# # !pip install -q culicidaelab
+# ```bash
+# !pip install -q culicidaelab[full]
+# ```
+# or, if you have access to GPU
+# ```bash
+# !pip install -q culicidaelab[full-gpu]
+# `
 
 # %%
 import matplotlib.pyplot as plt

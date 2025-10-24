@@ -32,9 +32,15 @@ This guide will cover:
 - **Reporting**: How to generate and visualize a comprehensive performance report.
 """
 
-# %%
+# %% [markdown]
 # Install the `culicidaelab` library if not already installed
-# # !pip install -q culicidaelab
+# ```bash
+# !pip install -q culicidaelab[full]
+# ```
+# or, if you have access to GPU
+# ```bash
+# !pip install -q culicidaelab[full-gpu]
+# `
 
 # %% [markdown]
 # ## 1. Initialization and Setup

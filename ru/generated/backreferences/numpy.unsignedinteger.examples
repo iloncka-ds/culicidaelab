@@ -3,6 +3,20 @@
 Examples using ``numpy.unsignedinteger``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+<div class="mkd-glr-thumbcontainer" tooltip="Это руководство демонстрирует, как использовать DatasetsManager в CulicidaeLab для взаимодейств...">
+    <!--div class="figure align-default" id="id1"-->
+        <img alt="Управление и загрузка наборов данных" src="images\thumb\mkd_glr_tutorial_part_1_datasets_example_thumb.png" />
+        <p class="caption">
+            <span class="caption-text">
+                <a class="reference internal" href="tutorial_part_1_datasets_example">
+                    <span class="std std-ref">Управление и загрузка наборов данных</span>
+                </a>
+            </span>
+            <!--a class="headerlink" href="#id1" title="Permalink to this image"></a-->
+        </p>
+    <!--/div-->
+</div>
+
 <div class="mkd-glr-thumbcontainer" tooltip="Это руководство показывает, как использовать MosquitoDetector из библиотеки CulicidaeLab для вы...">
     <!--div class="figure align-default" id="id1"-->
         <img alt="Руководство по детекции комаров" src="images\thumb\mkd_glr_tutorial_part_2_mosquito_detection_thumb.png" />

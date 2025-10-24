@@ -32,9 +32,15 @@
 - **Отчетность**: Как сгенерировать и визуализировать всесторонний отчет о производительности.
 """
 
-# %%
+# %% [markdown]
 # Установите библиотеку `culicidaelab`, если она еще не установлена
-# !pip install -q culicidaelab
+# ```bash
+# !pip install -q culicidaelab[full]
+# ```
+# или, если есть доступ к GPU
+# ```bash
+# !pip install -q culicidaelab[full-gpu]
+# ```
 
 # %% [markdown]
 # ## 1. Инициализация и настройка
