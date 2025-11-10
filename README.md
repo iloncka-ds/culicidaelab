@@ -291,6 +291,7 @@ Execute any script using Python from your terminal. For example:
     ```
 
 These examples are the best way to understand the practical applications of `CulicidaeLab` and provide a solid foundation for building your own analysis pipelines.
+
 **Build documentation locally:**
 ```bash
 pip install culicidaelab[full,docs] --extra-index-url https://download.pytorch.org/whl/cpu
