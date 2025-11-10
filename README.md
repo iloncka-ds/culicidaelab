@@ -271,7 +271,7 @@ cd culicidaelab
 - Visualizing detection boxes and segmentation masks
 - Evaluating model performance on benchmark datasets
 - Customizing behavior via YAML configuration overrides
-You need Jupyter Notebook server or JupyterLab installed. First, start the Jupyter server, then navigate to the root of the examples folder of the cloned repository (`examples/en/'` or `examples/ru/`) and run, if JupyterLab installed:
+You need Jupyter Notebook server or JupyterLab installed. First, start the Jupyter server, then navigate to the root of the examples folder of the cloned repository (`examples/en/` or `examples/ru/`) and run, if JupyterLab installed:
    ```bash
     jupyter lab
    ```
