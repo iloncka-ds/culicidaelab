@@ -132,7 +132,7 @@ An open-source system for mosquito research and analysis includes components:
 
   - [Python library (AGPL-3.0)](https://github.com/iloncka-ds/culicidaelab) providing core ML functionality
   - [Web server (AGPL-3.0)](https://github.com/iloncka-ds/culicidaelab-server) hosting API services
-  - [Mobile app Culicidaelab (AGPL-3.0)](https://github.com/iloncka-ds/culicidaelab-mobile) for usage with connection to the web-server for centralized observations storage and citizen science development  
+  - [Mobile app Culicidaelab (AGPL-3.0)](https://github.com/iloncka-ds/culicidaelab-mobile) for usage with connection to the web-server for centralized observations storage and citizen science development
   - [Mobile app Mosquitoscan (AGPL-3.0)](https://gitlab.com/mosquitoscan/mosquitoscan-app) for field use with optimized models
 
 These components form a cohesive ecosystem where datasets are used for training models that power applications, the Python library provides core functionality to the web server, and the server exposes services consumed by the mobile application. All components are openly licensed, promoting transparency and collaboration.
@@ -253,7 +253,7 @@ pip install culicidaelab[full-gpu]
 ### Additional Options
 
 **Run example notebooks locally:**
-This repository includes a collection of examples in the `/examples` directory to help you get started with `CulicidaeLab`. These examples are provided as both Jupyter Notebooks (`.ipynb`) and Python scripts (`.py`) and cover the main functionalities of the library. First, install all necessary dependencies: 
+This repository includes a collection of examples in the `/examples/en` (`/examples/ru` for Russian translation) directory to help you get started with `CulicidaeLab`. These examples are provided as both Jupyter Notebooks (`.ipynb`) and Python scripts (`.py`) and cover the main functionalities of the library. First, install all necessary dependencies:
 ```bash
 pip install culicidaelab[full,examples] --extra-index-url https://download.pytorch.org/whl/cpu
 # Or for GPU development:
@@ -270,7 +270,7 @@ cd culicidaelab
 - Visualizing detection boxes and segmentation masks
 - Evaluating model performance on benchmark datasets
 - Customizing behavior via YAML configuration overrides
-You need Jupyter Notebook server or JupyterLab installed. First, start the Jupyter server, then navigate to the root of the examples folder of the cloned repository and run, if JupyterLab installed:
+You need Jupyter Notebook server or JupyterLab installed. First, start the Jupyter server, then navigate to the root of the examples folder of the cloned repository (`examples/en/'` or `examples/ru/`) and run, if JupyterLab installed:
    ```bash
     jupyter lab
    ```
@@ -283,8 +283,13 @@ You can execute the code cells sequentially to see the library in action, from l
 You can also use the Python scripts (`.py`) for non-interactive demonstrations of specific tasks.
 Execute any script using Python from your terminal. For example:
     ```bash
-    python examples/tutorial_part_0_settings_example.py
+    python examples/en/tutorial_part_0_settings_example.py
     ```
+    or
+    ```bash
+    python examples/ru/tutorial_part_0_settings_example.py
+    ```
+
 These examples are the best way to understand the practical applications of `CulicidaeLab` and provide a solid foundation for building your own analysis pipelines.
 **Build documentation locally:**
 ```bash
