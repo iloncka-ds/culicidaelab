@@ -267,10 +267,12 @@ cd culicidaelab
 ```
  Jupyter Notebooks provide an interactive, step-by-step guide to using the library's features.
  Example use cases include:
-- Running inference on a single image or batch of images
-- Visualizing detection boxes and segmentation masks
-- Evaluating model performance on benchmark datasets
-- Customizing behavior via YAML configuration overrides
+ 
+- Running inference on a single image or batch of images;
+- Visualizing detection boxes and segmentation masks;
+- Evaluating model performance on benchmark datasets;
+- Customizing behavior via YAML configuration overrides.
+
 You need Jupyter Notebook server or JupyterLab installed. First, start the Jupyter server, then navigate to the root of the examples folder of the cloned repository (`examples/en/` or `examples/ru/`) and run, if JupyterLab installed:
    ```bash
     jupyter lab
