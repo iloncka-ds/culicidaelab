@@ -253,6 +253,7 @@ pip install culicidaelab[full-gpu]
 ### Additional Options
 
 **Run example notebooks locally:**
+
 This repository includes a collection of examples in the `/examples/en` (`/examples/ru` for Russian translation) directory to help you get started with `CulicidaeLab`. These examples are provided as both Jupyter Notebooks (`.ipynb`) and Python scripts (`.py`) and cover the main functionalities of the library. First, install all necessary dependencies:
 ```bash
 pip install culicidaelab[full,examples] --extra-index-url https://download.pytorch.org/whl/cpu
