@@ -229,11 +229,13 @@ Choose an installation profile based on your use case:
 
 #### **For Production/Serving (Lightweight Inference)**
 **GPU-accelerated inference:**
+
 ```bash
 pip install culicidaelab[serve-gpu]
 ```
 
 **Lightweight serve alias** (equivalent to default):
+
 ```bash
 pip install culicidaelab[serve]
 ```
@@ -241,11 +243,13 @@ pip install culicidaelab[serve]
 #### **For Research/Development**
 
 **CPU-based development** (includes PyTorch, FastAI, Ultralytics, and ONNX):
+
 ```bash
 pip install culicidaelab[full] --extra-index-url https://download.pytorch.org/whl/cpu
 ```
 
 **GPU-accelerated development** (includes PyTorch GPU, FastAI, Ultralytics, and ONNX GPU):
+
 ```bash
 pip install culicidaelab[full-gpu]
 ```
@@ -255,16 +259,20 @@ pip install culicidaelab[full-gpu]
 **Run example notebooks locally:**
 
 This repository includes a collection of examples in the `/examples/en` (`/examples/ru` for Russian translation) directory to help you get started with `CulicidaeLab`. These examples are provided as both Jupyter Notebooks (`.ipynb`) and Python scripts (`.py`) and cover the main functionalities of the library. First, install all necessary dependencies:
+
 ```bash
 pip install culicidaelab[full,examples] --extra-index-url https://download.pytorch.org/whl/cpu
 # Or for GPU development:
 pip install culicidaelab[full-gpu,examples]
 ```
+
 Clone the repository to get local access to the example files, or just download the selected notebook:
+
 ```bash
 git clone https://github.com/iloncka-ds/culicidaelab.git
 cd culicidaelab
 ```
+
  Jupyter Notebooks provide an interactive, step-by-step guide to using the library's features.
  Example use cases include:
 
@@ -274,30 +282,36 @@ cd culicidaelab
 - Customizing behavior via YAML configuration overrides.
 
 You need Jupyter Notebook server or JupyterLab installed. First, start the Jupyter server, then navigate to the root of the examples folder of the cloned repository (`examples/en/` or `examples/ru/`) and run, if JupyterLab installed:
-```bash
-    jupyter lab
-```
-    or, for Jupyter Notebook server:
 
 ```bash
-    jupyter notebook
+  jupyter lab
 ```
+
+  or, for Jupyter Notebook server:
+
+```bash
+  jupyter notebook
+```
+
 Your browser will open the Jupyter interface, then click on any `.ipynb` file to open it.
 You can execute the code cells sequentially to see the library in action, from loading models to visualizing predictions.
 You can also use the Python scripts (`.py`) for non-interactive demonstrations of specific tasks.
 Execute any script using Python from your terminal. For example:
-```bash
-    python examples/en/tutorial_part_0_settings_example.py
-```
-    or for Russian version:
 
 ```bash
-    python examples/ru/tutorial_part_0_settings_example.py
+  python examples/en/tutorial_part_0_settings_example.py
+```
+
+  or for Russian version:
+
+```bash
+  python examples/ru/tutorial_part_0_settings_example.py
 ```
 
 These examples are the best way to understand the practical applications of `CulicidaeLab` and provide a solid foundation for building your own analysis pipelines.
 
 **Build documentation locally:**
+
 ```bash
 pip install culicidaelab[full,docs] --extra-index-url https://download.pytorch.org/whl/cpu
 # Or for GPU development:
@@ -305,6 +319,7 @@ pip install culicidaelab[full-gpu,docs]
 ```
 
 **Run tests:**
+
 ```bash
 pip install culicidaelab[full,test] --extra-index-url https://download.pytorch.org/whl/cpu
 # Or for GPU development:
