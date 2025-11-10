@@ -274,25 +274,26 @@ cd culicidaelab
 - Customizing behavior via YAML configuration overrides.
 
 You need Jupyter Notebook server or JupyterLab installed. First, start the Jupyter server, then navigate to the root of the examples folder of the cloned repository (`examples/en/` or `examples/ru/`) and run, if JupyterLab installed:
-  ```bash
+```bash
     jupyter lab
-  ```
+```
     or, for Jupyter Notebook server:
 
-  ```bash
+```bash
     jupyter notebook
-  ```
+```
 Your browser will open the Jupyter interface, then click on any `.ipynb` file to open it.
 You can execute the code cells sequentially to see the library in action, from loading models to visualizing predictions.
 You can also use the Python scripts (`.py`) for non-interactive demonstrations of specific tasks.
 Execute any script using Python from your terminal. For example:
-  ```bash
+```bash
     python examples/en/tutorial_part_0_settings_example.py
-  ```
-    or
-  ```bash
+```
+    or for Russian version:
+
+```bash
     python examples/ru/tutorial_part_0_settings_example.py
-  ```
+```
 
 These examples are the best way to understand the practical applications of `CulicidaeLab` and provide a solid foundation for building your own analysis pipelines.
 
