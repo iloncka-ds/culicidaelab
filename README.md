@@ -127,14 +127,15 @@ An open-source system for mosquito research and analysis includes components:
   - [Detection model reports](https://gitlab.com/mosquitoscan/experiments-reports-detection-models)
   - [Segmentation model reports](https://gitlab.com/mosquitoscan/experiments-reports-segmentation-models)
   - [Classification experiment reports - 1st round](https://gitlab.com/iloncka/mosal-reports)
-  - [Classification experiment reports -2nd round](https://gitlab.com/mosquitoscan/experiments-reports)
+  - [Classification experiment reports - 2nd round](https://gitlab.com/mosquitoscan/experiments-reports)
 - **Applications**:
 
   - [Python library (AGPL-3.0)](https://github.com/iloncka-ds/culicidaelab) providing core ML functionality
   - [Web server (AGPL-3.0)](https://github.com/iloncka-ds/culicidaelab-server) hosting API services
-  - [Mobile app (AGPL-3.0)](https://gitlab.com/mosquitoscan/mosquitoscan-app) for field use with optimized models
+  - [Mobile app Culicidaelab (AGPL-3.0)](https://github.com/iloncka-ds/culicidaelab-mobile) for usage with connection to the web-server for centralized observations storage and citizen science development  
+  - [Mobile app Mosquitoscan (AGPL-3.0)](https://gitlab.com/mosquitoscan/mosquitoscan-app) for field use with optimized models
 
-These components form a cohesive ecosystem where datasets used for training models that power applications, the Python library provides core functionality to the web server, and the server exposes services consumed by the mobile application. All components are openly licensed, promoting transparency and collaboration.
+These components form a cohesive ecosystem where datasets are used for training models that power applications, the Python library provides core functionality to the web server, and the server exposes services consumed by the mobile application. All components are openly licensed, promoting transparency and collaboration.
 
 This integrated approach enables comprehensive mosquito research, from data collection to analysis and visualization, supporting both scientific research and public health initiatives.
 
@@ -147,7 +148,7 @@ This integrated approach enables comprehensive mosquito research, from data coll
   - **Instance Segmentation**: Generate precise pixel-level masks with a SAM-based segmenter.
 - **Unified API**: All predictors share a consistent interface (`.predict()`, `.visualize()`, `.evaluate()`) for a predictable user experience.
 - **Automatic Resource Management**: The library intelligently manages local storage, automatically downloading and caching model weights and datasets on first use.
-- **Extensible Provider System**: Seamlessly connect to data sources. A `HuggingFaceProvider` is built-in, with an easy-to-implement interface for adding more providers.
+- **Extensible Provider System**: Seamlessly connect to data sources. A `HuggingFaceProvider` is built in, with an easy-to-implement interface for adding more providers.
 - **Powerful Visualization**: Instantly visualize model outputs with built-in, configurable methods for drawing bounding boxes, classification labels, and segmentation masks.
 
 ## Practical Applications
@@ -196,6 +197,7 @@ Software:
 - Git
 - Python 3.11
 - uv 0.8.13
+- JupyterLab or Jupyter Notebook server (optional, for notebooks with examples running)
 
 Python packages:
 
@@ -207,7 +209,7 @@ Python packages:
 - Pillow 9.4.0
 - Pydantic 2.0.0+
 
-For full list of dependencies, see the [pyproject.toml](https://github.com/iloncka-ds/culicidaelab/blob/main/pyproject.toml) file.
+For the full list of dependencies, see the [pyproject.toml](https://github.com/iloncka-ds/culicidaelab/blob/main/pyproject.toml) file.
 
 ## Installation
 
@@ -219,7 +221,7 @@ For most users, the default installation provides full inference capabilities:
 pip install culicidaelab
 ```
 
-This includes CPU-based inference using ONNX Runtime, giving you everything needed for fast lightweight mosquito classification inference, and includes all core functionality without heavy ML frameworks, such as configuration management, resource handling, and model downloading capabilities.
+This includes CPU-based inference using ONNX Runtime, giving you everything needed for fast, lightweight mosquito classification inference, and includes all core functionality without heavy ML frameworks, such as configuration management, resource handling, and model downloading capabilities.
 
 ### Installation Profiles
 
@@ -251,12 +253,39 @@ pip install culicidaelab[full-gpu]
 ### Additional Options
 
 **Run example notebooks locally:**
+This repository includes a collection of examples in the `/examples` directory to help you get started with `CulicidaeLab`. These examples are provided as both Jupyter Notebooks (`.ipynb`) and Python scripts (`.py`) and cover the main functionalities of the library. First, install all necessary dependencies: 
 ```bash
 pip install culicidaelab[full,examples] --extra-index-url https://download.pytorch.org/whl/cpu
 # Or for GPU development:
 pip install culicidaelab[full-gpu,examples]
 ```
-
+Clone the repository to get local access to the example files, or just download the selected notebook:
+```bash
+git clone https://github.com/iloncka-ds/culicidaelab.git
+cd culicidaelab
+```
+ Jupyter Notebooks provide an interactive, step-by-step guide to using the library's features.
+ Example use cases include:
+- Running inference on a single image or batch of images
+- Visualizing detection boxes and segmentation masks
+- Evaluating model performance on benchmark datasets
+- Customizing behavior via YAML configuration overrides
+You need Jupyter Notebook server or JupyterLab installed. First, start the Jupyter server, then navigate to the root of the examples folder of the cloned repository and run, if JupyterLab installed:
+   ```bash
+    jupyter lab
+   ```
+    or, for Jupyter Notebook server:
+  ```bash
+    jupyter notebook
+   ```
+Your browser will open the Jupyter interface, then click on any `.ipynb` file to open it.
+You can execute the code cells sequentially to see the library in action, from loading models to visualizing predictions.
+You can also use the Python scripts (`.py`) for non-interactive demonstrations of specific tasks.
+Execute any script using Python from your terminal. For example:
+    ```bash
+    python examples/tutorial_part_0_settings_example.py
+    ```
+These examples are the best way to understand the practical applications of `CulicidaeLab` and provide a solid foundation for building your own analysis pipelines.
 **Build documentation locally:**
 ```bash
 pip install culicidaelab[full,docs] --extra-index-url https://download.pytorch.org/whl/cpu
